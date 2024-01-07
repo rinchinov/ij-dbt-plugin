@@ -11,6 +11,10 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable id="DBTPluginProjectConfigurable"
                              instance="com.github.rinchinov.ijdbtplugin.extentions.PluginProjectConfigurable" />
+        <notificationGroup id="DBT Notification Group"
+                           displayType="BALLOON"
+                           toolWindowId="null"
+                           isLogByDefault="true"/>
     </extensions>
 
 </idea-plugin>
