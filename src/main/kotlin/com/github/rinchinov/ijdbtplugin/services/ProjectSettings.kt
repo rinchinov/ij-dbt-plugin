@@ -12,7 +12,7 @@ class ProjectSettings(private val project: Project) : PersistentStateComponent<P
     private var myState = State()
 
     data class State(
-        var projectPath: String = PROJECT_PATH,
+        var dbtProjectPath: String = PROJECT_PATH,
         var dbtProfilePath: String = DBT_PROFILE_PATH,
         var dbtRunnerImport: String = DBT_RUNNER_IMPORT,
         var dbtInterpreterPath: String = DBT_INTERPRETER_PATH,
@@ -42,10 +42,10 @@ class ProjectSettings(private val project: Project) : PersistentStateComponent<P
         myState = state
     }
 
-    fun getProjectPath(): String = myState.projectPath
+    fun getDbtProjectPath(): String = myState.dbtProjectPath
 
-    fun setProjectPath(projectPath: String) {
-        myState.projectPath = projectPath
+    fun setDbtProjectPath(dbtProjectPath: String) {
+        myState.dbtProjectPath = dbtProjectPath
     }
 
     fun getDbtProfilePath(): String = myState.dbtProfilePath

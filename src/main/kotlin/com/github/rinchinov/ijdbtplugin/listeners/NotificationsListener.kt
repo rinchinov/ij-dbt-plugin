@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import javax.swing.event.HyperlinkEvent
 
 @Service(Service.Level.PROJECT)
-class NotificationListener(private val project: Project) : NotificationListener {
+class NotificationsListener(private val project: Project) : NotificationListener {
 
     override fun hyperlinkUpdate(notification: Notification, event: HyperlinkEvent) {
         if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {

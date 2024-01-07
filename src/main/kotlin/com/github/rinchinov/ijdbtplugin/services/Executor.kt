@@ -11,13 +11,13 @@ import com.intellij.notification.NotificationType
 @Service(Service.Level.PROJECT)
 class Executor(project: Project){
     private val settings = project.service<ProjectSettings>()
-    private val pathsUtils = project.service<PathsUtils>()
+    private val projectConfigurations = project.service<ProjectConfigurations>()
     private val dbtNotifications = project.service<Notifications>()
     fun executeDbt(args: List<String>, kwargs: Map<String, String>) {
         // Access the Python script as a resource
         val url = this::class.java.classLoader.getResource("python/cli.py")
         val scriptTemplate = url?.readText() ?: throw IllegalArgumentException("Script not found")
-        val pythonSdkPath = pathsUtils.sdkPath().absolutePath.toString()
+        val pythonSdkPath = projectConfigurations.sdkPath().absolutePath.toString()
         val script = scriptTemplate.replace("RUNNER_IMPORT", settings.getDbtRunnerImport())
         val gson = Gson()
         val processBuilder = ProcessBuilder(
@@ -28,7 +28,7 @@ class Executor(project: Project){
                 gson.toJson(kwargs)
         )
         processBuilder.directory(
-            pathsUtils.dbtProjectPath().absoluteDir.toFile()
+            projectConfigurations.dbtProjectPath().absoluteDir.toFile()
         )
 
         val process = processBuilder.start()
@@ -43,7 +43,7 @@ class Executor(project: Project){
         if (exitCode == 0) {
             dbtNotifications.sendNotification("Process finished successfully.", "Output: $output", NotificationType.INFORMATION)
         } else {
-            val logUrl = "<a href='file://${pathsUtils.logPath().absolutePath}'>Open log</a>."
+            val logUrl = "<a href='file://${projectConfigurations.logPath().absolutePath}'>Open log</a>."
             dbtNotifications.sendNotification("Process finished with exit code $exitCode", "$logUrl Output: $output", NotificationType.ERROR)
         }
     }

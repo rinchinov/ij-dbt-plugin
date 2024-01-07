@@ -1,5 +1,6 @@
 package com.github.rinchinov.ijdbtplugin.extentions
 import com.github.rinchinov.ijdbtplugin.MyBundle
+import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -13,6 +14,7 @@ import com.intellij.ui.components.JBScrollPane
 
 class PluginProjectConfigurable(private val project: Project) : Configurable {
     private val settings = project.service<ProjectSettings>()
+    private val projectConfigurations = project.service<ProjectConfigurations>()
     private val mainPanel = JPanel(GridBagLayout())
     private val projectPath: JTextField = JTextField()
     private val dbtProfilePath: JTextField = JTextField()
@@ -102,21 +104,22 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
     }
 
     override fun isModified(): Boolean {
-        return settings.getProjectPath() != projectPath.text
+        return settings.getDbtProjectPath() != projectPath.text
                 || settings.getDbtProfilePath() != dbtProfilePath.text
                 || settings.getDbtRunnerImport() != dbtRunnerImport.text
                 || settings.getDbtInterpreterPath() != dbtInterpreterPath.text
     }
 
     override fun apply() {
-        settings.setProjectPath(projectPath.text)
+        settings.setDbtProjectPath(projectPath.text)
         settings.setDbtProfilePath(dbtProfilePath.text)
         settings.setDbtRunnerImport(dbtRunnerImport.text)
         settings.setDbtInterpreterPath(dbtInterpreterPath.text)
+        projectConfigurations.reloadDbtProjectSettings()
     }
 
     override fun reset() {
-        projectPath.text = settings.getProjectPath()
+        projectPath.text = settings.getDbtProjectPath()
         dbtProfilePath.text = settings.getDbtProfilePath()
         dbtRunnerImport.text = settings.getDbtRunnerImport()
         dbtInterpreterPath.text = settings.getDbtInterpreterPath()
