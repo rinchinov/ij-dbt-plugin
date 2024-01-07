@@ -15,6 +15,9 @@
                            displayType="BALLOON"
                            toolWindowId="null"
                            isLogByDefault="true"/>
+        <toolWindow
+            factoryClass="com.github.rinchinov.ijdbtplugin.extentions.ToolMainWindow"
+            id="DBT Plugin"/>
     </extensions>
 
 </idea-plugin>
