@@ -11,6 +11,8 @@ plugins {
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
+    kotlin("jvm") version "1.6.10" // or any other Kotlin plugin
+    kotlin("plugin.serialization") version "1.6.10"
 }
 
 group = properties("pluginGroup").get()
@@ -25,6 +27,8 @@ repositories {
 dependencies {
     implementation("org.yaml:snakeyaml:2.0")
     implementation("com.google.code.gson:gson:2.8.9")
+    implementation(kotlin("script-runtime"))
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") // Check for the latest version
 }
 
 // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
