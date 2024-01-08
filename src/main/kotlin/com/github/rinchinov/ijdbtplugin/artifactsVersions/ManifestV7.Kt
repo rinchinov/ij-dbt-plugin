@@ -109,7 +109,7 @@ data class ManifestV7 (
      * The sources defined in the dbt project and its dependencies
      */
     val sources: Map<String, ParsedSourceDefinition>
-)
+): ManifestInterface()
 
 /**
  * CompiledAnalysisNode(compiled: bool, database: Optional[str], schema: str, fqn:

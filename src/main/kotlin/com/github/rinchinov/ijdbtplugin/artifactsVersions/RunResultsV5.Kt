@@ -19,7 +19,7 @@ data class RunResultsV5 (
 
     val metadata: BaseArtifactMetadata,
     val results: List<RunResultOutput>
-)
+): RunResultsInterface()
 
 @Serializable
 data class BaseArtifactMetadata (

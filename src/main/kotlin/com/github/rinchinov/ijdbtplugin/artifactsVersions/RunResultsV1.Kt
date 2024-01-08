@@ -24,7 +24,7 @@ data class RunResultsV1 (
 
     val metadata: BaseArtifactMetadata,
     val results: List<RunResultOutput>
-)
+): RunResultsInterface()
 
 /**
  * BaseArtifactMetadata(dbt_schema_version: str, dbt_version: str = '0.19.0', generated_at:

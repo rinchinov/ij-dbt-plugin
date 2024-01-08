@@ -88,7 +88,7 @@ data class ManifestV8 (
      * The sources defined in the dbt project and its dependencies
      */
     val sources: Map<String, SourceDefinition>
-)
+): ManifestInterface()
 
 /**
  * AnalysisNode(database: Optional[str], schema: str, name: str, resource_type:

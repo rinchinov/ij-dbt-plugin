@@ -91,7 +91,7 @@ data class ManifestV11 (
      * The sources defined in the dbt project and its dependencies
      */
     val sources: Map<String, SourceDefinition>
-)
+): ManifestInterface()
 
 @Serializable
 data class AnalysisNode (

@@ -109,7 +109,7 @@ data class ManifestV10 (
      * The sources defined in the dbt project and its dependencies
      */
     val sources: Map<String, SourceDefinition>
-)
+): ManifestInterface()
 
 /**
  * AnalysisNode(database: Union[str, NoneType], schema: str, name: str, resource_type:

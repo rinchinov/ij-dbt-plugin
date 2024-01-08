@@ -46,7 +46,7 @@ data class BaseArtifactMetadata (
 
     @SerialName("invocation_id")
     val invocationId: String? = null
-)
+): RunResultsInterface()
 
 /**
  * RunResultOutput(status: Union[dbt.contracts.results.RunStatus,
