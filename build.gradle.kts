@@ -27,7 +27,6 @@ repositories {
 dependencies {
     implementation("org.yaml:snakeyaml:2.0")
     implementation("com.google.code.gson:gson:2.8.9")
-    implementation(kotlin("script-runtime"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") // Check for the latest version
 }
 

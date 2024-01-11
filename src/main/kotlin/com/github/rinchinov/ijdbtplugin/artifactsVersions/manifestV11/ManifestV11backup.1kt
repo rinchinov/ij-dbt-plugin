@@ -3,12 +3,14 @@
 // val json        = Json { allowStructuredMapKeys = true }
 // val manifestV11 = json.parse(ManifestV11.serializer(), jsonString)
 
-package com.github.rinchinov.ijdbtplugin.artifactsVersions
+package com.github.rinchinov.ijdbtplugin.artifactsVersions.manifestV11
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
+import com.github.rinchinov.ijdbtplugin.artifactInterfaces.ManifestInterface
+import com.intellij.json.psi.JsonStringLiteral
 
 @Serializable
 data class ManifestV11 (
@@ -91,8 +93,7 @@ data class ManifestV11 (
      * The sources defined in the dbt project and its dependencies
      */
     val sources: Map<String, SourceDefinition>
-): ManifestInterface()
-
+): ManifestInterface
 @Serializable
 data class AnalysisNode (
     @SerialName("_event_status")
@@ -435,11 +436,52 @@ data class Hook (
     val sql: String,
     val transaction: Boolean? = null
 )
-
-@Serializable
+@Serializable(with = TagsSerializer::class)
 sealed class Tags {
+    @Serializable
     class StringArrayValue(val value: List<String>) : Tags()
-    class StringValue(val value: String)            : Tags()
+    @Serializable
+    class StringValue(val value: String) : Tags()
+}
+object TagsSerializer : KSerializer<Tags> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Tags")
+
+    override fun serialize(encoder: Encoder, value: Tags) {
+        // Implement serialization logic based on the specific subclass of Tags
+        when (value) {
+            is Tags.StringArrayValue -> Json.encodeToString(Tags.StringArrayValue.serializer(), value)
+            is Tags.StringValue -> Json.encodeToString(Tags.StringValue.serializer(), value)
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): Tags {
+        val jsonDecoder = decoder as? JsonDecoder?: throw SerializationException("Expected JsonDecoder")
+        val element = jsonDecoder.decodeJsonElement()
+
+        return when (element) {
+
+            is JsonPrimitive -> {
+                Tags.StringValue(element.jsonPrimitive.content)
+            }
+            is JsonArray -> {
+                Tags.StringArrayValue(emptyList())
+                if (element.size == 0) {
+                    Tags.StringArrayValue(emptyList())
+                } else {
+                    Tags.StringArrayValue(element.jsonArray.map { it.jsonPrimitive.content })
+                }
+            }
+            else -> {
+                throw SerializationException("Unknown element type for Tags")
+            }
+        }
+//        return when {
+//            element.jsonPrimitive.isString -> Tags.StringValue(element.jsonPrimitive.content)
+//            (element as JsonArray).size == 0 -> Tags.StringArrayValue(emptyList())
+//            element.jsonArray.isNotEmpty() ->
+//            else ->
+//        }
+    }
 }
 
 @Serializable

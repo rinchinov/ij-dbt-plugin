@@ -1,14 +1,56 @@
-// To parse the JSON, install kotlin's serialization plugin and do:
-//
-// val json        = Json { allowStructuredMapKeys = true }
-// val manifestV10 = json.parse(ManifestV10.serializer(), jsonString)
+package com.github.rinchinov.ijdbtplugin.artifactsVersions.manifestV10
 
-package com.github.rinchinov.ijdbtplugin.artifactsVersions
+import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.core.*
+import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.node.*
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
+import com.fasterxml.jackson.module.kotlin.*
+import com.github.rinchinov.ijdbtplugin.artifactInterfaces.ManifestInterface
 
-import kotlinx.serialization.*
-import kotlinx.serialization.json.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+
+@Suppress("UNCHECKED_CAST")
+private fun <T> ObjectMapper.convert(k: kotlin.reflect.KClass<*>, fromJson: (JsonNode) -> T, toJson: (T) -> String, isUnion: Boolean = false) = registerModule(SimpleModule().apply {
+    addSerializer(k.java as Class<T>, object : StdSerializer<T>(k.java as Class<T>) {
+        override fun serialize(value: T, gen: JsonGenerator, provider: SerializerProvider) = gen.writeRawValue(toJson(value))
+    })
+    addDeserializer(k.java as Class<T>, object : StdDeserializer<T>(k.java as Class<T>) {
+        override fun deserialize(p: JsonParser, ctxt: DeserializationContext) = fromJson(p.readValueAsTree())
+    })
+})
+
+val mapper = jacksonObjectMapper().apply {
+    propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
+    setSerializationInclusion(JsonInclude.Include.NON_NULL)
+    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    convert(Access::class,                { Access.fromValue(it.asText()) },                { "\"${it.value}\"" })
+    convert(ConstraintType::class,        { ConstraintType.fromValue(it.asText()) },        { "\"${it.value}\"" })
+    convert(OnConfigurationChange::class, { OnConfigurationChange.fromValue(it.asText()) }, { "\"${it.value}\"" })
+    convert(DimensionType::class,         { DimensionType.fromValue(it.asText()) },         { "\"${it.value}\"" })
+    convert(Granularity::class,           { Granularity.fromValue(it.asText()) },           { "\"${it.value}\"" })
+    convert(EntityType::class,            { EntityType.fromValue(it.asText()) },            { "\"${it.value}\"" })
+    convert(Period::class,                { Period.fromValue(it.asText()) },                { "\"${it.value}\"" })
+    convert(Maturity::class,              { Maturity.fromValue(it.asText()) },              { "\"${it.value}\"" })
+    convert(Agg::class,                   { Agg.fromValue(it.asText()) },                   { "\"${it.value}\"" })
+    convert(DisabledResourceType::class,  { DisabledResourceType.fromValue(it.asText()) },  { "\"${it.value}\"" })
+    convert(DisabledType::class,          { DisabledType.fromValue(it.asText()) },          { "\"${it.value}\"" })
+    convert(DocResourceType::class,       { DocResourceType.fromValue(it.asText()) },       { "\"${it.value}\"" })
+    convert(ExposureResourceType::class,  { ExposureResourceType.fromValue(it.asText()) },  { "\"${it.value}\"" })
+    convert(ExposureType::class,          { ExposureType.fromValue(it.asText()) },          { "\"${it.value}\"" })
+    convert(GroupResourceType::class,     { GroupResourceType.fromValue(it.asText()) },     { "\"${it.value}\"" })
+    convert(MacroResourceType::class,     { MacroResourceType.fromValue(it.asText()) },     { "\"${it.value}\"" })
+    convert(SupportedLanguage::class,     { SupportedLanguage.fromValue(it.asText()) },     { "\"${it.value}\"" })
+    convert(MetricResourceType::class,    { MetricResourceType.fromValue(it.asText()) },    { "\"${it.value}\"" })
+    convert(MetricType::class,            { MetricType.fromValue(it.asText()) },            { "\"${it.value}\"" })
+    convert(NodeResourceType::class,      { NodeResourceType.fromValue(it.asText()) },      { "\"${it.value}\"" })
+    convert(SourceResourceType::class,    { SourceResourceType.fromValue(it.asText()) },    { "\"${it.value}\"" })
+    convert(UniqueKey::class,             { UniqueKey.fromJson(it) },                       { it.toJson() }, true)
+    convert(Tags::class,                  { Tags.fromJson(it) },                            { it.toJson() }, true)
+    convert(Partition::class,             { Partition.fromJson(it) },                       { it.toJson() }, true)
+    convert(Version::class,               { Version.fromJson(it) },                         { it.toJson() }, true)
+}
 
 /**
  * WritableManifest(metadata: dbt.contracts.graph.manifest.ManifestMetadata, nodes:
@@ -34,12 +76,11 @@ import kotlinx.serialization.encoding.*
  * NoneType], group_map: Union[Dict[str, List[str]], NoneType], semantic_models:
  * Mapping[str, dbt.contracts.graph.nodes.SemanticModel])
  */
-@Serializable
 data class ManifestV10 (
     /**
      * A mapping from parent nodes to their dependents
      */
-    @SerialName("child_map")
+    @get:JsonProperty("child_map")@field:JsonProperty("child_map")
     val childMap: Map<String, List<String>>? = null,
 
     /**
@@ -50,66 +91,81 @@ data class ManifestV10 (
     /**
      * The docs defined in the dbt project and its dependencies
      */
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val docs: Map<String, Documentation>,
 
     /**
      * The exposures defined in the dbt project and its dependencies
      */
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val exposures: Map<String, Exposure>,
 
     /**
      * A mapping from group names to their nodes
      */
-    @SerialName("group_map")
+    @get:JsonProperty("group_map")@field:JsonProperty("group_map")
     val groupMap: Map<String, List<String>>? = null,
 
     /**
      * The groups defined in the dbt project
      */
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val groups: Map<String, Group>,
 
     /**
      * The macros defined in the dbt project and its dependencies
      */
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val macros: Map<String, Macro>,
 
     /**
      * Metadata about the manifest
      */
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val metadata: ManifestMetadata,
 
     /**
      * The metrics defined in the dbt project and its dependencies
      */
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val metrics: Map<String, Metric>,
 
     /**
      * The nodes defined in the dbt project and its dependencies
      */
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val nodes: Map<String, Node>,
 
     /**
      * A mapping from child nodes to their dependencies
      */
-    @SerialName("parent_map")
+    @get:JsonProperty("parent_map")@field:JsonProperty("parent_map")
     val parentMap: Map<String, List<String>>? = null,
 
     /**
      * The selectors defined in selectors.yml
      */
-    val selectors: JsonObject,
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
+    val selectors: Map<String, Any?>,
 
     /**
      * The semantic models defined in the dbt project
      */
-    @SerialName("semantic_models")
+    @get:JsonProperty("semantic_models", required=true)@field:JsonProperty("semantic_models", required=true)
     val semanticModels: Map<String, SemanticModel>,
 
     /**
      * The sources defined in the dbt project and its dependencies
      */
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val sources: Map<String, SourceDefinition>
-): ManifestInterface()
+): ManifestInterface {
+    fun toJson() = mapper.writeValueAsString(this)
+
+    companion object {
+        fun fromJson(json: String) = mapper.readValue<ManifestV10>(json)
+    }
+}
 
 /**
  * AnalysisNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
@@ -340,134 +396,138 @@ data class ManifestV10 (
  * config: dbt.contracts.graph.model_config.SemanticModelConfig = <factory>, primary_entity:
  * Union[str, NoneType] = None)
  */
-@Serializable
 data class AnalysisNode (
     val alias: String? = null,
 
-    @SerialName("build_path")
+    @get:JsonProperty("build_path")@field:JsonProperty("build_path")
     val buildPath: String? = null,
 
     val checksum: FileHash? = null,
     val columns: Map<String, ColumnInfo>? = null,
     val compiled: Boolean? = null,
 
-    @SerialName("compiled_code")
+    @get:JsonProperty("compiled_code")@field:JsonProperty("compiled_code")
     val compiledCode: String? = null,
 
-    @SerialName("compiled_path")
+    @get:JsonProperty("compiled_path")@field:JsonProperty("compiled_path")
     val compiledPath: String? = null,
 
     val config: DisabledConfig? = null,
 
-    @SerialName("config_call_dict")
-    val configCallDict: JsonObject? = null,
+    @get:JsonProperty("config_call_dict")@field:JsonProperty("config_call_dict")
+    val configCallDict: Map<String, Any?>? = null,
 
     val contract: Contract? = null,
 
-    @SerialName("created_at")
+    @get:JsonProperty("created_at")@field:JsonProperty("created_at")
     val createdAt: Double? = null,
 
     val database: String? = null,
     val deferred: Boolean? = null,
 
-    @SerialName("depends_on")
+    @get:JsonProperty("depends_on")@field:JsonProperty("depends_on")
     val dependsOn: DependsOn? = null,
 
     val description: String? = null,
     val docs: Docs? = null,
 
-    @SerialName("extra_ctes")
+    @get:JsonProperty("extra_ctes")@field:JsonProperty("extra_ctes")
     val extraCtes: List<InjectedCte>? = null,
 
-    @SerialName("extra_ctes_injected")
+    @get:JsonProperty("extra_ctes_injected")@field:JsonProperty("extra_ctes_injected")
     val extraCtesInjected: Boolean? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val fqn: List<String>,
+
     val group: String? = null,
     val language: String? = null,
-    val meta: JsonObject? = null,
+    val meta: Map<String, Any?>? = null,
     val metrics: List<List<String>>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("original_file_path")
+    @get:JsonProperty("original_file_path", required=true)@field:JsonProperty("original_file_path", required=true)
     val originalFilePath: String,
 
-    @SerialName("package_name")
+    @get:JsonProperty("package_name", required=true)@field:JsonProperty("package_name", required=true)
     val packageName: String,
 
-    @SerialName("patch_path")
+    @get:JsonProperty("patch_path")@field:JsonProperty("patch_path")
     val patchPath: String? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val path: String,
 
-    @SerialName("raw_code")
+    @get:JsonProperty("raw_code")@field:JsonProperty("raw_code")
     val rawCode: String? = null,
 
     val refs: List<RefArgs>? = null,
 
-    @SerialName("relation_name")
+    @get:JsonProperty("relation_name")@field:JsonProperty("relation_name")
     val relationName: String? = null,
 
-    @SerialName("resource_type")
+    @get:JsonProperty("resource_type", required=true)@field:JsonProperty("resource_type", required=true)
     val resourceType: DisabledResourceType,
 
     val schema: String? = null,
     val sources: List<List<String>>? = null,
     val tags: List<String>? = null,
 
-    @SerialName("unique_id")
+    @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
     val uniqueId: String,
 
-    @SerialName("unrendered_config")
-    val unrenderedConfig: JsonObject? = null,
+    @get:JsonProperty("unrendered_config")@field:JsonProperty("unrendered_config")
+    val unrenderedConfig: Map<String, Any?>? = null,
 
     val index: Long? = null,
     val access: Access? = null,
     val constraints: List<ModelLevelConstraint>? = null,
 
-    @SerialName("defer_relation")
+    @get:JsonProperty("defer_relation")@field:JsonProperty("defer_relation")
     val deferRelation: DeferRelation? = null,
 
-    @SerialName("deprecation_date")
+    @get:JsonProperty("deprecation_date")@field:JsonProperty("deprecation_date")
     val deprecationDate: String? = null,
 
-    @SerialName("latest_version")
+    @get:JsonProperty("latest_version")@field:JsonProperty("latest_version")
     val latestVersion: Version? = null,
 
     val version: Version? = null,
 
-    @SerialName("attached_node")
+    @get:JsonProperty("attached_node")@field:JsonProperty("attached_node")
     val attachedNode: String? = null,
 
-    @SerialName("column_name")
+    @get:JsonProperty("column_name")@field:JsonProperty("column_name")
     val columnName: String? = null,
 
-    @SerialName("file_key_name")
+    @get:JsonProperty("file_key_name")@field:JsonProperty("file_key_name")
     val fileKeyName: String? = null,
 
-    @SerialName("test_metadata")
+    @get:JsonProperty("test_metadata")@field:JsonProperty("test_metadata")
     val testMetadata: TestMetadata? = null,
 
-    @SerialName("root_path")
+    @get:JsonProperty("root_path")@field:JsonProperty("root_path")
     val rootPath: String? = null,
 
     val external: ExternalTable? = null,
     val freshness: FreshnessThreshold? = null,
     val identifier: String? = null,
 
-    @SerialName("loaded_at_field")
+    @get:JsonProperty("loaded_at_field")@field:JsonProperty("loaded_at_field")
     val loadedAtField: String? = null,
 
     val loader: String? = null,
     val quoting: Quoting? = null,
 
-    @SerialName("source_description")
+    @get:JsonProperty("source_description")@field:JsonProperty("source_description")
     val sourceDescription: String? = null,
 
-    @SerialName("source_meta")
-    val sourceMeta: JsonObject? = null,
+    @get:JsonProperty("source_meta")@field:JsonProperty("source_meta")
+    val sourceMeta: Map<String, Any?>? = null,
 
-    @SerialName("source_name")
+    @get:JsonProperty("source_name")@field:JsonProperty("source_name")
     val sourceName: String? = null,
 
     val label: String? = null,
@@ -478,7 +538,7 @@ data class AnalysisNode (
     val filter: WhereFilter? = null,
     val metadata: SourceFileMetadata? = null,
 
-    @SerialName("type_params")
+    @get:JsonProperty("type_params")@field:JsonProperty("type_params")
     val typeParams: MetricTypeParams? = null,
 
     val defaults: Defaults? = null,
@@ -487,42 +547,54 @@ data class AnalysisNode (
     val measures: List<Measure>? = null,
     val model: String? = null,
 
-    @SerialName("node_relation")
+    @get:JsonProperty("node_relation")@field:JsonProperty("node_relation")
     val nodeRelation: NodeRelation? = null,
 
-    @SerialName("primary_entity")
+    @get:JsonProperty("primary_entity")@field:JsonProperty("primary_entity")
     val primaryEntity: String? = null
 )
 
-@Serializable
 enum class Access(val value: String) {
-    @SerialName("private") Private("private"),
-    @SerialName("protected") Protected("protected"),
-    @SerialName("public") Public("public");
+    Private("private"),
+    Protected("protected"),
+    Public("public");
+
+    companion object {
+        fun fromValue(value: String): Access = when (value) {
+            "private"   -> Private
+            "protected" -> Protected
+            "public"    -> Public
+            else        -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
  * FileHash(name: str, checksum: str)
  */
-@Serializable
 data class FileHash (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val checksum: String,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String
 )
 
 /**
  * Used in all ManifestNodes and SourceDefinition
  */
-@Serializable
 data class ColumnInfo (
     val constraints: List<ColumnLevelConstraint>? = null,
 
-    @SerialName("data_type")
+    @get:JsonProperty("data_type")@field:JsonProperty("data_type")
     val dataType: String? = null,
 
     val description: String? = null,
-    val meta: JsonObject? = null,
+    val meta: Map<String, Any?>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
+
     val quote: Boolean? = null,
     val tags: List<String>? = null
 )
@@ -532,27 +604,39 @@ data class ColumnInfo (
  * NoneType] = None, expression: Union[str, NoneType] = None, warn_unenforced: bool = True,
  * warn_unsupported: bool = True)
  */
-@Serializable
 data class ColumnLevelConstraint (
     val expression: String? = null,
     val name: String? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val type: ConstraintType,
 
-    @SerialName("warn_unenforced")
+    @get:JsonProperty("warn_unenforced")@field:JsonProperty("warn_unenforced")
     val warnUnenforced: Boolean? = null,
 
-    @SerialName("warn_unsupported")
+    @get:JsonProperty("warn_unsupported")@field:JsonProperty("warn_unsupported")
     val warnUnsupported: Boolean? = null
 )
 
-@Serializable
 enum class ConstraintType(val value: String) {
-    @SerialName("check") Check("check"),
-    @SerialName("custom") Custom("custom"),
-    @SerialName("foreign_key") ForeignKey("foreign_key"),
-    @SerialName("not_null") NotNull("not_null"),
-    @SerialName("primary_key") PrimaryKey("primary_key"),
-    @SerialName("unique") Unique("unique");
+    Check("check"),
+    Custom("custom"),
+    ForeignKey("foreign_key"),
+    NotNull("not_null"),
+    PrimaryKey("primary_key"),
+    Unique("unique");
+
+    companion object {
+        fun fromValue(value: String): ConstraintType = when (value) {
+            "check"       -> Check
+            "custom"      -> Custom
+            "foreign_key" -> ForeignKey
+            "not_null"    -> NotNull
+            "primary_key" -> PrimaryKey
+            "unique"      -> Unique
+            else          -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -622,100 +706,112 @@ enum class ConstraintType(val value: String) {
  *
  * SemanticModelConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True)
  */
-@Serializable
 data class DisabledConfig (
     val alias: String? = null,
 
-    @SerialName("column_types")
-    val columnTypes: JsonObject? = null,
+    @get:JsonProperty("column_types")@field:JsonProperty("column_types")
+    val columnTypes: Map<String, Any?>? = null,
 
     val contract: ContractConfig? = null,
     val database: String? = null,
     val docs: Docs? = null,
     val enabled: Boolean? = null,
 
-    @SerialName("full_refresh")
+    @get:JsonProperty("full_refresh")@field:JsonProperty("full_refresh")
     val fullRefresh: Boolean? = null,
 
-    val grants: JsonObject? = null,
+    val grants: Map<String, Any?>? = null,
     val group: String? = null,
 
-    @SerialName("incremental_strategy")
+    @get:JsonProperty("incremental_strategy")@field:JsonProperty("incremental_strategy")
     val incrementalStrategy: String? = null,
 
     val materialized: String? = null,
-    val meta: JsonObject? = null,
+    val meta: Map<String, Any?>? = null,
 
-    @SerialName("on_configuration_change")
+    @get:JsonProperty("on_configuration_change")@field:JsonProperty("on_configuration_change")
     val onConfigurationChange: OnConfigurationChange? = null,
 
-    @SerialName("on_schema_change")
+    @get:JsonProperty("on_schema_change")@field:JsonProperty("on_schema_change")
     val onSchemaChange: String? = null,
 
     val packages: List<String>? = null,
 
-    @SerialName("persist_docs")
-    val persistDocs: JsonObject? = null,
+    @get:JsonProperty("persist_docs")@field:JsonProperty("persist_docs")
+    val persistDocs: Map<String, Any?>? = null,
 
-    @SerialName("post-hook")
+    @get:JsonProperty("post-hook")@field:JsonProperty("post-hook")
     val postHook: List<Hook>? = null,
 
-    @SerialName("pre-hook")
+    @get:JsonProperty("pre-hook")@field:JsonProperty("pre-hook")
     val preHook: List<Hook>? = null,
 
-    val quoting: JsonObject? = null,
+    val quoting: Map<String, Any?>? = null,
     val schema: String? = null,
     val tags: Tags? = null,
 
-    @SerialName("unique_key")
+    @get:JsonProperty("unique_key")@field:JsonProperty("unique_key")
     val uniqueKey: UniqueKey? = null,
 
-    @SerialName("error_if")
+    @get:JsonProperty("error_if")@field:JsonProperty("error_if")
     val errorIf: String? = null,
 
-    @SerialName("fail_calc")
+    @get:JsonProperty("fail_calc")@field:JsonProperty("fail_calc")
     val failCalc: String? = null,
 
     val limit: Long? = null,
     val severity: String? = null,
 
-    @SerialName("store_failures")
+    @get:JsonProperty("store_failures")@field:JsonProperty("store_failures")
     val storeFailures: Boolean? = null,
 
-    @SerialName("warn_if")
+    @get:JsonProperty("warn_if")@field:JsonProperty("warn_if")
     val warnIf: String? = null,
 
     val where: String? = null,
 
-    @SerialName("check_cols")
+    @get:JsonProperty("check_cols")@field:JsonProperty("check_cols")
     val checkCols: UniqueKey? = null,
 
     val strategy: String? = null,
 
-    @SerialName("target_database")
+    @get:JsonProperty("target_database")@field:JsonProperty("target_database")
     val targetDatabase: String? = null,
 
-    @SerialName("target_schema")
+    @get:JsonProperty("target_schema")@field:JsonProperty("target_schema")
     val targetSchema: String? = null,
 
-    @SerialName("updated_at")
+    @get:JsonProperty("updated_at")@field:JsonProperty("updated_at")
     val updatedAt: String? = null,
 
-    @SerialName("quote_columns")
+    @get:JsonProperty("quote_columns")@field:JsonProperty("quote_columns")
     val quoteColumns: Boolean? = null
 )
 
-@Serializable
 sealed class UniqueKey {
     class StringArrayValue(val value: List<String>) : UniqueKey()
     class StringValue(val value: String)            : UniqueKey()
     class NullValue()                               : UniqueKey()
+
+    fun toJson(): String = mapper.writeValueAsString(when (this) {
+        is StringArrayValue -> this.value
+        is StringValue      -> this.value
+        is NullValue        -> "null"
+    })
+
+    companion object {
+        fun fromJson(jn: JsonNode): UniqueKey = when (jn) {
+            is ArrayNode -> StringArrayValue(mapper.treeToValue(jn))
+            is TextNode  -> StringValue(mapper.treeToValue(jn))
+            null         -> NullValue()
+            else         -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
  * ContractConfig(enforced: bool = False)
  */
-@Serializable
 data class ContractConfig (
     val enforced: Boolean? = null
 )
@@ -723,35 +819,56 @@ data class ContractConfig (
 /**
  * Docs(show: bool = True, node_color: Union[str, NoneType] = None)
  */
-@Serializable
 data class Docs (
-    @SerialName("node_color")
+    @get:JsonProperty("node_color")@field:JsonProperty("node_color")
     val nodeColor: String? = null,
 
     val show: Boolean? = null
 )
 
-@Serializable
 enum class OnConfigurationChange(val value: String) {
-    @SerialName("apply") Apply("apply"),
-    @SerialName("continue") Continue("continue"),
-    @SerialName("fail") Fail("fail");
+    Apply("apply"),
+    Continue("continue"),
+    Fail("fail");
+
+    companion object {
+        fun fromValue(value: String): OnConfigurationChange = when (value) {
+            "apply"    -> Apply
+            "continue" -> Continue
+            "fail"     -> Fail
+            else       -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
  * Hook(sql: str, transaction: bool = True, index: Union[int, NoneType] = None)
  */
-@Serializable
 data class Hook (
     val index: Long? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val sql: String,
+
     val transaction: Boolean? = null
 )
 
-@Serializable
 sealed class Tags {
     class StringArrayValue(val value: List<String>) : Tags()
     class StringValue(val value: String)            : Tags()
+
+    fun toJson(): String = mapper.writeValueAsString(when (this) {
+        is StringArrayValue -> this.value
+        is StringValue      -> this.value
+    })
+
+    companion object {
+        fun fromJson(jn: JsonNode): Tags = when (jn) {
+            is ArrayNode -> StringArrayValue(mapper.treeToValue(jn))
+            is TextNode  -> StringValue(mapper.treeToValue(jn))
+            else         -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -759,24 +876,24 @@ sealed class Tags {
  * NoneType] = None, expression: Union[str, NoneType] = None, warn_unenforced: bool = True,
  * warn_unsupported: bool = True, columns: List[str] = <factory>)
  */
-@Serializable
 data class ModelLevelConstraint (
     val columns: List<String>? = null,
     val expression: String? = null,
     val name: String? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val type: ConstraintType,
 
-    @SerialName("warn_unenforced")
+    @get:JsonProperty("warn_unenforced")@field:JsonProperty("warn_unenforced")
     val warnUnenforced: Boolean? = null,
 
-    @SerialName("warn_unsupported")
+    @get:JsonProperty("warn_unsupported")@field:JsonProperty("warn_unsupported")
     val warnUnsupported: Boolean? = null
 )
 
 /**
  * Contract(enforced: bool = False, checksum: Union[str, NoneType] = None)
  */
-@Serializable
 data class Contract (
     val checksum: String? = null,
     val enforced: Boolean? = null
@@ -785,9 +902,8 @@ data class Contract (
 /**
  * Defaults(agg_time_dimension: Union[str, NoneType] = None)
  */
-@Serializable
 data class Defaults (
-    @SerialName("agg_time_dimension")
+    @get:JsonProperty("agg_time_dimension")@field:JsonProperty("agg_time_dimension")
     val aggTimeDimension: String? = null
 )
 
@@ -795,14 +911,16 @@ data class Defaults (
  * DeferRelation(database: Union[str, NoneType], schema: str, alias: str, relation_name:
  * Union[str, NoneType])
  */
-@Serializable
 data class DeferRelation (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val alias: String,
+
     val database: String? = null,
 
-    @SerialName("relation_name")
+    @get:JsonProperty("relation_name")@field:JsonProperty("relation_name")
     val relationName: String? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val schema: String
 )
 
@@ -811,7 +929,6 @@ data class DeferRelation (
  *
  * Used only in the Macro class
  */
-@Serializable
 data class DependsOn (
     val macros: List<String>? = null,
     val nodes: List<String>? = null
@@ -825,20 +942,23 @@ data class DependsOn (
  * None, expr: Union[str, NoneType] = None, metadata:
  * Union[dbt.contracts.graph.semantic_models.SourceFileMetadata, NoneType] = None)
  */
-@Serializable
 data class Dimension (
     val description: String? = null,
     val expr: String? = null,
 
-    @SerialName("is_partition")
+    @get:JsonProperty("is_partition")@field:JsonProperty("is_partition")
     val isPartition: Boolean? = null,
 
     val label: String? = null,
     val metadata: SourceFileMetadata? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val type: DimensionType,
 
-    @SerialName("type_params")
+    @get:JsonProperty("type_params")@field:JsonProperty("type_params")
     val typeParams: DimensionTypeParams? = null
 )
 
@@ -847,12 +967,11 @@ data class Dimension (
  *
  * Implementation of the dbt-semantic-interfaces `Metadata` protocol
  */
-@Serializable
 data class SourceFileMetadata (
-    @SerialName("file_slice")
+    @get:JsonProperty("file_slice", required=true)@field:JsonProperty("file_slice", required=true)
     val fileSlice: FileSlice,
 
-    @SerialName("repo_file_path")
+    @get:JsonProperty("repo_file_path", required=true)@field:JsonProperty("repo_file_path", required=true)
     val repoFilePath: String
 )
 
@@ -861,23 +980,31 @@ data class SourceFileMetadata (
  *
  * Implementation of the dbt-semantic-interfaces `FileSlice` protocol
  */
-@Serializable
 data class FileSlice (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val content: String,
 
-    @SerialName("end_line_number")
+    @get:JsonProperty("end_line_number", required=true)@field:JsonProperty("end_line_number", required=true)
     val endLineNumber: Long,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val filename: String,
 
-    @SerialName("start_line_number")
+    @get:JsonProperty("start_line_number", required=true)@field:JsonProperty("start_line_number", required=true)
     val startLineNumber: Long
 )
 
-@Serializable
 enum class DimensionType(val value: String) {
-    @SerialName("categorical") Categorical("categorical"),
-    @SerialName("time") Time("time");
+    Categorical("categorical"),
+    Time("time");
+
+    companion object {
+        fun fromValue(value: String): DimensionType = when (value) {
+            "categorical" -> Categorical
+            "time"        -> Time
+            else          -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -885,33 +1012,41 @@ enum class DimensionType(val value: String) {
  * dbt_semantic_interfaces.type_enums.time_granularity.TimeGranularity, validity_params:
  * Union[dbt.contracts.graph.semantic_models.DimensionValidityParams, NoneType] = None)
  */
-@Serializable
 data class DimensionTypeParams (
-    @SerialName("time_granularity")
+    @get:JsonProperty("time_granularity", required=true)@field:JsonProperty("time_granularity", required=true)
     val timeGranularity: Granularity,
 
-    @SerialName("validity_params")
+    @get:JsonProperty("validity_params")@field:JsonProperty("validity_params")
     val validityParams: DimensionValidityParams? = null
 )
 
-@Serializable
 enum class Granularity(val value: String) {
-    @SerialName("day") Day("day"),
-    @SerialName("month") Month("month"),
-    @SerialName("quarter") Quarter("quarter"),
-    @SerialName("week") Week("week"),
-    @SerialName("year") Year("year");
+    Day("day"),
+    Month("month"),
+    Quarter("quarter"),
+    Week("week"),
+    Year("year");
+
+    companion object {
+        fun fromValue(value: String): Granularity = when (value) {
+            "day"     -> Day
+            "month"   -> Month
+            "quarter" -> Quarter
+            "week"    -> Week
+            "year"    -> Year
+            else      -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
  * DimensionValidityParams(is_start: bool = False, is_end: bool = False)
  */
-@Serializable
 data class DimensionValidityParams (
-    @SerialName("is_end")
+    @get:JsonProperty("is_end")@field:JsonProperty("is_end")
     val isEnd: Boolean? = null,
 
-    @SerialName("is_start")
+    @get:JsonProperty("is_start")@field:JsonProperty("is_start")
     val isStart: Boolean? = null
 )
 
@@ -920,22 +1055,35 @@ data class DimensionValidityParams (
  * description: Union[str, NoneType] = None, label: Union[str, NoneType] = None, role:
  * Union[str, NoneType] = None, expr: Union[str, NoneType] = None)
  */
-@Serializable
 data class Entity (
     val description: String? = null,
     val expr: String? = null,
     val label: String? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
+
     val role: String? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val type: EntityType
 )
 
-@Serializable
 enum class EntityType(val value: String) {
-    @SerialName("foreign") Foreign("foreign"),
-    @SerialName("natural") Natural("natural"),
-    @SerialName("primary") Primary("primary"),
-    @SerialName("unique") Unique("unique");
+    Foreign("foreign"),
+    Natural("natural"),
+    Primary("primary"),
+    Unique("unique");
+
+    companion object {
+        fun fromValue(value: String): EntityType = when (value) {
+            "foreign" -> Foreign
+            "natural" -> Natural
+            "primary" -> Primary
+            "unique"  -> Unique
+            else      -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -944,56 +1092,67 @@ enum class EntityType(val value: String) {
  * tbl_properties: Union[str, NoneType] = None, partitions: Union[List[str],
  * List[dbt.contracts.graph.unparsed.ExternalPartition], NoneType] = None)
  */
-@Serializable
 data class ExternalTable (
-    @SerialName("file_format")
+    @get:JsonProperty("file_format")@field:JsonProperty("file_format")
     val fileFormat: String? = null,
 
     val location: String? = null,
     val partitions: List<Partition>? = null,
 
-    @SerialName("row_format")
+    @get:JsonProperty("row_format")@field:JsonProperty("row_format")
     val rowFormat: String? = null,
 
-    @SerialName("tbl_properties")
+    @get:JsonProperty("tbl_properties")@field:JsonProperty("tbl_properties")
     val tblProperties: String? = null
 )
 
-@Serializable
 sealed class Partition {
     class ExternalPartitionValue(val value: ExternalPartition) : Partition()
     class StringValue(val value: String)                       : Partition()
+
+    fun toJson(): String = mapper.writeValueAsString(when (this) {
+        is ExternalPartitionValue -> this.value
+        is StringValue            -> this.value
+    })
+
+    companion object {
+        fun fromJson(jn: JsonNode): Partition = when (jn) {
+            is ObjectNode -> ExternalPartitionValue(mapper.treeToValue(jn))
+            is TextNode   -> StringValue(mapper.treeToValue(jn))
+            else          -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
  * ExternalPartition(_extra: Dict[str, Any] = <factory>, name: str = '', description: str =
  * '', data_type: str = '', meta: Dict[str, Any] = <factory>)
  */
-@Serializable
 data class ExternalPartition (
-    @SerialName("data_type")
+    @get:JsonProperty("data_type")@field:JsonProperty("data_type")
     val dataType: String? = null,
 
     val description: String? = null,
-    val meta: JsonObject? = null,
+    val meta: Map<String, Any?>? = null,
     val name: String? = null
 )
 
 /**
  * Used in CompiledNodes as part of ephemeral model processing
  */
-@Serializable
 data class InjectedCte (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val id: String,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val sql: String
 )
 
 /**
  * WhereFilter(where_sql_template: str)
  */
-@Serializable
 data class WhereFilter (
-    @SerialName("where_sql_template")
+    @get:JsonProperty("where_sql_template", required=true)@field:JsonProperty("where_sql_template", required=true)
     val whereSqlTemplate: String
 )
 
@@ -1002,14 +1161,13 @@ data class WhereFilter (
  * <factory>, error_after: Union[dbt.contracts.graph.unparsed.Time, NoneType] = <factory>,
  * filter: Union[str, NoneType] = None)
  */
-@Serializable
 data class FreshnessThreshold (
-    @SerialName("error_after")
+    @get:JsonProperty("error_after")@field:JsonProperty("error_after")
     val errorAfter: Time? = null,
 
     val filter: String? = null,
 
-    @SerialName("warn_after")
+    @get:JsonProperty("warn_after")@field:JsonProperty("warn_after")
     val warnAfter: Time? = null
 )
 
@@ -1017,31 +1175,60 @@ data class FreshnessThreshold (
  * Time(count: Union[int, NoneType] = None, period:
  * Union[dbt.contracts.graph.unparsed.TimePeriod, NoneType] = None)
  */
-@Serializable
 data class Time (
     val count: Long? = null,
     val period: Period? = null
 )
 
-@Serializable
 enum class Period(val value: String) {
-    @SerialName("day") Day("day"),
-    @SerialName("hour") Hour("hour"),
-    @SerialName("minute") Minute("minute");
+    Day("day"),
+    Hour("hour"),
+    Minute("minute");
+
+    companion object {
+        fun fromValue(value: String): Period = when (value) {
+            "day"    -> Day
+            "hour"   -> Hour
+            "minute" -> Minute
+            else     -> throw IllegalArgumentException()
+        }
+    }
 }
 
-@Serializable
 sealed class Version {
     class DoubleValue(val value: Double) : Version()
     class StringValue(val value: String) : Version()
     class NullValue()                    : Version()
+
+    fun toJson(): String = mapper.writeValueAsString(when (this) {
+        is DoubleValue -> this.value
+        is StringValue -> this.value
+        is NullValue   -> "null"
+    })
+
+    companion object {
+        fun fromJson(jn: JsonNode): Version = when (jn) {
+            is DoubleNode -> DoubleValue(mapper.treeToValue(jn))
+            is TextNode   -> StringValue(mapper.treeToValue(jn))
+            null          -> NullValue()
+            else          -> throw IllegalArgumentException()
+        }
+    }
 }
 
-@Serializable
 enum class Maturity(val value: String) {
-    @SerialName("high") High("high"),
-    @SerialName("low") Low("low"),
-    @SerialName("medium") Medium("medium");
+    High("high"),
+    Low("low"),
+    Medium("medium");
+
+    companion object {
+        fun fromValue(value: String): Maturity = when (value) {
+            "high"   -> High
+            "low"    -> Low
+            "medium" -> Medium
+            else     -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -1053,53 +1240,68 @@ enum class Maturity(val value: String) {
  * non_additive_dimension: Union[dbt.contracts.graph.semantic_models.NonAdditiveDimension,
  * NoneType] = None, agg_time_dimension: Union[str, NoneType] = None)
  */
-@Serializable
 data class Measure (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val agg: Agg,
 
-    @SerialName("agg_params")
+    @get:JsonProperty("agg_params")@field:JsonProperty("agg_params")
     val aggParams: MeasureAggregationParameters? = null,
 
-    @SerialName("agg_time_dimension")
+    @get:JsonProperty("agg_time_dimension")@field:JsonProperty("agg_time_dimension")
     val aggTimeDimension: String? = null,
 
-    @SerialName("create_metric")
+    @get:JsonProperty("create_metric")@field:JsonProperty("create_metric")
     val createMetric: Boolean? = null,
 
     val description: String? = null,
     val expr: String? = null,
     val label: String? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("non_additive_dimension")
+    @get:JsonProperty("non_additive_dimension")@field:JsonProperty("non_additive_dimension")
     val nonAdditiveDimension: NonAdditiveDimension? = null
 )
 
-@Serializable
 enum class Agg(val value: String) {
-    @SerialName("average") Average("average"),
-    @SerialName("count") Count("count"),
-    @SerialName("count_distinct") CountDistinct("count_distinct"),
-    @SerialName("max") Max("max"),
-    @SerialName("median") Median("median"),
-    @SerialName("min") Min("min"),
-    @SerialName("percentile") Percentile("percentile"),
-    @SerialName("sum") Sum("sum"),
-    @SerialName("sum_boolean") SumBoolean("sum_boolean");
+    Average("average"),
+    Count("count"),
+    CountDistinct("count_distinct"),
+    Max("max"),
+    Median("median"),
+    Min("min"),
+    Percentile("percentile"),
+    Sum("sum"),
+    SumBoolean("sum_boolean");
+
+    companion object {
+        fun fromValue(value: String): Agg = when (value) {
+            "average"        -> Average
+            "count"          -> Count
+            "count_distinct" -> CountDistinct
+            "max"            -> Max
+            "median"         -> Median
+            "min"            -> Min
+            "percentile"     -> Percentile
+            "sum"            -> Sum
+            "sum_boolean"    -> SumBoolean
+            else             -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
  * MeasureAggregationParameters(percentile: Union[float, NoneType] = None,
  * use_discrete_percentile: bool = False, use_approximate_percentile: bool = False)
  */
-@Serializable
 data class MeasureAggregationParameters (
     val percentile: Double? = null,
 
-    @SerialName("use_approximate_percentile")
+    @get:JsonProperty("use_approximate_percentile")@field:JsonProperty("use_approximate_percentile")
     val useApproximatePercentile: Boolean? = null,
 
-    @SerialName("use_discrete_percentile")
+    @get:JsonProperty("use_discrete_percentile")@field:JsonProperty("use_discrete_percentile")
     val useDiscretePercentile: Boolean? = null
 )
 
@@ -1108,14 +1310,14 @@ data class MeasureAggregationParameters (
  * dbt_semantic_interfaces.type_enums.aggregation_type.AggregationType, window_groupings:
  * List[str])
  */
-@Serializable
 data class NonAdditiveDimension (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("window_choice")
+    @get:JsonProperty("window_choice", required=true)@field:JsonProperty("window_choice", required=true)
     val windowChoice: Agg,
 
-    @SerialName("window_groupings")
+    @get:JsonProperty("window_groupings", required=true)@field:JsonProperty("window_groupings", required=true)
     val windowGroupings: List<String>
 )
 
@@ -1123,15 +1325,16 @@ data class NonAdditiveDimension (
  * NodeRelation(alias: str, schema_name: str, database: Union[str, NoneType] = None,
  * relation_name: Union[str, NoneType] = None)
  */
-@Serializable
 data class NodeRelation (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val alias: String,
+
     val database: String? = null,
 
-    @SerialName("relation_name")
+    @get:JsonProperty("relation_name")@field:JsonProperty("relation_name")
     val relationName: String? = null,
 
-    @SerialName("schema_name")
+    @get:JsonProperty("schema_name", required=true)@field:JsonProperty("schema_name", required=true)
     val schemaName: String
 )
 
@@ -1139,7 +1342,6 @@ data class NodeRelation (
  * Owner(_extra: Dict[str, Any] = <factory>, email: Union[str, NoneType] = None, name:
  * Union[str, NoneType] = None)
  */
-@Serializable
 data class Owner (
     val email: String? = null,
     val name: String? = null
@@ -1149,7 +1351,6 @@ data class Owner (
  * Quoting(database: Union[bool, NoneType] = None, schema: Union[bool, NoneType] = None,
  * identifier: Union[bool, NoneType] = None, column: Union[bool, NoneType] = None)
  */
-@Serializable
 data class Quoting (
     val column: Boolean? = null,
     val database: Boolean? = null,
@@ -1161,57 +1362,93 @@ data class Quoting (
  * RefArgs(name: str, package: Union[str, NoneType] = None, version: Union[str, float,
  * NoneType] = None)
  */
-@Serializable
 data class RefArgs (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("package")
+    @get:JsonProperty("package")@field:JsonProperty("package")
     val refArgsPackage: String? = null,
 
     val version: Version? = null
 )
 
-@Serializable
 enum class DisabledResourceType(val value: String) {
-    @SerialName("analysis") Analysis("analysis"),
-    @SerialName("doc") Doc("doc"),
-    @SerialName("exposure") Exposure("exposure"),
-    @SerialName("group") Group("group"),
-    @SerialName("macro") Macro("macro"),
-    @SerialName("metric") Metric("metric"),
-    @SerialName("model") Model("model"),
-    @SerialName("operation") Operation("operation"),
-    @SerialName("rpc") RPC("rpc"),
-    @SerialName("sql_operation") SQLOperation("sql_operation"),
-    @SerialName("seed") Seed("seed"),
-    @SerialName("semantic_model") SemanticModel("semantic_model"),
-    @SerialName("snapshot") Snapshot("snapshot"),
-    @SerialName("source") Source("source"),
-    @SerialName("test") Test("test");
+    Analysis("analysis"),
+    Doc("doc"),
+    Exposure("exposure"),
+    Group("group"),
+    Macro("macro"),
+    Metric("metric"),
+    Model("model"),
+    Operation("operation"),
+    RPC("rpc"),
+    SQLOperation("sql_operation"),
+    Seed("seed"),
+    SemanticModel("semantic_model"),
+    Snapshot("snapshot"),
+    Source("source"),
+    Test("test");
+
+    companion object {
+        fun fromValue(value: String): DisabledResourceType = when (value) {
+            "analysis"       -> Analysis
+            "doc"            -> Doc
+            "exposure"       -> Exposure
+            "group"          -> Group
+            "macro"          -> Macro
+            "metric"         -> Metric
+            "model"          -> Model
+            "operation"      -> Operation
+            "rpc"            -> RPC
+            "sql_operation"  -> SQLOperation
+            "seed"           -> Seed
+            "semantic_model" -> SemanticModel
+            "snapshot"       -> Snapshot
+            "source"         -> Source
+            "test"           -> Test
+            else             -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
  * TestMetadata(name: str, kwargs: Dict[str, Any] = <factory>, namespace: Union[str,
  * NoneType] = None)
  */
-@Serializable
 data class TestMetadata (
-    val kwargs: JsonObject? = null,
+    val kwargs: Map<String, Any?>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
+
     val namespace: String? = null
 )
 
-@Serializable
 enum class DisabledType(val value: String) {
-    @SerialName("analysis") Analysis("analysis"),
-    @SerialName("application") Application("application"),
-    @SerialName("cumulative") Cumulative("cumulative"),
-    @SerialName("dashboard") Dashboard("dashboard"),
-    @SerialName("derived") Derived("derived"),
-    @SerialName("ml") Ml("ml"),
-    @SerialName("notebook") Notebook("notebook"),
-    @SerialName("ratio") Ratio("ratio"),
-    @SerialName("simple") Simple("simple");
+    Analysis("analysis"),
+    Application("application"),
+    Cumulative("cumulative"),
+    Dashboard("dashboard"),
+    Derived("derived"),
+    Ml("ml"),
+    Notebook("notebook"),
+    Ratio("ratio"),
+    Simple("simple");
+
+    companion object {
+        fun fromValue(value: String): DisabledType = when (value) {
+            "analysis"    -> Analysis
+            "application" -> Application
+            "cumulative"  -> Cumulative
+            "dashboard"   -> Dashboard
+            "derived"     -> Derived
+            "ml"          -> Ml
+            "notebook"    -> Notebook
+            "ratio"       -> Ratio
+            "simple"      -> Simple
+            else          -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -1224,15 +1461,14 @@ enum class DisabledType(val value: String) {
  * NoneType] = None, metrics: Union[List[dbt.contracts.graph.nodes.MetricInput], NoneType] =
  * None)
  */
-@Serializable
 data class MetricTypeParams (
     val denominator: MetricInput? = null,
     val expr: String? = null,
 
-    @SerialName("grain_to_date")
+    @get:JsonProperty("grain_to_date")@field:JsonProperty("grain_to_date")
     val grainToDate: Granularity? = null,
 
-    @SerialName("input_measures")
+    @get:JsonProperty("input_measures")@field:JsonProperty("input_measures")
     val inputMeasures: List<MetricInputMeasure>? = null,
 
     val measure: MetricInputMeasure? = null,
@@ -1248,16 +1484,17 @@ data class MetricTypeParams (
  * Union[dbt_semantic_interfaces.type_enums.time_granularity.TimeGranularity, NoneType] =
  * None)
  */
-@Serializable
 data class MetricInput (
     val alias: String? = null,
     val filter: WhereFilter? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("offset_to_grain")
+    @get:JsonProperty("offset_to_grain")@field:JsonProperty("offset_to_grain")
     val offsetToGrain: Granularity? = null,
 
-    @SerialName("offset_window")
+    @get:JsonProperty("offset_window")@field:JsonProperty("offset_window")
     val offsetWindow: MetricTimeWindow? = null
 )
 
@@ -1265,9 +1502,11 @@ data class MetricInput (
  * MetricTimeWindow(count: int, granularity:
  * dbt_semantic_interfaces.type_enums.time_granularity.TimeGranularity)
  */
-@Serializable
 data class MetricTimeWindow (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val count: Long,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val granularity: Granularity
 )
 
@@ -1276,18 +1515,18 @@ data class MetricTimeWindow (
  * NoneType] = None, alias: Union[str, NoneType] = None, join_to_timespine: bool = False,
  * fill_nulls_with: Union[int, NoneType] = None)
  */
-@Serializable
 data class MetricInputMeasure (
     val alias: String? = null,
 
-    @SerialName("fill_nulls_with")
+    @get:JsonProperty("fill_nulls_with")@field:JsonProperty("fill_nulls_with")
     val fillNullsWith: Long? = null,
 
     val filter: WhereFilter? = null,
 
-    @SerialName("join_to_timespine")
+    @get:JsonProperty("join_to_timespine")@field:JsonProperty("join_to_timespine")
     val joinToTimespine: Boolean? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String
 )
 
@@ -1295,31 +1534,38 @@ data class MetricInputMeasure (
  * Documentation(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path:
  * str, original_file_path: str, unique_id: str, block_contents: str)
  */
-@Serializable
 data class Documentation (
-    @SerialName("block_contents")
+    @get:JsonProperty("block_contents", required=true)@field:JsonProperty("block_contents", required=true)
     val blockContents: String,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("original_file_path")
+    @get:JsonProperty("original_file_path", required=true)@field:JsonProperty("original_file_path", required=true)
     val originalFilePath: String,
 
-    @SerialName("package_name")
+    @get:JsonProperty("package_name", required=true)@field:JsonProperty("package_name", required=true)
     val packageName: String,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val path: String,
 
-    @SerialName("resource_type")
+    @get:JsonProperty("resource_type", required=true)@field:JsonProperty("resource_type", required=true)
     val resourceType: DocResourceType,
 
-    @SerialName("unique_id")
+    @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
     val uniqueId: String
 )
 
-@Serializable
 enum class DocResourceType(val value: String) {
-    @SerialName("doc") Doc("doc");
+    Doc("doc");
+
+    companion object {
+        fun fromValue(value: String): DocResourceType = when (value) {
+            "doc" -> Doc
+            else  -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -1335,47 +1581,56 @@ enum class DocResourceType(val value: String) {
  * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
  * <factory>, metrics: List[List[str]] = <factory>, created_at: float = <factory>)
  */
-@Serializable
 data class Exposure (
     val config: ExposureConfig? = null,
 
-    @SerialName("created_at")
+    @get:JsonProperty("created_at")@field:JsonProperty("created_at")
     val createdAt: Double? = null,
 
-    @SerialName("depends_on")
+    @get:JsonProperty("depends_on")@field:JsonProperty("depends_on")
     val dependsOn: ExposureDependsOn? = null,
 
     val description: String? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val fqn: List<String>,
+
     val label: String? = null,
     val maturity: Maturity? = null,
-    val meta: JsonObject? = null,
+    val meta: Map<String, Any?>? = null,
     val metrics: List<List<String>>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("original_file_path")
+    @get:JsonProperty("original_file_path", required=true)@field:JsonProperty("original_file_path", required=true)
     val originalFilePath: String,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val owner: Owner,
 
-    @SerialName("package_name")
+    @get:JsonProperty("package_name", required=true)@field:JsonProperty("package_name", required=true)
     val packageName: String,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val path: String,
+
     val refs: List<RefArgs>? = null,
 
-    @SerialName("resource_type")
+    @get:JsonProperty("resource_type", required=true)@field:JsonProperty("resource_type", required=true)
     val resourceType: ExposureResourceType,
 
     val sources: List<List<String>>? = null,
     val tags: List<String>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val type: ExposureType,
 
-    @SerialName("unique_id")
+    @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
     val uniqueId: String,
 
-    @SerialName("unrendered_config")
-    val unrenderedConfig: JsonObject? = null,
+    @get:JsonProperty("unrendered_config")@field:JsonProperty("unrendered_config")
+    val unrenderedConfig: Map<String, Any?>? = null,
 
     val url: String? = null
 )
@@ -1383,7 +1638,6 @@ data class Exposure (
 /**
  * ExposureConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True)
  */
-@Serializable
 data class ExposureConfig (
     val enabled: Boolean? = null
 )
@@ -1391,54 +1645,77 @@ data class ExposureConfig (
 /**
  * DependsOn(macros: List[str] = <factory>, nodes: List[str] = <factory>)
  */
-@Serializable
 data class ExposureDependsOn (
     val macros: List<String>? = null,
     val nodes: List<String>? = null
 )
 
-@Serializable
 enum class ExposureResourceType(val value: String) {
-    @SerialName("exposure") Exposure("exposure");
+    Exposure("exposure");
+
+    companion object {
+        fun fromValue(value: String): ExposureResourceType = when (value) {
+            "exposure" -> Exposure
+            else       -> throw IllegalArgumentException()
+        }
+    }
 }
 
-@Serializable
 enum class ExposureType(val value: String) {
-    @SerialName("analysis") Analysis("analysis"),
-    @SerialName("application") Application("application"),
-    @SerialName("dashboard") Dashboard("dashboard"),
-    @SerialName("ml") Ml("ml"),
-    @SerialName("notebook") Notebook("notebook");
+    Analysis("analysis"),
+    Application("application"),
+    Dashboard("dashboard"),
+    Ml("ml"),
+    Notebook("notebook");
+
+    companion object {
+        fun fromValue(value: String): ExposureType = when (value) {
+            "analysis"    -> Analysis
+            "application" -> Application
+            "dashboard"   -> Dashboard
+            "ml"          -> Ml
+            "notebook"    -> Notebook
+            else          -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
  * Group(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path: str,
  * original_file_path: str, unique_id: str, owner: dbt.contracts.graph.unparsed.Owner)
  */
-@Serializable
 data class Group (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("original_file_path")
+    @get:JsonProperty("original_file_path", required=true)@field:JsonProperty("original_file_path", required=true)
     val originalFilePath: String,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val owner: Owner,
 
-    @SerialName("package_name")
+    @get:JsonProperty("package_name", required=true)@field:JsonProperty("package_name", required=true)
     val packageName: String,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val path: String,
 
-    @SerialName("resource_type")
+    @get:JsonProperty("resource_type", required=true)@field:JsonProperty("resource_type", required=true)
     val resourceType: GroupResourceType,
 
-    @SerialName("unique_id")
+    @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
     val uniqueId: String
 )
 
-@Serializable
 enum class GroupResourceType(val value: String) {
-    @SerialName("group") Group("group");
+    Group("group");
+
+    companion object {
+        fun fromValue(value: String): GroupResourceType = when (value) {
+            "group" -> Group
+            else    -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -1451,73 +1728,89 @@ enum class GroupResourceType(val value: String) {
  * <factory>, supported_languages: Union[List[dbt.node_types.ModelLanguage], NoneType] =
  * None)
  */
-@Serializable
 data class Macro (
     val arguments: List<MacroArgument>? = null,
 
-    @SerialName("created_at")
+    @get:JsonProperty("created_at")@field:JsonProperty("created_at")
     val createdAt: Double? = null,
 
-    @SerialName("depends_on")
+    @get:JsonProperty("depends_on")@field:JsonProperty("depends_on")
     val dependsOn: MacroDependsOn? = null,
 
     val description: String? = null,
     val docs: Docs? = null,
 
-    @SerialName("macro_sql")
+    @get:JsonProperty("macro_sql", required=true)@field:JsonProperty("macro_sql", required=true)
     val macroSql: String,
 
-    val meta: JsonObject? = null,
+    val meta: Map<String, Any?>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("original_file_path")
+    @get:JsonProperty("original_file_path", required=true)@field:JsonProperty("original_file_path", required=true)
     val originalFilePath: String,
 
-    @SerialName("package_name")
+    @get:JsonProperty("package_name", required=true)@field:JsonProperty("package_name", required=true)
     val packageName: String,
 
-    @SerialName("patch_path")
+    @get:JsonProperty("patch_path")@field:JsonProperty("patch_path")
     val patchPath: String? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val path: String,
 
-    @SerialName("resource_type")
+    @get:JsonProperty("resource_type", required=true)@field:JsonProperty("resource_type", required=true)
     val resourceType: MacroResourceType,
 
-    @SerialName("supported_languages")
+    @get:JsonProperty("supported_languages")@field:JsonProperty("supported_languages")
     val supportedLanguages: List<SupportedLanguage>? = null,
 
-    @SerialName("unique_id")
+    @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
     val uniqueId: String
 )
 
 /**
  * MacroArgument(name: str, type: Union[str, NoneType] = None, description: str = '')
  */
-@Serializable
 data class MacroArgument (
     val description: String? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
+
     val type: String? = null
 )
 
 /**
  * Used only in the Macro class
  */
-@Serializable
 data class MacroDependsOn (
     val macros: List<String>? = null
 )
 
-@Serializable
 enum class MacroResourceType(val value: String) {
-    @SerialName("macro") Macro("macro");
+    Macro("macro");
+
+    companion object {
+        fun fromValue(value: String): MacroResourceType = when (value) {
+            "macro" -> Macro
+            else    -> throw IllegalArgumentException()
+        }
+    }
 }
 
-@Serializable
 enum class SupportedLanguage(val value: String) {
-    @SerialName("python") Python("python"),
-    @SerialName("sql") SQL("sql");
+    Python("python"),
+    SQL("sql");
+
+    companion object {
+        fun fromValue(value: String): SupportedLanguage = when (value) {
+            "python" -> Python
+            "sql"    -> SQL
+            else     -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -1525,50 +1818,49 @@ enum class SupportedLanguage(val value: String) {
  *
  * Metadata for the manifest.
  */
-@Serializable
 data class ManifestMetadata (
     /**
      * The type name of the adapter
      */
-    @SerialName("adapter_type")
+    @get:JsonProperty("adapter_type")@field:JsonProperty("adapter_type")
     val adapterType: String? = null,
 
-    @SerialName("dbt_schema_version")
+    @get:JsonProperty("dbt_schema_version")@field:JsonProperty("dbt_schema_version")
     val dbtSchemaVersion: String? = null,
 
-    @SerialName("dbt_version")
+    @get:JsonProperty("dbt_version")@field:JsonProperty("dbt_version")
     val dbtVersion: String? = null,
 
     val env: Map<String, String>? = null,
 
-    @SerialName("generated_at")
+    @get:JsonProperty("generated_at")@field:JsonProperty("generated_at")
     val generatedAt: String? = null,
 
-    @SerialName("invocation_id")
+    @get:JsonProperty("invocation_id")@field:JsonProperty("invocation_id")
     val invocationId: String? = null,
 
     /**
      * A unique identifier for the project, hashed from the project name
      */
-    @SerialName("project_id")
+    @get:JsonProperty("project_id")@field:JsonProperty("project_id")
     val projectId: String? = null,
 
     /**
      * Name of the root project
      */
-    @SerialName("project_name")
+    @get:JsonProperty("project_name")@field:JsonProperty("project_name")
     val projectName: String? = null,
 
     /**
      * Whether dbt is configured to send anonymous usage statistics
      */
-    @SerialName("send_anonymous_usage_stats")
+    @get:JsonProperty("send_anonymous_usage_stats")@field:JsonProperty("send_anonymous_usage_stats")
     val sendAnonymousUsageStats: Boolean? = null,
 
     /**
      * A unique identifier for the user
      */
-    @SerialName("user_id")
+    @get:JsonProperty("user_id")@field:JsonProperty("user_id")
     val userId: String? = null
 )
 
@@ -1586,73 +1878,100 @@ data class ManifestMetadata (
  * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, metrics: List[List[str]] =
  * <factory>, created_at: float = <factory>, group: Union[str, NoneType] = None)
  */
-@Serializable
 data class Metric (
     val config: MetricConfig? = null,
 
-    @SerialName("created_at")
+    @get:JsonProperty("created_at")@field:JsonProperty("created_at")
     val createdAt: Double? = null,
 
-    @SerialName("depends_on")
+    @get:JsonProperty("depends_on")@field:JsonProperty("depends_on")
     val dependsOn: ExposureDependsOn? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val description: String,
+
     val filter: WhereFilter? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val fqn: List<String>,
+
     val group: String? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val label: String,
-    val meta: JsonObject? = null,
+
+    val meta: Map<String, Any?>? = null,
     val metadata: SourceFileMetadata? = null,
     val metrics: List<List<String>>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("original_file_path")
+    @get:JsonProperty("original_file_path", required=true)@field:JsonProperty("original_file_path", required=true)
     val originalFilePath: String,
 
-    @SerialName("package_name")
+    @get:JsonProperty("package_name", required=true)@field:JsonProperty("package_name", required=true)
     val packageName: String,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val path: String,
+
     val refs: List<RefArgs>? = null,
 
-    @SerialName("resource_type")
+    @get:JsonProperty("resource_type", required=true)@field:JsonProperty("resource_type", required=true)
     val resourceType: MetricResourceType,
 
     val sources: List<List<String>>? = null,
     val tags: List<String>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val type: MetricType,
 
-    @SerialName("type_params")
+    @get:JsonProperty("type_params", required=true)@field:JsonProperty("type_params", required=true)
     val typeParams: MetricTypeParams,
 
-    @SerialName("unique_id")
+    @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
     val uniqueId: String,
 
-    @SerialName("unrendered_config")
-    val unrenderedConfig: JsonObject? = null
+    @get:JsonProperty("unrendered_config")@field:JsonProperty("unrendered_config")
+    val unrenderedConfig: Map<String, Any?>? = null
 )
 
 /**
  * MetricConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, group: Union[str,
  * NoneType] = None)
  */
-@Serializable
 data class MetricConfig (
     val enabled: Boolean? = null,
     val group: String? = null
 )
 
-@Serializable
 enum class MetricResourceType(val value: String) {
-    @SerialName("metric") Metric("metric");
+    Metric("metric");
+
+    companion object {
+        fun fromValue(value: String): MetricResourceType = when (value) {
+            "metric" -> Metric
+            else     -> throw IllegalArgumentException()
+        }
+    }
 }
 
-@Serializable
 enum class MetricType(val value: String) {
-    @SerialName("cumulative") Cumulative("cumulative"),
-    @SerialName("derived") Derived("derived"),
-    @SerialName("ratio") Ratio("ratio"),
-    @SerialName("simple") Simple("simple");
+    Cumulative("cumulative"),
+    Derived("derived"),
+    Ratio("ratio"),
+    Simple("simple");
+
+    companion object {
+        fun fromValue(value: String): MetricType = when (value) {
+            "cumulative" -> Cumulative
+            "derived"    -> Derived
+            "ratio"      -> Ratio
+            "simple"     -> Simple
+            else         -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -1832,115 +2151,124 @@ enum class MetricType(val value: String) {
  * dbt.contracts.graph.nodes.MacroDependsOn = <factory>, defer_relation:
  * Union[dbt.contracts.graph.nodes.DeferRelation, NoneType] = None)
  */
-@Serializable
 data class Node (
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val alias: String,
 
-    @SerialName("build_path")
+    @get:JsonProperty("build_path")@field:JsonProperty("build_path")
     val buildPath: String? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val checksum: FileHash,
+
     val columns: Map<String, ColumnInfo>? = null,
     val compiled: Boolean? = null,
 
-    @SerialName("compiled_code")
+    @get:JsonProperty("compiled_code")@field:JsonProperty("compiled_code")
     val compiledCode: String? = null,
 
-    @SerialName("compiled_path")
+    @get:JsonProperty("compiled_path")@field:JsonProperty("compiled_path")
     val compiledPath: String? = null,
 
     val config: NodeConfig? = null,
 
-    @SerialName("config_call_dict")
-    val configCallDict: JsonObject? = null,
+    @get:JsonProperty("config_call_dict")@field:JsonProperty("config_call_dict")
+    val configCallDict: Map<String, Any?>? = null,
 
     val contract: Contract? = null,
 
-    @SerialName("created_at")
+    @get:JsonProperty("created_at")@field:JsonProperty("created_at")
     val createdAt: Double? = null,
 
     val database: String? = null,
     val deferred: Boolean? = null,
 
-    @SerialName("depends_on")
+    @get:JsonProperty("depends_on")@field:JsonProperty("depends_on")
     val dependsOn: DependsOn? = null,
 
     val description: String? = null,
     val docs: Docs? = null,
 
-    @SerialName("extra_ctes")
+    @get:JsonProperty("extra_ctes")@field:JsonProperty("extra_ctes")
     val extraCtes: List<InjectedCte>? = null,
 
-    @SerialName("extra_ctes_injected")
+    @get:JsonProperty("extra_ctes_injected")@field:JsonProperty("extra_ctes_injected")
     val extraCtesInjected: Boolean? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val fqn: List<String>,
+
     val group: String? = null,
     val language: String? = null,
-    val meta: JsonObject? = null,
+    val meta: Map<String, Any?>? = null,
     val metrics: List<List<String>>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("original_file_path")
+    @get:JsonProperty("original_file_path", required=true)@field:JsonProperty("original_file_path", required=true)
     val originalFilePath: String,
 
-    @SerialName("package_name")
+    @get:JsonProperty("package_name", required=true)@field:JsonProperty("package_name", required=true)
     val packageName: String,
 
-    @SerialName("patch_path")
+    @get:JsonProperty("patch_path")@field:JsonProperty("patch_path")
     val patchPath: String? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val path: String,
 
-    @SerialName("raw_code")
+    @get:JsonProperty("raw_code")@field:JsonProperty("raw_code")
     val rawCode: String? = null,
 
     val refs: List<RefArgs>? = null,
 
-    @SerialName("relation_name")
+    @get:JsonProperty("relation_name")@field:JsonProperty("relation_name")
     val relationName: String? = null,
 
-    @SerialName("resource_type")
+    @get:JsonProperty("resource_type", required=true)@field:JsonProperty("resource_type", required=true)
     val resourceType: NodeResourceType,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val schema: String,
+
     val sources: List<List<String>>? = null,
     val tags: List<String>? = null,
 
-    @SerialName("unique_id")
+    @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
     val uniqueId: String,
 
-    @SerialName("unrendered_config")
-    val unrenderedConfig: JsonObject? = null,
+    @get:JsonProperty("unrendered_config")@field:JsonProperty("unrendered_config")
+    val unrenderedConfig: Map<String, Any?>? = null,
 
     val index: Long? = null,
     val access: Access? = null,
     val constraints: List<ModelLevelConstraint>? = null,
 
-    @SerialName("defer_relation")
+    @get:JsonProperty("defer_relation")@field:JsonProperty("defer_relation")
     val deferRelation: DeferRelation? = null,
 
-    @SerialName("deprecation_date")
+    @get:JsonProperty("deprecation_date")@field:JsonProperty("deprecation_date")
     val deprecationDate: String? = null,
 
-    @SerialName("latest_version")
+    @get:JsonProperty("latest_version")@field:JsonProperty("latest_version")
     val latestVersion: Version? = null,
 
     val version: Version? = null,
 
-    @SerialName("attached_node")
+    @get:JsonProperty("attached_node")@field:JsonProperty("attached_node")
     val attachedNode: String? = null,
 
-    @SerialName("column_name")
+    @get:JsonProperty("column_name")@field:JsonProperty("column_name")
     val columnName: String? = null,
 
-    @SerialName("file_key_name")
+    @get:JsonProperty("file_key_name")@field:JsonProperty("file_key_name")
     val fileKeyName: String? = null,
 
-    @SerialName("test_metadata")
+    @get:JsonProperty("test_metadata")@field:JsonProperty("test_metadata")
     val testMetadata: TestMetadata? = null,
 
-    @SerialName("root_path")
+    @get:JsonProperty("root_path")@field:JsonProperty("root_path")
     val rootPath: String? = null
 )
 
@@ -2002,99 +2330,111 @@ data class Node (
  * dbt.contracts.graph.model_config.ContractConfig = <factory>, quote_columns: Union[bool,
  * NoneType] = None)
  */
-@Serializable
 data class NodeConfig (
     val alias: String? = null,
 
-    @SerialName("column_types")
-    val columnTypes: JsonObject? = null,
+    @get:JsonProperty("column_types")@field:JsonProperty("column_types")
+    val columnTypes: Map<String, Any?>? = null,
 
     val contract: ContractConfig? = null,
     val database: String? = null,
     val docs: Docs? = null,
     val enabled: Boolean? = null,
 
-    @SerialName("full_refresh")
+    @get:JsonProperty("full_refresh")@field:JsonProperty("full_refresh")
     val fullRefresh: Boolean? = null,
 
-    val grants: JsonObject? = null,
+    val grants: Map<String, Any?>? = null,
     val group: String? = null,
 
-    @SerialName("incremental_strategy")
+    @get:JsonProperty("incremental_strategy")@field:JsonProperty("incremental_strategy")
     val incrementalStrategy: String? = null,
 
     val materialized: String? = null,
-    val meta: JsonObject? = null,
+    val meta: Map<String, Any?>? = null,
 
-    @SerialName("on_configuration_change")
+    @get:JsonProperty("on_configuration_change")@field:JsonProperty("on_configuration_change")
     val onConfigurationChange: OnConfigurationChange? = null,
 
-    @SerialName("on_schema_change")
+    @get:JsonProperty("on_schema_change")@field:JsonProperty("on_schema_change")
     val onSchemaChange: String? = null,
 
     val packages: List<String>? = null,
 
-    @SerialName("persist_docs")
-    val persistDocs: JsonObject? = null,
+    @get:JsonProperty("persist_docs")@field:JsonProperty("persist_docs")
+    val persistDocs: Map<String, Any?>? = null,
 
-    @SerialName("post-hook")
+    @get:JsonProperty("post-hook")@field:JsonProperty("post-hook")
     val postHook: List<Hook>? = null,
 
-    @SerialName("pre-hook")
+    @get:JsonProperty("pre-hook")@field:JsonProperty("pre-hook")
     val preHook: List<Hook>? = null,
 
-    val quoting: JsonObject? = null,
+    val quoting: Map<String, Any?>? = null,
     val schema: String? = null,
     val tags: Tags? = null,
 
-    @SerialName("unique_key")
+    @get:JsonProperty("unique_key")@field:JsonProperty("unique_key")
     val uniqueKey: UniqueKey? = null,
 
-    @SerialName("error_if")
+    @get:JsonProperty("error_if")@field:JsonProperty("error_if")
     val errorIf: String? = null,
 
-    @SerialName("fail_calc")
+    @get:JsonProperty("fail_calc")@field:JsonProperty("fail_calc")
     val failCalc: String? = null,
 
     val limit: Long? = null,
     val severity: String? = null,
 
-    @SerialName("store_failures")
+    @get:JsonProperty("store_failures")@field:JsonProperty("store_failures")
     val storeFailures: Boolean? = null,
 
-    @SerialName("warn_if")
+    @get:JsonProperty("warn_if")@field:JsonProperty("warn_if")
     val warnIf: String? = null,
 
     val where: String? = null,
 
-    @SerialName("check_cols")
+    @get:JsonProperty("check_cols")@field:JsonProperty("check_cols")
     val checkCols: UniqueKey? = null,
 
     val strategy: String? = null,
 
-    @SerialName("target_database")
+    @get:JsonProperty("target_database")@field:JsonProperty("target_database")
     val targetDatabase: String? = null,
 
-    @SerialName("target_schema")
+    @get:JsonProperty("target_schema")@field:JsonProperty("target_schema")
     val targetSchema: String? = null,
 
-    @SerialName("updated_at")
+    @get:JsonProperty("updated_at")@field:JsonProperty("updated_at")
     val updatedAt: String? = null,
 
-    @SerialName("quote_columns")
+    @get:JsonProperty("quote_columns")@field:JsonProperty("quote_columns")
     val quoteColumns: Boolean? = null
 )
 
-@Serializable
 enum class NodeResourceType(val value: String) {
-    @SerialName("analysis") Analysis("analysis"),
-    @SerialName("model") Model("model"),
-    @SerialName("operation") Operation("operation"),
-    @SerialName("rpc") RPC("rpc"),
-    @SerialName("sql_operation") SQLOperation("sql_operation"),
-    @SerialName("seed") Seed("seed"),
-    @SerialName("snapshot") Snapshot("snapshot"),
-    @SerialName("test") Test("test");
+    Analysis("analysis"),
+    Model("model"),
+    Operation("operation"),
+    RPC("rpc"),
+    SQLOperation("sql_operation"),
+    Seed("seed"),
+    Snapshot("snapshot"),
+    Test("test");
+
+    companion object {
+        fun fromValue(value: String): NodeResourceType = when (value) {
+            "analysis"      -> Analysis
+            "model"         -> Model
+            "operation"     -> Operation
+            "rpc"           -> RPC
+            "sql_operation" -> SQLOperation
+            "seed"          -> Seed
+            "snapshot"      -> Snapshot
+            "test"          -> Test
+            else            -> throw IllegalArgumentException()
+        }
+    }
 }
 
 /**
@@ -2112,55 +2452,61 @@ enum class NodeResourceType(val value: String) {
  * config: dbt.contracts.graph.model_config.SemanticModelConfig = <factory>, primary_entity:
  * Union[str, NoneType] = None)
  */
-@Serializable
 data class SemanticModel (
     val config: SemanticModelConfig? = null,
 
-    @SerialName("created_at")
+    @get:JsonProperty("created_at")@field:JsonProperty("created_at")
     val createdAt: Double? = null,
 
     val defaults: Defaults? = null,
 
-    @SerialName("depends_on")
+    @get:JsonProperty("depends_on")@field:JsonProperty("depends_on")
     val dependsOn: ExposureDependsOn? = null,
 
     val description: String? = null,
     val dimensions: List<Dimension>? = null,
     val entities: List<Entity>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val fqn: List<String>,
+
     val label: String? = null,
     val measures: List<Measure>? = null,
     val metadata: SourceFileMetadata? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val model: String,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("node_relation")
+    @get:JsonProperty("node_relation")@field:JsonProperty("node_relation")
     val nodeRelation: NodeRelation? = null,
 
-    @SerialName("original_file_path")
+    @get:JsonProperty("original_file_path", required=true)@field:JsonProperty("original_file_path", required=true)
     val originalFilePath: String,
 
-    @SerialName("package_name")
+    @get:JsonProperty("package_name", required=true)@field:JsonProperty("package_name", required=true)
     val packageName: String,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val path: String,
 
-    @SerialName("primary_entity")
+    @get:JsonProperty("primary_entity")@field:JsonProperty("primary_entity")
     val primaryEntity: String? = null,
 
     val refs: List<RefArgs>? = null,
 
-    @SerialName("resource_type")
+    @get:JsonProperty("resource_type", required=true)@field:JsonProperty("resource_type", required=true)
     val resourceType: DisabledResourceType,
 
-    @SerialName("unique_id")
+    @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
     val uniqueId: String
 )
 
 /**
  * SemanticModelConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True)
  */
-@Serializable
 data class SemanticModelConfig (
     val enabled: Boolean? = null
 )
@@ -2179,75 +2525,92 @@ data class SemanticModelConfig (
  * <factory>, patch_path: Union[str, NoneType] = None, unrendered_config: Dict[str, Any] =
  * <factory>, relation_name: Union[str, NoneType] = None, created_at: float = <factory>)
  */
-@Serializable
 data class SourceDefinition (
     val columns: Map<String, ColumnInfo>? = null,
     val config: SourceConfig? = null,
 
-    @SerialName("created_at")
+    @get:JsonProperty("created_at")@field:JsonProperty("created_at")
     val createdAt: Double? = null,
 
     val database: String? = null,
     val description: String? = null,
     val external: ExternalTable? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val fqn: List<String>,
+
     val freshness: FreshnessThreshold? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val identifier: String,
 
-    @SerialName("loaded_at_field")
+    @get:JsonProperty("loaded_at_field")@field:JsonProperty("loaded_at_field")
     val loadedAtField: String? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val loader: String,
-    val meta: JsonObject? = null,
+
+    val meta: Map<String, Any?>? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
 
-    @SerialName("original_file_path")
+    @get:JsonProperty("original_file_path", required=true)@field:JsonProperty("original_file_path", required=true)
     val originalFilePath: String,
 
-    @SerialName("package_name")
+    @get:JsonProperty("package_name", required=true)@field:JsonProperty("package_name", required=true)
     val packageName: String,
 
-    @SerialName("patch_path")
+    @get:JsonProperty("patch_path")@field:JsonProperty("patch_path")
     val patchPath: String? = null,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val path: String,
+
     val quoting: Quoting? = null,
 
-    @SerialName("relation_name")
+    @get:JsonProperty("relation_name")@field:JsonProperty("relation_name")
     val relationName: String? = null,
 
-    @SerialName("resource_type")
+    @get:JsonProperty("resource_type", required=true)@field:JsonProperty("resource_type", required=true)
     val resourceType: SourceResourceType,
 
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val schema: String,
 
-    @SerialName("source_description")
+    @get:JsonProperty("source_description", required=true)@field:JsonProperty("source_description", required=true)
     val sourceDescription: String,
 
-    @SerialName("source_meta")
-    val sourceMeta: JsonObject? = null,
+    @get:JsonProperty("source_meta")@field:JsonProperty("source_meta")
+    val sourceMeta: Map<String, Any?>? = null,
 
-    @SerialName("source_name")
+    @get:JsonProperty("source_name", required=true)@field:JsonProperty("source_name", required=true)
     val sourceName: String,
 
     val tags: List<String>? = null,
 
-    @SerialName("unique_id")
+    @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
     val uniqueId: String,
 
-    @SerialName("unrendered_config")
-    val unrenderedConfig: JsonObject? = null
+    @get:JsonProperty("unrendered_config")@field:JsonProperty("unrendered_config")
+    val unrenderedConfig: Map<String, Any?>? = null
 )
 
 /**
  * SourceConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True)
  */
-@Serializable
 data class SourceConfig (
     val enabled: Boolean? = null
 )
 
-@Serializable
 enum class SourceResourceType(val value: String) {
-    @SerialName("source") Source("source");
+    Source("source");
+
+    companion object {
+        fun fromValue(value: String): SourceResourceType = when (value) {
+            "source" -> Source
+            else     -> throw IllegalArgumentException()
+        }
+    }
 }
+

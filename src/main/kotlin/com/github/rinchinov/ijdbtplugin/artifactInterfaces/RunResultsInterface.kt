@@ -1,0 +1,3 @@
+package com.github.rinchinov.ijdbtplugin.artifactInterfaces
+
+interface RunResultsInterface
