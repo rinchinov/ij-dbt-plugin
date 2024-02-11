@@ -5,19 +5,29 @@
     <vendor>rinchinov</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.pycharm</depends>
+    <depends>com.intellij.modules.python</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.database</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <projectConfigurable id="DBTPluginProjectConfigurable"
-                             instance="com.github.rinchinov.ijdbtplugin.extentions.PluginProjectConfigurable" />
-        <notificationGroup id="DBT Notification Group"
-                           displayType="BALLOON"
-                           toolWindowId="null"
-                           isLogByDefault="true"/>
+        <projectConfigurable
+                id="DBTPluginProjectConfigurable"
+                instance="com.github.rinchinov.ijdbtplugin.extentions.PluginProjectConfigurable"
+                displayName="DBT Project Settings"/>
+        <notificationGroup
+                id="DBT Notification Group"
+                displayType="BALLOON"
+                toolWindowId="null"
+                isLogByDefault="true"/>
         <toolWindow
-            factoryClass="com.github.rinchinov.ijdbtplugin.extentions.ToolMainWindow"
-            id="DBT Plugin"/>
+                factoryClass="com.github.rinchinov.ijdbtplugin.extentions.ToolMainWindow"
+                id="DBT Plugin"/>
+        <psi.referenceContributor
+                implementation="com.github.rinchinov.ijdbtplugin.ref.DbtPsiReferenceContributor"
+                language="DjangoTemplate"/>
     </extensions>
 
 </idea-plugin>
