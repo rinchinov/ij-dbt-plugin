@@ -1,4 +1,4 @@
-package com.github.rinchinov.ijdbtplugin.artifactsVersions.manifestV10
+package com.github.rinchinov.ijdbtplugin.artifactsVersions
 
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.core.*
@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.node.*
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.*
-import com.github.rinchinov.ijdbtplugin.artifactInterfaces.ManifestInterface
 
 
 @Suppress("UNCHECKED_CAST")
@@ -21,7 +20,7 @@ private fun <T> ObjectMapper.convert(k: kotlin.reflect.KClass<*>, fromJson: (Jso
     })
 })
 
-val mapper = jacksonObjectMapper().apply {
+val mapperManifest = jacksonObjectMapper().apply {
     propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
     setSerializationInclusion(JsonInclude.Include.NON_NULL)
     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -52,31 +51,7 @@ val mapper = jacksonObjectMapper().apply {
     convert(Version::class,               { Version.fromJson(it) },                         { it.toJson() }, true)
 }
 
-/**
- * WritableManifest(metadata: dbt.contracts.graph.manifest.ManifestMetadata, nodes:
- * Mapping[str, Union[dbt.contracts.graph.nodes.AnalysisNode,
- * dbt.contracts.graph.nodes.SingularTestNode, dbt.contracts.graph.nodes.HookNode,
- * dbt.contracts.graph.nodes.ModelNode, dbt.contracts.graph.nodes.RPCNode,
- * dbt.contracts.graph.nodes.SqlNode, dbt.contracts.graph.nodes.GenericTestNode,
- * dbt.contracts.graph.nodes.SnapshotNode, dbt.contracts.graph.nodes.SeedNode]], sources:
- * Mapping[str, dbt.contracts.graph.nodes.SourceDefinition], macros: Mapping[str,
- * dbt.contracts.graph.nodes.Macro], docs: Mapping[str,
- * dbt.contracts.graph.nodes.Documentation], exposures: Mapping[str,
- * dbt.contracts.graph.nodes.Exposure], metrics: Mapping[str,
- * dbt.contracts.graph.nodes.Metric], groups: Mapping[str, dbt.contracts.graph.nodes.Group],
- * selectors: Mapping[str, Any], disabled: Union[Mapping[str,
- * List[Union[dbt.contracts.graph.nodes.AnalysisNode,
- * dbt.contracts.graph.nodes.SingularTestNode, dbt.contracts.graph.nodes.HookNode,
- * dbt.contracts.graph.nodes.ModelNode, dbt.contracts.graph.nodes.RPCNode,
- * dbt.contracts.graph.nodes.SqlNode, dbt.contracts.graph.nodes.GenericTestNode,
- * dbt.contracts.graph.nodes.SnapshotNode, dbt.contracts.graph.nodes.SeedNode,
- * dbt.contracts.graph.nodes.SourceDefinition, dbt.contracts.graph.nodes.Exposure,
- * dbt.contracts.graph.nodes.Metric, dbt.contracts.graph.nodes.SemanticModel]]], NoneType],
- * parent_map: Union[Dict[str, List[str]], NoneType], child_map: Union[Dict[str, List[str]],
- * NoneType], group_map: Union[Dict[str, List[str]], NoneType], semantic_models:
- * Mapping[str, dbt.contracts.graph.nodes.SemanticModel])
- */
-data class ManifestV10 (
+data class Manifest (
     /**
      * A mapping from parent nodes to their dependents
      */
@@ -143,6 +118,12 @@ data class ManifestV10 (
     val parentMap: Map<String, List<String>>? = null,
 
     /**
+     * The saved queries defined in the dbt project
+     */
+    @get:JsonProperty("saved_queries", required=true)@field:JsonProperty("saved_queries", required=true)
+    val savedQueries: Map<String, SavedQuery>,
+
+    /**
      * The selectors defined in selectors.yml
      */
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
@@ -159,244 +140,21 @@ data class ManifestV10 (
      */
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val sources: Map<String, SourceDefinition>
-): ManifestInterface {
-    fun toJson() = mapper.writeValueAsString(this)
+){
+    fun toJson() = mapperManifest.writeValueAsString(this)
 
     companion object {
-        fun fromJson(json: String) = mapper.readValue<ManifestV10>(json)
+        fun fromJson(json: String) = mapperManifest.readValue<Manifest>(json)
     }
 }
 
-/**
- * AnalysisNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.NodeConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>)
- *
- * SingularTestNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.TestConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>)
- *
- * HookNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.NodeConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>, index:
- * Union[int, NoneType] = None)
- *
- * ModelNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.NodeConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>, access:
- * dbt.node_types.AccessType = <AccessType.Protected: 'protected'>, constraints:
- * List[dbt.contracts.graph.nodes.ModelLevelConstraint] = <factory>, version: Union[str,
- * float, NoneType] = None, latest_version: Union[str, float, NoneType] = None,
- * deprecation_date: Union[datetime.datetime, NoneType] = None, defer_relation:
- * Union[dbt.contracts.graph.nodes.DeferRelation, NoneType] = None)
- *
- * RPCNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.NodeConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>)
- *
- * SqlNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.NodeConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>)
- *
- * GenericTestNode(test_metadata: dbt.contracts.graph.nodes.TestMetadata, database:
- * Union[str, NoneType], schema: str, name: str, resource_type: dbt.node_types.NodeType,
- * package_name: str, path: str, original_file_path: str, unique_id: str, fqn: List[str],
- * alias: str, checksum: dbt.contracts.files.FileHash, config:
- * dbt.contracts.graph.model_config.TestConfig = <factory>, _event_status: Dict[str, Any] =
- * <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>, column_name:
- * Union[str, NoneType] = None, file_key_name: Union[str, NoneType] = None, attached_node:
- * Union[str, NoneType] = None)
- *
- * SnapshotNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.SnapshotConfig, _event_status: Dict[str, Any] =
- * <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>,
- * defer_relation: Union[dbt.contracts.graph.nodes.DeferRelation, NoneType] = None)
- *
- * SeedNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.SeedConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', root_path: Union[str, NoneType] = None, depends_on:
- * dbt.contracts.graph.nodes.MacroDependsOn = <factory>, defer_relation:
- * Union[dbt.contracts.graph.nodes.DeferRelation, NoneType] = None)
- *
- * SourceDefinition(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], source_name: str, source_description: str, loader: str,
- * identifier: str, _event_status: Dict[str, Any] = <factory>, quoting:
- * dbt.contracts.graph.unparsed.Quoting = <factory>, loaded_at_field: Union[str, NoneType] =
- * None, freshness: Union[dbt.contracts.graph.unparsed.FreshnessThreshold, NoneType] = None,
- * external: Union[dbt.contracts.graph.unparsed.ExternalTable, NoneType] = None,
- * description: str = '', columns: Dict[str, dbt.contracts.graph.nodes.ColumnInfo] =
- * <factory>, meta: Dict[str, Any] = <factory>, source_meta: Dict[str, Any] = <factory>,
- * tags: List[str] = <factory>, config: dbt.contracts.graph.model_config.SourceConfig =
- * <factory>, patch_path: Union[str, NoneType] = None, unrendered_config: Dict[str, Any] =
- * <factory>, relation_name: Union[str, NoneType] = None, created_at: float = <factory>)
- *
- * Exposure(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path: str,
- * original_file_path: str, unique_id: str, fqn: List[str], type:
- * dbt.contracts.graph.unparsed.ExposureType, owner: dbt.contracts.graph.unparsed.Owner,
- * description: str = '', label: Union[str, NoneType] = None, maturity:
- * Union[dbt.contracts.graph.unparsed.MaturityType, NoneType] = None, meta: Dict[str, Any] =
- * <factory>, tags: List[str] = <factory>, config:
- * dbt.contracts.graph.model_config.ExposureConfig = <factory>, unrendered_config: Dict[str,
- * Any] = <factory>, url: Union[str, NoneType] = None, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, created_at: float = <factory>)
- *
- * Metric(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path: str,
- * original_file_path: str, unique_id: str, fqn: List[str], description: str, label: str,
- * type: dbt_semantic_interfaces.type_enums.metric_type.MetricType, type_params:
- * dbt.contracts.graph.nodes.MetricTypeParams, filter:
- * Union[dbt.contracts.graph.nodes.WhereFilter, NoneType] = None, metadata:
- * Union[dbt.contracts.graph.semantic_models.SourceFileMetadata, NoneType] = None, meta:
- * Dict[str, Any] = <factory>, tags: List[str] = <factory>, config:
- * dbt.contracts.graph.model_config.MetricConfig = <factory>, unrendered_config: Dict[str,
- * Any] = <factory>, sources: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, metrics: List[List[str]] =
- * <factory>, created_at: float = <factory>, group: Union[str, NoneType] = None)
- *
- * SemanticModel(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path:
- * str, original_file_path: str, unique_id: str, fqn: List[str], model: str, node_relation:
- * Union[dbt.contracts.graph.nodes.NodeRelation, NoneType], description: Union[str,
- * NoneType] = None, label: Union[str, NoneType] = None, defaults:
- * Union[dbt.contracts.graph.semantic_models.Defaults, NoneType] = None, entities:
- * Sequence[dbt.contracts.graph.semantic_models.Entity] = <factory>, measures:
- * Sequence[dbt.contracts.graph.semantic_models.Measure] = <factory>, dimensions:
- * Sequence[dbt.contracts.graph.semantic_models.Dimension] = <factory>, metadata:
- * Union[dbt.contracts.graph.semantic_models.SourceFileMetadata, NoneType] = None,
- * depends_on: dbt.contracts.graph.nodes.DependsOn = <factory>, refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, created_at: float = <factory>,
- * config: dbt.contracts.graph.model_config.SemanticModelConfig = <factory>, primary_entity:
- * Union[str, NoneType] = None)
- */
 data class AnalysisNode (
+    @get:JsonProperty("_event_status")@field:JsonProperty("_event_status")
+    val eventStatus: Map<String, Any?>? = null,
+
+    @get:JsonProperty("_pre_injected_sql")@field:JsonProperty("_pre_injected_sql")
+    val preInjectedSql: String? = null,
+
     val alias: String? = null,
 
     @get:JsonProperty("build_path")@field:JsonProperty("build_path")
@@ -443,7 +201,7 @@ data class AnalysisNode (
     val group: String? = null,
     val language: String? = null,
     val meta: Map<String, Any?>? = null,
-    val metrics: List<List<String>>? = null,
+    val metrics: List<Tags>? = null,
 
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
@@ -535,12 +293,16 @@ data class AnalysisNode (
     val owner: Owner? = null,
     val type: DisabledType? = null,
     val url: String? = null,
-    val filter: WhereFilter? = null,
+    val filter: WhereFilterIntersection? = null,
     val metadata: SourceFileMetadata? = null,
 
     @get:JsonProperty("type_params")@field:JsonProperty("type_params")
     val typeParams: MetricTypeParams? = null,
 
+    @get:JsonProperty("group_bys")@field:JsonProperty("group_bys")
+    val groupBys: List<String>? = null,
+
+    val where: WhereFilterIntersection? = null,
     val defaults: Defaults? = null,
     val dimensions: List<Dimension>? = null,
     val entities: List<Entity>? = null,
@@ -569,9 +331,6 @@ enum class Access(val value: String) {
     }
 }
 
-/**
- * FileHash(name: str, checksum: str)
- */
 data class FileHash (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val checksum: String,
@@ -580,10 +339,10 @@ data class FileHash (
     val name: String
 )
 
-/**
- * Used in all ManifestNodes and SourceDefinition
- */
 data class ColumnInfo (
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
     val constraints: List<ColumnLevelConstraint>? = null,
 
     @get:JsonProperty("data_type")@field:JsonProperty("data_type")
@@ -599,11 +358,6 @@ data class ColumnInfo (
     val tags: List<String>? = null
 )
 
-/**
- * ColumnLevelConstraint(type: dbt.contracts.graph.nodes.ConstraintType, name: Union[str,
- * NoneType] = None, expression: Union[str, NoneType] = None, warn_unenforced: bool = True,
- * warn_unsupported: bool = True)
- */
 data class ColumnLevelConstraint (
     val expression: String? = null,
     val name: String? = null,
@@ -639,74 +393,10 @@ enum class ConstraintType(val value: String) {
     }
 }
 
-/**
- * NodeConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, alias: Union[str,
- * NoneType] = None, schema: Union[str, NoneType] = None, database: Union[str, NoneType] =
- * None, tags: Union[List[str], str] = <factory>, meta: Dict[str, Any] = <factory>, group:
- * Union[str, NoneType] = None, materialized: str = 'view', incremental_strategy: Union[str,
- * NoneType] = None, persist_docs: Dict[str, Any] = <factory>, post_hook:
- * List[dbt.contracts.graph.model_config.Hook] = <factory>, pre_hook:
- * List[dbt.contracts.graph.model_config.Hook] = <factory>, quoting: Dict[str, Any] =
- * <factory>, column_types: Dict[str, Any] = <factory>, full_refresh: Union[bool, NoneType]
- * = None, unique_key: Union[str, List[str], NoneType] = None, on_schema_change: Union[str,
- * NoneType] = 'ignore', on_configuration_change:
- * dbt.contracts.graph.model_config.OnConfigurationChangeOption = <factory>, grants:
- * Dict[str, Any] = <factory>, packages: List[str] = <factory>, docs:
- * dbt.contracts.graph.unparsed.Docs = <factory>, contract:
- * dbt.contracts.graph.model_config.ContractConfig = <factory>)
- *
- * TestConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, alias: Union[str,
- * NoneType] = None, schema: Union[str, NoneType] = 'dbt_test__audit', database: Union[str,
- * NoneType] = None, tags: Union[List[str], str] = <factory>, meta: Dict[str, Any] =
- * <factory>, group: Union[str, NoneType] = None, materialized: str = 'test', severity:
- * dbt.contracts.graph.model_config.Severity = 'ERROR', store_failures: Union[bool,
- * NoneType] = None, where: Union[str, NoneType] = None, limit: Union[int, NoneType] = None,
- * fail_calc: str = 'count(*)', warn_if: str = '!= 0', error_if: str = '!= 0')
- *
- * SnapshotConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, alias:
- * Union[str, NoneType] = None, schema: Union[str, NoneType] = None, database: Union[str,
- * NoneType] = None, tags: Union[List[str], str] = <factory>, meta: Dict[str, Any] =
- * <factory>, group: Union[str, NoneType] = None, materialized: str = 'snapshot',
- * incremental_strategy: Union[str, NoneType] = None, persist_docs: Dict[str, Any] =
- * <factory>, post_hook: List[dbt.contracts.graph.model_config.Hook] = <factory>, pre_hook:
- * List[dbt.contracts.graph.model_config.Hook] = <factory>, quoting: Dict[str, Any] =
- * <factory>, column_types: Dict[str, Any] = <factory>, full_refresh: Union[bool, NoneType]
- * = None, unique_key: Union[str, NoneType] = None, on_schema_change: Union[str, NoneType] =
- * 'ignore', on_configuration_change:
- * dbt.contracts.graph.model_config.OnConfigurationChangeOption = <factory>, grants:
- * Dict[str, Any] = <factory>, packages: List[str] = <factory>, docs:
- * dbt.contracts.graph.unparsed.Docs = <factory>, contract:
- * dbt.contracts.graph.model_config.ContractConfig = <factory>, strategy: Union[str,
- * NoneType] = None, target_schema: Union[str, NoneType] = None, target_database: Union[str,
- * NoneType] = None, updated_at: Union[str, NoneType] = None, check_cols: Union[str,
- * List[str], NoneType] = None)
- *
- * SeedConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, alias: Union[str,
- * NoneType] = None, schema: Union[str, NoneType] = None, database: Union[str, NoneType] =
- * None, tags: Union[List[str], str] = <factory>, meta: Dict[str, Any] = <factory>, group:
- * Union[str, NoneType] = None, materialized: str = 'seed', incremental_strategy: Union[str,
- * NoneType] = None, persist_docs: Dict[str, Any] = <factory>, post_hook:
- * List[dbt.contracts.graph.model_config.Hook] = <factory>, pre_hook:
- * List[dbt.contracts.graph.model_config.Hook] = <factory>, quoting: Dict[str, Any] =
- * <factory>, column_types: Dict[str, Any] = <factory>, full_refresh: Union[bool, NoneType]
- * = None, unique_key: Union[str, List[str], NoneType] = None, on_schema_change: Union[str,
- * NoneType] = 'ignore', on_configuration_change:
- * dbt.contracts.graph.model_config.OnConfigurationChangeOption = <factory>, grants:
- * Dict[str, Any] = <factory>, packages: List[str] = <factory>, docs:
- * dbt.contracts.graph.unparsed.Docs = <factory>, contract:
- * dbt.contracts.graph.model_config.ContractConfig = <factory>, quote_columns: Union[bool,
- * NoneType] = None)
- *
- * SourceConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True)
- *
- * ExposureConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True)
- *
- * MetricConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, group: Union[str,
- * NoneType] = None)
- *
- * SemanticModelConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True)
- */
 data class DisabledConfig (
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
     val alias: String? = null,
 
     @get:JsonProperty("column_types")@field:JsonProperty("column_types")
@@ -769,6 +459,7 @@ data class DisabledConfig (
     val warnIf: String? = null,
 
     val where: String? = null,
+    val access: Access? = null,
 
     @get:JsonProperty("check_cols")@field:JsonProperty("check_cols")
     val checkCols: UniqueKey? = null,
@@ -784,6 +475,8 @@ data class DisabledConfig (
     @get:JsonProperty("updated_at")@field:JsonProperty("updated_at")
     val updatedAt: String? = null,
 
+    val delimiter: String? = null,
+
     @get:JsonProperty("quote_columns")@field:JsonProperty("quote_columns")
     val quoteColumns: Boolean? = null
 )
@@ -793,32 +486,29 @@ sealed class UniqueKey {
     class StringValue(val value: String)            : UniqueKey()
     class NullValue()                               : UniqueKey()
 
-    fun toJson(): String = mapper.writeValueAsString(when (this) {
+    fun toJson(): String = mapperManifest.writeValueAsString(when (this) {
         is StringArrayValue -> this.value
-        is StringValue      -> this.value
-        is NullValue        -> "null"
+        is StringValue -> this.value
+        is NullValue -> "null"
     })
 
     companion object {
         fun fromJson(jn: JsonNode): UniqueKey = when (jn) {
-            is ArrayNode -> StringArrayValue(mapper.treeToValue(jn))
-            is TextNode  -> StringValue(mapper.treeToValue(jn))
+            is ArrayNode -> StringArrayValue(mapperManifest.treeToValue(jn))
+            is TextNode  -> StringValue(mapperManifest.treeToValue(jn))
             null         -> NullValue()
             else         -> throw IllegalArgumentException()
         }
     }
 }
 
-/**
- * ContractConfig(enforced: bool = False)
- */
 data class ContractConfig (
+    @get:JsonProperty("alias_types")@field:JsonProperty("alias_types")
+    val aliasTypes: Boolean? = null,
+
     val enforced: Boolean? = null
 )
 
-/**
- * Docs(show: bool = True, node_color: Union[str, NoneType] = None)
- */
 data class Docs (
     @get:JsonProperty("node_color")@field:JsonProperty("node_color")
     val nodeColor: String? = null,
@@ -841,9 +531,6 @@ enum class OnConfigurationChange(val value: String) {
     }
 }
 
-/**
- * Hook(sql: str, transaction: bool = True, index: Union[int, NoneType] = None)
- */
 data class Hook (
     val index: Long? = null,
 
@@ -857,25 +544,20 @@ sealed class Tags {
     class StringArrayValue(val value: List<String>) : Tags()
     class StringValue(val value: String)            : Tags()
 
-    fun toJson(): String = mapper.writeValueAsString(when (this) {
+    fun toJson(): String = mapperManifest.writeValueAsString(when (this) {
         is StringArrayValue -> this.value
-        is StringValue      -> this.value
+        is StringValue -> this.value
     })
 
     companion object {
         fun fromJson(jn: JsonNode): Tags = when (jn) {
-            is ArrayNode -> StringArrayValue(mapper.treeToValue(jn))
-            is TextNode  -> StringValue(mapper.treeToValue(jn))
+            is ArrayNode -> StringArrayValue(mapperManifest.treeToValue(jn))
+            is TextNode  -> StringValue(mapperManifest.treeToValue(jn))
             else         -> throw IllegalArgumentException()
         }
     }
 }
 
-/**
- * ModelLevelConstraint(type: dbt.contracts.graph.nodes.ConstraintType, name: Union[str,
- * NoneType] = None, expression: Union[str, NoneType] = None, warn_unenforced: bool = True,
- * warn_unsupported: bool = True, columns: List[str] = <factory>)
- */
 data class ModelLevelConstraint (
     val columns: List<String>? = null,
     val expression: String? = null,
@@ -891,26 +573,19 @@ data class ModelLevelConstraint (
     val warnUnsupported: Boolean? = null
 )
 
-/**
- * Contract(enforced: bool = False, checksum: Union[str, NoneType] = None)
- */
 data class Contract (
+    @get:JsonProperty("alias_types")@field:JsonProperty("alias_types")
+    val aliasTypes: Boolean? = null,
+
     val checksum: String? = null,
     val enforced: Boolean? = null
 )
 
-/**
- * Defaults(agg_time_dimension: Union[str, NoneType] = None)
- */
 data class Defaults (
     @get:JsonProperty("agg_time_dimension")@field:JsonProperty("agg_time_dimension")
     val aggTimeDimension: String? = null
 )
 
-/**
- * DeferRelation(database: Union[str, NoneType], schema: str, alias: str, relation_name:
- * Union[str, NoneType])
- */
 data class DeferRelation (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val alias: String,
@@ -924,24 +599,11 @@ data class DeferRelation (
     val schema: String
 )
 
-/**
- * DependsOn(macros: List[str] = <factory>, nodes: List[str] = <factory>)
- *
- * Used only in the Macro class
- */
 data class DependsOn (
     val macros: List<String>? = null,
     val nodes: List<String>? = null
 )
 
-/**
- * Dimension(name: str, type:
- * dbt_semantic_interfaces.type_enums.dimension_type.DimensionType, description: Union[str,
- * NoneType] = None, label: Union[str, NoneType] = None, is_partition: bool = False,
- * type_params: Union[dbt.contracts.graph.semantic_models.DimensionTypeParams, NoneType] =
- * None, expr: Union[str, NoneType] = None, metadata:
- * Union[dbt.contracts.graph.semantic_models.SourceFileMetadata, NoneType] = None)
- */
 data class Dimension (
     val description: String? = null,
     val expr: String? = null,
@@ -962,11 +624,6 @@ data class Dimension (
     val typeParams: DimensionTypeParams? = null
 )
 
-/**
- * Provides file context about what something was created from.
- *
- * Implementation of the dbt-semantic-interfaces `Metadata` protocol
- */
 data class SourceFileMetadata (
     @get:JsonProperty("file_slice", required=true)@field:JsonProperty("file_slice", required=true)
     val fileSlice: FileSlice,
@@ -975,11 +632,6 @@ data class SourceFileMetadata (
     val repoFilePath: String
 )
 
-/**
- * Provides file slice level context about what something was created from.
- *
- * Implementation of the dbt-semantic-interfaces `FileSlice` protocol
- */
 data class FileSlice (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val content: String,
@@ -1007,11 +659,6 @@ enum class DimensionType(val value: String) {
     }
 }
 
-/**
- * DimensionTypeParams(time_granularity:
- * dbt_semantic_interfaces.type_enums.time_granularity.TimeGranularity, validity_params:
- * Union[dbt.contracts.graph.semantic_models.DimensionValidityParams, NoneType] = None)
- */
 data class DimensionTypeParams (
     @get:JsonProperty("time_granularity", required=true)@field:JsonProperty("time_granularity", required=true)
     val timeGranularity: Granularity,
@@ -1039,9 +686,6 @@ enum class Granularity(val value: String) {
     }
 }
 
-/**
- * DimensionValidityParams(is_start: bool = False, is_end: bool = False)
- */
 data class DimensionValidityParams (
     @get:JsonProperty("is_end")@field:JsonProperty("is_end")
     val isEnd: Boolean? = null,
@@ -1050,11 +694,6 @@ data class DimensionValidityParams (
     val isStart: Boolean? = null
 )
 
-/**
- * Entity(name: str, type: dbt_semantic_interfaces.type_enums.entity_type.EntityType,
- * description: Union[str, NoneType] = None, label: Union[str, NoneType] = None, role:
- * Union[str, NoneType] = None, expr: Union[str, NoneType] = None)
- */
 data class Entity (
     val description: String? = null,
     val expr: String? = null,
@@ -1086,13 +725,10 @@ enum class EntityType(val value: String) {
     }
 }
 
-/**
- * ExternalTable(_extra: Dict[str, Any] = <factory>, location: Union[str, NoneType] = None,
- * file_format: Union[str, NoneType] = None, row_format: Union[str, NoneType] = None,
- * tbl_properties: Union[str, NoneType] = None, partitions: Union[List[str],
- * List[dbt.contracts.graph.unparsed.ExternalPartition], NoneType] = None)
- */
 data class ExternalTable (
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
     @get:JsonProperty("file_format")@field:JsonProperty("file_format")
     val fileFormat: String? = null,
 
@@ -1110,25 +746,24 @@ sealed class Partition {
     class ExternalPartitionValue(val value: ExternalPartition) : Partition()
     class StringValue(val value: String)                       : Partition()
 
-    fun toJson(): String = mapper.writeValueAsString(when (this) {
+    fun toJson(): String = mapperManifest.writeValueAsString(when (this) {
         is ExternalPartitionValue -> this.value
-        is StringValue            -> this.value
+        is StringValue -> this.value
     })
 
     companion object {
         fun fromJson(jn: JsonNode): Partition = when (jn) {
-            is ObjectNode -> ExternalPartitionValue(mapper.treeToValue(jn))
-            is TextNode   -> StringValue(mapper.treeToValue(jn))
+            is ObjectNode -> ExternalPartitionValue(mapperManifest.treeToValue(jn))
+            is TextNode   -> StringValue(mapperManifest.treeToValue(jn))
             else          -> throw IllegalArgumentException()
         }
     }
 }
 
-/**
- * ExternalPartition(_extra: Dict[str, Any] = <factory>, name: str = '', description: str =
- * '', data_type: str = '', meta: Dict[str, Any] = <factory>)
- */
 data class ExternalPartition (
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
     @get:JsonProperty("data_type")@field:JsonProperty("data_type")
     val dataType: String? = null,
 
@@ -1137,9 +772,6 @@ data class ExternalPartition (
     val name: String? = null
 )
 
-/**
- * Used in CompiledNodes as part of ephemeral model processing
- */
 data class InjectedCte (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val id: String,
@@ -1148,19 +780,16 @@ data class InjectedCte (
     val sql: String
 )
 
-/**
- * WhereFilter(where_sql_template: str)
- */
+data class WhereFilterIntersection (
+    @get:JsonProperty("where_filters", required=true)@field:JsonProperty("where_filters", required=true)
+    val whereFilters: List<WhereFilter>
+)
+
 data class WhereFilter (
     @get:JsonProperty("where_sql_template", required=true)@field:JsonProperty("where_sql_template", required=true)
     val whereSqlTemplate: String
 )
 
-/**
- * FreshnessThreshold(warn_after: Union[dbt.contracts.graph.unparsed.Time, NoneType] =
- * <factory>, error_after: Union[dbt.contracts.graph.unparsed.Time, NoneType] = <factory>,
- * filter: Union[str, NoneType] = None)
- */
 data class FreshnessThreshold (
     @get:JsonProperty("error_after")@field:JsonProperty("error_after")
     val errorAfter: Time? = null,
@@ -1171,10 +800,6 @@ data class FreshnessThreshold (
     val warnAfter: Time? = null
 )
 
-/**
- * Time(count: Union[int, NoneType] = None, period:
- * Union[dbt.contracts.graph.unparsed.TimePeriod, NoneType] = None)
- */
 data class Time (
     val count: Long? = null,
     val period: Period? = null
@@ -1197,19 +822,22 @@ enum class Period(val value: String) {
 
 sealed class Version {
     class DoubleValue(val value: Double) : Version()
+    class IntValue(val value: Int)       : Version()
     class StringValue(val value: String) : Version()
     class NullValue()                    : Version()
 
-    fun toJson(): String = mapper.writeValueAsString(when (this) {
+    fun toJson(): String = mapperManifest.writeValueAsString(when (this) {
         is DoubleValue -> this.value
         is StringValue -> this.value
-        is NullValue   -> "null"
+        is IntValue -> this.value
+        is NullValue -> "null"
     })
 
     companion object {
         fun fromJson(jn: JsonNode): Version = when (jn) {
-            is DoubleNode -> DoubleValue(mapper.treeToValue(jn))
-            is TextNode   -> StringValue(mapper.treeToValue(jn))
+            is DoubleNode -> DoubleValue(mapperManifest.treeToValue(jn))
+            is IntNode    -> IntValue(mapperManifest.treeToValue(jn))
+            is TextNode   -> StringValue(mapperManifest.treeToValue(jn))
             null          -> NullValue()
             else          -> throw IllegalArgumentException()
         }
@@ -1231,15 +859,6 @@ enum class Maturity(val value: String) {
     }
 }
 
-/**
- * Measure(name: str, agg:
- * dbt_semantic_interfaces.type_enums.aggregation_type.AggregationType, description:
- * Union[str, NoneType] = None, label: Union[str, NoneType] = None, create_metric: bool =
- * False, expr: Union[str, NoneType] = None, agg_params:
- * Union[dbt.contracts.graph.semantic_models.MeasureAggregationParameters, NoneType] = None,
- * non_additive_dimension: Union[dbt.contracts.graph.semantic_models.NonAdditiveDimension,
- * NoneType] = None, agg_time_dimension: Union[str, NoneType] = None)
- */
 data class Measure (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val agg: Agg,
@@ -1291,10 +910,6 @@ enum class Agg(val value: String) {
     }
 }
 
-/**
- * MeasureAggregationParameters(percentile: Union[float, NoneType] = None,
- * use_discrete_percentile: bool = False, use_approximate_percentile: bool = False)
- */
 data class MeasureAggregationParameters (
     val percentile: Double? = null,
 
@@ -1305,11 +920,6 @@ data class MeasureAggregationParameters (
     val useDiscretePercentile: Boolean? = null
 )
 
-/**
- * NonAdditiveDimension(name: str, window_choice:
- * dbt_semantic_interfaces.type_enums.aggregation_type.AggregationType, window_groupings:
- * List[str])
- */
 data class NonAdditiveDimension (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
@@ -1321,10 +931,6 @@ data class NonAdditiveDimension (
     val windowGroupings: List<String>
 )
 
-/**
- * NodeRelation(alias: str, schema_name: str, database: Union[str, NoneType] = None,
- * relation_name: Union[str, NoneType] = None)
- */
 data class NodeRelation (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val alias: String,
@@ -1338,19 +944,14 @@ data class NodeRelation (
     val schemaName: String
 )
 
-/**
- * Owner(_extra: Dict[str, Any] = <factory>, email: Union[str, NoneType] = None, name:
- * Union[str, NoneType] = None)
- */
 data class Owner (
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
     val email: String? = null,
     val name: String? = null
 )
 
-/**
- * Quoting(database: Union[bool, NoneType] = None, schema: Union[bool, NoneType] = None,
- * identifier: Union[bool, NoneType] = None, column: Union[bool, NoneType] = None)
- */
 data class Quoting (
     val column: Boolean? = null,
     val database: Boolean? = null,
@@ -1358,10 +959,6 @@ data class Quoting (
     val schema: Boolean? = null
 )
 
-/**
- * RefArgs(name: str, package: Union[str, NoneType] = None, version: Union[str, float,
- * NoneType] = None)
- */
 data class RefArgs (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
@@ -1369,6 +966,7 @@ data class RefArgs (
     @get:JsonProperty("package")@field:JsonProperty("package")
     val refArgsPackage: String? = null,
 
+    @get:JsonProperty("version")@field:JsonProperty("version")
     val version: Version? = null
 )
 
@@ -1383,6 +981,7 @@ enum class DisabledResourceType(val value: String) {
     Operation("operation"),
     RPC("rpc"),
     SQLOperation("sql_operation"),
+    SavedQuery("saved_query"),
     Seed("seed"),
     SemanticModel("semantic_model"),
     Snapshot("snapshot"),
@@ -1401,6 +1000,7 @@ enum class DisabledResourceType(val value: String) {
             "operation"      -> Operation
             "rpc"            -> RPC
             "sql_operation"  -> SQLOperation
+            "saved_query"    -> SavedQuery
             "seed"           -> Seed
             "semantic_model" -> SemanticModel
             "snapshot"       -> Snapshot
@@ -1411,10 +1011,6 @@ enum class DisabledResourceType(val value: String) {
     }
 }
 
-/**
- * TestMetadata(name: str, kwargs: Dict[str, Any] = <factory>, namespace: Union[str,
- * NoneType] = None)
- */
 data class TestMetadata (
     val kwargs: Map<String, Any?>? = null,
 
@@ -1451,16 +1047,6 @@ enum class DisabledType(val value: String) {
     }
 }
 
-/**
- * MetricTypeParams(measure: Union[dbt.contracts.graph.nodes.MetricInputMeasure, NoneType] =
- * None, input_measures: List[dbt.contracts.graph.nodes.MetricInputMeasure] = <factory>,
- * numerator: Union[dbt.contracts.graph.nodes.MetricInput, NoneType] = None, denominator:
- * Union[dbt.contracts.graph.nodes.MetricInput, NoneType] = None, expr: Union[str, NoneType]
- * = None, window: Union[dbt.contracts.graph.nodes.MetricTimeWindow, NoneType] = None,
- * grain_to_date: Union[dbt_semantic_interfaces.type_enums.time_granularity.TimeGranularity,
- * NoneType] = None, metrics: Union[List[dbt.contracts.graph.nodes.MetricInput], NoneType] =
- * None)
- */
 data class MetricTypeParams (
     val denominator: MetricInput? = null,
     val expr: String? = null,
@@ -1477,16 +1063,9 @@ data class MetricTypeParams (
     val window: MetricTimeWindow? = null
 )
 
-/**
- * MetricInput(name: str, filter: Union[dbt.contracts.graph.nodes.WhereFilter, NoneType] =
- * None, alias: Union[str, NoneType] = None, offset_window:
- * Union[dbt.contracts.graph.nodes.MetricTimeWindow, NoneType] = None, offset_to_grain:
- * Union[dbt_semantic_interfaces.type_enums.time_granularity.TimeGranularity, NoneType] =
- * None)
- */
 data class MetricInput (
     val alias: String? = null,
-    val filter: WhereFilter? = null,
+    val filter: WhereFilterIntersection? = null,
 
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
@@ -1498,10 +1077,6 @@ data class MetricInput (
     val offsetWindow: MetricTimeWindow? = null
 )
 
-/**
- * MetricTimeWindow(count: int, granularity:
- * dbt_semantic_interfaces.type_enums.time_granularity.TimeGranularity)
- */
 data class MetricTimeWindow (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val count: Long,
@@ -1510,18 +1085,13 @@ data class MetricTimeWindow (
     val granularity: Granularity
 )
 
-/**
- * MetricInputMeasure(name: str, filter: Union[dbt.contracts.graph.nodes.WhereFilter,
- * NoneType] = None, alias: Union[str, NoneType] = None, join_to_timespine: bool = False,
- * fill_nulls_with: Union[int, NoneType] = None)
- */
 data class MetricInputMeasure (
     val alias: String? = null,
 
     @get:JsonProperty("fill_nulls_with")@field:JsonProperty("fill_nulls_with")
     val fillNullsWith: Long? = null,
 
-    val filter: WhereFilter? = null,
+    val filter: WhereFilterIntersection? = null,
 
     @get:JsonProperty("join_to_timespine")@field:JsonProperty("join_to_timespine")
     val joinToTimespine: Boolean? = null,
@@ -1530,10 +1100,6 @@ data class MetricInputMeasure (
     val name: String
 )
 
-/**
- * Documentation(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path:
- * str, original_file_path: str, unique_id: str, block_contents: str)
- */
 data class Documentation (
     @get:JsonProperty("block_contents", required=true)@field:JsonProperty("block_contents", required=true)
     val blockContents: String,
@@ -1568,19 +1134,6 @@ enum class DocResourceType(val value: String) {
     }
 }
 
-/**
- * Exposure(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path: str,
- * original_file_path: str, unique_id: str, fqn: List[str], type:
- * dbt.contracts.graph.unparsed.ExposureType, owner: dbt.contracts.graph.unparsed.Owner,
- * description: str = '', label: Union[str, NoneType] = None, maturity:
- * Union[dbt.contracts.graph.unparsed.MaturityType, NoneType] = None, meta: Dict[str, Any] =
- * <factory>, tags: List[str] = <factory>, config:
- * dbt.contracts.graph.model_config.ExposureConfig = <factory>, unrendered_config: Dict[str,
- * Any] = <factory>, url: Union[str, NoneType] = None, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, created_at: float = <factory>)
- */
 data class Exposure (
     val config: ExposureConfig? = null,
 
@@ -1635,16 +1188,13 @@ data class Exposure (
     val url: String? = null
 )
 
-/**
- * ExposureConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True)
- */
 data class ExposureConfig (
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
     val enabled: Boolean? = null
 )
 
-/**
- * DependsOn(macros: List[str] = <factory>, nodes: List[str] = <factory>)
- */
 data class ExposureDependsOn (
     val macros: List<String>? = null,
     val nodes: List<String>? = null
@@ -1680,10 +1230,6 @@ enum class ExposureType(val value: String) {
     }
 }
 
-/**
- * Group(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path: str,
- * original_file_path: str, unique_id: str, owner: dbt.contracts.graph.unparsed.Owner)
- */
 data class Group (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val name: String,
@@ -1718,16 +1264,6 @@ enum class GroupResourceType(val value: String) {
     }
 }
 
-/**
- * Macro(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path: str,
- * original_file_path: str, unique_id: str, macro_sql: str, depends_on:
- * dbt.contracts.graph.nodes.MacroDependsOn = <factory>, description: str = '', meta:
- * Dict[str, Any] = <factory>, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, arguments:
- * List[dbt.contracts.graph.unparsed.MacroArgument] = <factory>, created_at: float =
- * <factory>, supported_languages: Union[List[dbt.node_types.ModelLanguage], NoneType] =
- * None)
- */
 data class Macro (
     val arguments: List<MacroArgument>? = null,
 
@@ -1770,9 +1306,6 @@ data class Macro (
     val uniqueId: String
 )
 
-/**
- * MacroArgument(name: str, type: Union[str, NoneType] = None, description: str = '')
- */
 data class MacroArgument (
     val description: String? = null,
 
@@ -1782,9 +1315,6 @@ data class MacroArgument (
     val type: String? = null
 )
 
-/**
- * Used only in the Macro class
- */
 data class MacroDependsOn (
     val macros: List<String>? = null
 )
@@ -1815,8 +1345,6 @@ enum class SupportedLanguage(val value: String) {
 
 /**
  * Metadata about the manifest
- *
- * Metadata for the manifest.
  */
 data class ManifestMetadata (
     /**
@@ -1864,20 +1392,6 @@ data class ManifestMetadata (
     val userId: String? = null
 )
 
-/**
- * Metric(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path: str,
- * original_file_path: str, unique_id: str, fqn: List[str], description: str, label: str,
- * type: dbt_semantic_interfaces.type_enums.metric_type.MetricType, type_params:
- * dbt.contracts.graph.nodes.MetricTypeParams, filter:
- * Union[dbt.contracts.graph.nodes.WhereFilter, NoneType] = None, metadata:
- * Union[dbt.contracts.graph.semantic_models.SourceFileMetadata, NoneType] = None, meta:
- * Dict[str, Any] = <factory>, tags: List[str] = <factory>, config:
- * dbt.contracts.graph.model_config.MetricConfig = <factory>, unrendered_config: Dict[str,
- * Any] = <factory>, sources: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, metrics: List[List[str]] =
- * <factory>, created_at: float = <factory>, group: Union[str, NoneType] = None)
- */
 data class Metric (
     val config: MetricConfig? = null,
 
@@ -1890,7 +1404,7 @@ data class Metric (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val description: String,
 
-    val filter: WhereFilter? = null,
+    val filter: WhereFilterIntersection? = null,
 
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val fqn: List<String>,
@@ -1937,11 +1451,10 @@ data class Metric (
     val unrenderedConfig: Map<String, Any?>? = null
 )
 
-/**
- * MetricConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, group: Union[str,
- * NoneType] = None)
- */
 data class MetricConfig (
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
     val enabled: Boolean? = null,
     val group: String? = null
 )
@@ -1974,184 +1487,13 @@ enum class MetricType(val value: String) {
     }
 }
 
-/**
- * AnalysisNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.NodeConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>)
- *
- * SingularTestNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.TestConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>)
- *
- * HookNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.NodeConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>, index:
- * Union[int, NoneType] = None)
- *
- * ModelNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.NodeConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>, access:
- * dbt.node_types.AccessType = <AccessType.Protected: 'protected'>, constraints:
- * List[dbt.contracts.graph.nodes.ModelLevelConstraint] = <factory>, version: Union[str,
- * float, NoneType] = None, latest_version: Union[str, float, NoneType] = None,
- * deprecation_date: Union[datetime.datetime, NoneType] = None, defer_relation:
- * Union[dbt.contracts.graph.nodes.DeferRelation, NoneType] = None)
- *
- * RPCNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.NodeConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>)
- *
- * SqlNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.NodeConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>)
- *
- * GenericTestNode(test_metadata: dbt.contracts.graph.nodes.TestMetadata, database:
- * Union[str, NoneType], schema: str, name: str, resource_type: dbt.node_types.NodeType,
- * package_name: str, path: str, original_file_path: str, unique_id: str, fqn: List[str],
- * alias: str, checksum: dbt.contracts.files.FileHash, config:
- * dbt.contracts.graph.model_config.TestConfig = <factory>, _event_status: Dict[str, Any] =
- * <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>, column_name:
- * Union[str, NoneType] = None, file_key_name: Union[str, NoneType] = None, attached_node:
- * Union[str, NoneType] = None)
- *
- * SnapshotNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.SnapshotConfig, _event_status: Dict[str, Any] =
- * <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', language: str = 'sql', refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, sources: List[List[str]] =
- * <factory>, metrics: List[List[str]] = <factory>, depends_on:
- * dbt.contracts.graph.nodes.DependsOn = <factory>, compiled_path: Union[str, NoneType] =
- * None, compiled: bool = False, compiled_code: Union[str, NoneType] = None,
- * extra_ctes_injected: bool = False, extra_ctes:
- * List[dbt.contracts.graph.nodes.InjectedCTE] = <factory>, _pre_injected_sql: Union[str,
- * NoneType] = None, contract: dbt.contracts.graph.nodes.Contract = <factory>,
- * defer_relation: Union[dbt.contracts.graph.nodes.DeferRelation, NoneType] = None)
- *
- * SeedNode(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], alias: str, checksum: dbt.contracts.files.FileHash,
- * config: dbt.contracts.graph.model_config.SeedConfig = <factory>, _event_status: Dict[str,
- * Any] = <factory>, tags: List[str] = <factory>, description: str = '', columns: Dict[str,
- * dbt.contracts.graph.nodes.ColumnInfo] = <factory>, meta: Dict[str, Any] = <factory>,
- * group: Union[str, NoneType] = None, docs: dbt.contracts.graph.unparsed.Docs = <factory>,
- * patch_path: Union[str, NoneType] = None, build_path: Union[str, NoneType] = None,
- * deferred: bool = False, unrendered_config: Dict[str, Any] = <factory>, created_at: float
- * = <factory>, config_call_dict: Dict[str, Any] = <factory>, relation_name: Union[str,
- * NoneType] = None, raw_code: str = '', root_path: Union[str, NoneType] = None, depends_on:
- * dbt.contracts.graph.nodes.MacroDependsOn = <factory>, defer_relation:
- * Union[dbt.contracts.graph.nodes.DeferRelation, NoneType] = None)
- */
 data class Node (
+    @get:JsonProperty("_event_status")@field:JsonProperty("_event_status")
+    val eventStatus: Map<String, Any?>? = null,
+
+    @get:JsonProperty("_pre_injected_sql")@field:JsonProperty("_pre_injected_sql")
+    val preInjectedSql: String? = null,
+
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val alias: String,
 
@@ -2272,65 +1614,10 @@ data class Node (
     val rootPath: String? = null
 )
 
-/**
- * NodeConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, alias: Union[str,
- * NoneType] = None, schema: Union[str, NoneType] = None, database: Union[str, NoneType] =
- * None, tags: Union[List[str], str] = <factory>, meta: Dict[str, Any] = <factory>, group:
- * Union[str, NoneType] = None, materialized: str = 'view', incremental_strategy: Union[str,
- * NoneType] = None, persist_docs: Dict[str, Any] = <factory>, post_hook:
- * List[dbt.contracts.graph.model_config.Hook] = <factory>, pre_hook:
- * List[dbt.contracts.graph.model_config.Hook] = <factory>, quoting: Dict[str, Any] =
- * <factory>, column_types: Dict[str, Any] = <factory>, full_refresh: Union[bool, NoneType]
- * = None, unique_key: Union[str, List[str], NoneType] = None, on_schema_change: Union[str,
- * NoneType] = 'ignore', on_configuration_change:
- * dbt.contracts.graph.model_config.OnConfigurationChangeOption = <factory>, grants:
- * Dict[str, Any] = <factory>, packages: List[str] = <factory>, docs:
- * dbt.contracts.graph.unparsed.Docs = <factory>, contract:
- * dbt.contracts.graph.model_config.ContractConfig = <factory>)
- *
- * TestConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, alias: Union[str,
- * NoneType] = None, schema: Union[str, NoneType] = 'dbt_test__audit', database: Union[str,
- * NoneType] = None, tags: Union[List[str], str] = <factory>, meta: Dict[str, Any] =
- * <factory>, group: Union[str, NoneType] = None, materialized: str = 'test', severity:
- * dbt.contracts.graph.model_config.Severity = 'ERROR', store_failures: Union[bool,
- * NoneType] = None, where: Union[str, NoneType] = None, limit: Union[int, NoneType] = None,
- * fail_calc: str = 'count(*)', warn_if: str = '!= 0', error_if: str = '!= 0')
- *
- * SnapshotConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, alias:
- * Union[str, NoneType] = None, schema: Union[str, NoneType] = None, database: Union[str,
- * NoneType] = None, tags: Union[List[str], str] = <factory>, meta: Dict[str, Any] =
- * <factory>, group: Union[str, NoneType] = None, materialized: str = 'snapshot',
- * incremental_strategy: Union[str, NoneType] = None, persist_docs: Dict[str, Any] =
- * <factory>, post_hook: List[dbt.contracts.graph.model_config.Hook] = <factory>, pre_hook:
- * List[dbt.contracts.graph.model_config.Hook] = <factory>, quoting: Dict[str, Any] =
- * <factory>, column_types: Dict[str, Any] = <factory>, full_refresh: Union[bool, NoneType]
- * = None, unique_key: Union[str, NoneType] = None, on_schema_change: Union[str, NoneType] =
- * 'ignore', on_configuration_change:
- * dbt.contracts.graph.model_config.OnConfigurationChangeOption = <factory>, grants:
- * Dict[str, Any] = <factory>, packages: List[str] = <factory>, docs:
- * dbt.contracts.graph.unparsed.Docs = <factory>, contract:
- * dbt.contracts.graph.model_config.ContractConfig = <factory>, strategy: Union[str,
- * NoneType] = None, target_schema: Union[str, NoneType] = None, target_database: Union[str,
- * NoneType] = None, updated_at: Union[str, NoneType] = None, check_cols: Union[str,
- * List[str], NoneType] = None)
- *
- * SeedConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True, alias: Union[str,
- * NoneType] = None, schema: Union[str, NoneType] = None, database: Union[str, NoneType] =
- * None, tags: Union[List[str], str] = <factory>, meta: Dict[str, Any] = <factory>, group:
- * Union[str, NoneType] = None, materialized: str = 'seed', incremental_strategy: Union[str,
- * NoneType] = None, persist_docs: Dict[str, Any] = <factory>, post_hook:
- * List[dbt.contracts.graph.model_config.Hook] = <factory>, pre_hook:
- * List[dbt.contracts.graph.model_config.Hook] = <factory>, quoting: Dict[str, Any] =
- * <factory>, column_types: Dict[str, Any] = <factory>, full_refresh: Union[bool, NoneType]
- * = None, unique_key: Union[str, List[str], NoneType] = None, on_schema_change: Union[str,
- * NoneType] = 'ignore', on_configuration_change:
- * dbt.contracts.graph.model_config.OnConfigurationChangeOption = <factory>, grants:
- * Dict[str, Any] = <factory>, packages: List[str] = <factory>, docs:
- * dbt.contracts.graph.unparsed.Docs = <factory>, contract:
- * dbt.contracts.graph.model_config.ContractConfig = <factory>, quote_columns: Union[bool,
- * NoneType] = None)
- */
 data class NodeConfig (
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
     val alias: String? = null,
 
     @get:JsonProperty("column_types")@field:JsonProperty("column_types")
@@ -2393,6 +1680,7 @@ data class NodeConfig (
     val warnIf: String? = null,
 
     val where: String? = null,
+    val access: Access? = null,
 
     @get:JsonProperty("check_cols")@field:JsonProperty("check_cols")
     val checkCols: UniqueKey? = null,
@@ -2407,6 +1695,8 @@ data class NodeConfig (
 
     @get:JsonProperty("updated_at")@field:JsonProperty("updated_at")
     val updatedAt: String? = null,
+
+    val delimiter: String? = null,
 
     @get:JsonProperty("quote_columns")@field:JsonProperty("quote_columns")
     val quoteColumns: Boolean? = null
@@ -2437,21 +1727,66 @@ enum class NodeResourceType(val value: String) {
     }
 }
 
-/**
- * SemanticModel(name: str, resource_type: dbt.node_types.NodeType, package_name: str, path:
- * str, original_file_path: str, unique_id: str, fqn: List[str], model: str, node_relation:
- * Union[dbt.contracts.graph.nodes.NodeRelation, NoneType], description: Union[str,
- * NoneType] = None, label: Union[str, NoneType] = None, defaults:
- * Union[dbt.contracts.graph.semantic_models.Defaults, NoneType] = None, entities:
- * Sequence[dbt.contracts.graph.semantic_models.Entity] = <factory>, measures:
- * Sequence[dbt.contracts.graph.semantic_models.Measure] = <factory>, dimensions:
- * Sequence[dbt.contracts.graph.semantic_models.Dimension] = <factory>, metadata:
- * Union[dbt.contracts.graph.semantic_models.SourceFileMetadata, NoneType] = None,
- * depends_on: dbt.contracts.graph.nodes.DependsOn = <factory>, refs:
- * List[dbt.contracts.graph.nodes.RefArgs] = <factory>, created_at: float = <factory>,
- * config: dbt.contracts.graph.model_config.SemanticModelConfig = <factory>, primary_entity:
- * Union[str, NoneType] = None)
- */
+data class SavedQuery (
+    val config: SavedQueryConfig? = null,
+
+    @get:JsonProperty("created_at")@field:JsonProperty("created_at")
+    val createdAt: Double? = null,
+
+    @get:JsonProperty("depends_on")@field:JsonProperty("depends_on")
+    val dependsOn: ExposureDependsOn? = null,
+
+    val description: String? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
+    val fqn: List<String>,
+
+    val group: String? = null,
+
+    @get:JsonProperty("group_bys", required=true)@field:JsonProperty("group_bys", required=true)
+    val groupBys: List<String>,
+
+    val label: String? = null,
+    val metadata: SourceFileMetadata? = null,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
+    val metrics: List<String>,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
+    val name: String,
+
+    @get:JsonProperty("original_file_path", required=true)@field:JsonProperty("original_file_path", required=true)
+    val originalFilePath: String,
+
+    @get:JsonProperty("package_name", required=true)@field:JsonProperty("package_name", required=true)
+    val packageName: String,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
+    val path: String,
+
+    val refs: List<RefArgs>? = null,
+
+    @get:JsonProperty("resource_type", required=true)@field:JsonProperty("resource_type", required=true)
+    val resourceType: DisabledResourceType,
+
+    @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
+    val uniqueId: String,
+
+    @get:JsonProperty("unrendered_config")@field:JsonProperty("unrendered_config")
+    val unrenderedConfig: Map<String, Any?>? = null,
+
+    val where: WhereFilterIntersection? = null
+)
+
+data class SavedQueryConfig (
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
+    val enabled: Boolean? = null,
+    val group: String? = null,
+    val meta: Map<String, Any?>? = null
+)
+
 data class SemanticModel (
     val config: SemanticModelConfig? = null,
 
@@ -2470,6 +1805,7 @@ data class SemanticModel (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val fqn: List<String>,
 
+    val group: String? = null,
     val label: String? = null,
     val measures: List<Measure>? = null,
     val metadata: SourceFileMetadata? = null,
@@ -2501,31 +1837,25 @@ data class SemanticModel (
     val resourceType: DisabledResourceType,
 
     @get:JsonProperty("unique_id", required=true)@field:JsonProperty("unique_id", required=true)
-    val uniqueId: String
+    val uniqueId: String,
+
+    @get:JsonProperty("unrendered_config")@field:JsonProperty("unrendered_config")
+    val unrenderedConfig: Map<String, Any?>? = null
 )
 
-/**
- * SemanticModelConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True)
- */
 data class SemanticModelConfig (
-    val enabled: Boolean? = null
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
+    val enabled: Boolean? = null,
+    val group: String? = null,
+    val meta: Map<String, Any?>? = null
 )
 
-/**
- * SourceDefinition(database: Union[str, NoneType], schema: str, name: str, resource_type:
- * dbt.node_types.NodeType, package_name: str, path: str, original_file_path: str,
- * unique_id: str, fqn: List[str], source_name: str, source_description: str, loader: str,
- * identifier: str, _event_status: Dict[str, Any] = <factory>, quoting:
- * dbt.contracts.graph.unparsed.Quoting = <factory>, loaded_at_field: Union[str, NoneType] =
- * None, freshness: Union[dbt.contracts.graph.unparsed.FreshnessThreshold, NoneType] = None,
- * external: Union[dbt.contracts.graph.unparsed.ExternalTable, NoneType] = None,
- * description: str = '', columns: Dict[str, dbt.contracts.graph.nodes.ColumnInfo] =
- * <factory>, meta: Dict[str, Any] = <factory>, source_meta: Dict[str, Any] = <factory>,
- * tags: List[str] = <factory>, config: dbt.contracts.graph.model_config.SourceConfig =
- * <factory>, patch_path: Union[str, NoneType] = None, unrendered_config: Dict[str, Any] =
- * <factory>, relation_name: Union[str, NoneType] = None, created_at: float = <factory>)
- */
 data class SourceDefinition (
+    @get:JsonProperty("_event_status")@field:JsonProperty("_event_status")
+    val eventStatus: Map<String, Any?>? = null,
+
     val columns: Map<String, ColumnInfo>? = null,
     val config: SourceConfig? = null,
 
@@ -2596,10 +1926,10 @@ data class SourceDefinition (
     val unrenderedConfig: Map<String, Any?>? = null
 )
 
-/**
- * SourceConfig(_extra: Dict[str, Any] = <factory>, enabled: bool = True)
- */
 data class SourceConfig (
+    @get:JsonProperty("_extra")@field:JsonProperty("_extra")
+    val extra: Map<String, Any?>? = null,
+
     val enabled: Boolean? = null
 )
 
