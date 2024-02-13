@@ -52,7 +52,7 @@ class ManifestService(project: Project): ReferencesProviderInterface {
             return ""
         } else {
             val nodes = (manifest as Manifest).nodes
-            val uniqueId = "${(manifest as Manifest).metadata.projectName}.${element.text.trim('\"', '\'')}"
+            val uniqueId = "${(manifest as Manifest).getProjectName()}.${element.text.trim('\"', '\'')}"
             val node = if ("model.$uniqueId" in nodes) {
                 nodes["model.$uniqueId"]
             } else if ("seed.$uniqueId" in nodes) {
@@ -76,7 +76,7 @@ class ManifestService(project: Project): ReferencesProviderInterface {
             val source = """source\(['"]([^'"]*)['"],\s*["']([^"']*)['"]\)""".toRegex().replace(element.parent.text) { matchResult ->
                 "${matchResult.groupValues[1]}.${matchResult.groupValues[2]}"
             }
-            val uniqueId = "source.${(manifest as Manifest).metadata.projectName}.$source"
+            val uniqueId = "source.${(manifest as Manifest).getProjectName()}.$source"
             if (uniqueId in sources) {
                 element.project.basePath + "/" + sources[uniqueId]?.originalFilePath
             } else {
