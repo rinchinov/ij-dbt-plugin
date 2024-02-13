@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.node.*
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.*
+import com.jetbrains.rd.util.first
 
 
 @Suppress("UNCHECKED_CAST")
@@ -120,8 +121,8 @@ data class Manifest (
     /**
      * The saved queries defined in the dbt project
      */
-    @get:JsonProperty("saved_queries", required=true)@field:JsonProperty("saved_queries", required=true)
-    val savedQueries: Map<String, SavedQuery>,
+    @get:JsonProperty("saved_queries")@field:JsonProperty("saved_queries")
+    val savedQueries: Map<String, SavedQuery>?,
 
     /**
      * The selectors defined in selectors.yml
@@ -132,8 +133,8 @@ data class Manifest (
     /**
      * The semantic models defined in the dbt project
      */
-    @get:JsonProperty("semantic_models", required=true)@field:JsonProperty("semantic_models", required=true)
-    val semanticModels: Map<String, SemanticModel>,
+    @get:JsonProperty("semantic_models", required=true)@field:JsonProperty("semantic_models")
+    val semanticModels: Map<String, SemanticModel>?,
 
     /**
      * The sources defined in the dbt project and its dependencies
@@ -142,7 +143,9 @@ data class Manifest (
     val sources: Map<String, SourceDefinition>
 ){
     fun toJson() = mapperManifest.writeValueAsString(this)
-
+    fun getProjectName(): String{
+        return metadata.projectName ?: nodes.first().value.packageName
+    }
     companion object {
         fun fromJson(json: String) = mapperManifest.readValue<Manifest>(json)
     }

@@ -27,7 +27,7 @@ val mapperRunResults = jacksonObjectMapper().apply {
     convert(Status::class, { Status.fromValue(it.asText()) }, { "\"${it.value}\"" })
 }
 
-data class RunResultsV5 (
+data class RunResults (
     val args: Map<String, Any?>? = null,
 
     @get:JsonProperty("elapsed_time", required=true)@field:JsonProperty("elapsed_time", required=true)
@@ -42,7 +42,7 @@ data class RunResultsV5 (
     fun toJson() = mapperRunResults.writeValueAsString(this)
 
     companion object {
-        fun fromJson(json: String) = mapperRunResults.readValue<RunResultsV5>(json)
+        fun fromJson(json: String) = mapperRunResults.readValue<RunResults>(json)
     }
 }
 
