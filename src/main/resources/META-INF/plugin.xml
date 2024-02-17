@@ -28,6 +28,13 @@
         <psi.referenceContributor
                 implementation="com.github.rinchinov.ijdbtplugin.ref.DbtPsiReferenceContributor"
                 language="DjangoTemplate"/>
+        <lang.elementManipulator
+                forClass="com.jetbrains.jinja2.template.psi.impl.Jinja2MemberNameImpl"
+                implementationClass="com.github.rinchinov.ijdbtplugin.ref.Jinja2MemberNameManipulator"/>
+        <lang.elementManipulator
+                forClass="com.jetbrains.jinja2.template.psi.impl.Jinja2VariableReferenceImpl"
+                implementationClass="com.github.rinchinov.ijdbtplugin.ref.Jinja2VariableReferenceManipulator"/>
+
     </extensions>
 
 </idea-plugin>

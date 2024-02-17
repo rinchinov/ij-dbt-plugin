@@ -27,13 +27,11 @@ class ManifestService(project: Project): ReferencesProviderInterface {
     init {
         parseManifest()
     }
-
-    var manifest: Manifest? = null
+    private var manifest: Manifest? = null
         set(value) {
             field = value
             lastUpdated = LocalDateTime.now()
         }
-
 
     override fun toString(): String = "Data:, Last Updated: $lastUpdated"
 
@@ -47,41 +45,65 @@ class ManifestService(project: Project): ReferencesProviderInterface {
         dbtNotifications.sendNotification("Manifest reloaded!", manifest.toString(), NotificationType.INFORMATION)
     }
 
-    override fun modelReferenceFileByElement(element: PsiElement): String {
+    private fun getPackageInfo(packageName: String?): Pair<String, String> {
+        return if (packageName == null || packageName == "" || (manifest as Manifest).metadata.projectName == packageName) {
+            Pair((manifest as Manifest).metadata.projectName ?: "", "/")
+        }
+        else {
+            // to do get it from project yml
+            // packages-install-path: dbt_packages
+            // https://docs.getdbt.com/reference/project-configs/packages-install-path
+            Pair(packageName, "/dbt_packages/$packageName/")
+        }
+    }
+
+    override fun modelReferenceFileByElement(packageName: String?, uniqueId: String, currentVersion: Int?, element: PsiElement): String {
         if (manifest == null) {
             return ""
         } else {
             val nodes = (manifest as Manifest).nodes
-            val uniqueId = "${(manifest as Manifest).getProjectName()}.${element.text.trim('\"', '\'')}"
-            val node = if ("model.$uniqueId" in nodes) {
-                nodes["model.$uniqueId"]
-            } else if ("seed.$uniqueId" in nodes) {
-                nodes["seed.$uniqueId"]
+            val packageInfo = getPackageInfo(packageName)
+            val packageId = packageInfo.first
+            val node = if ("model.$packageId.$uniqueId" in nodes) {
+                nodes["model.$packageId.$uniqueId"]
+            } else if ("seed.$packageId.$uniqueId" in nodes) {
+                nodes["seed.$packageId.$uniqueId"]
             } else {
-                val latestVersion = nodes.filterKeys { it.startsWith("model.$uniqueId") }.first().value.latestVersion?.toJson()
+                val latestVersion = nodes.filterKeys { it.startsWith("model.$packageId.$uniqueId") }.first().value.latestVersion?.toJson()
                     ?.toInt()
-                val currentVersion = """(version|v)=["']?(\d+)["']?""".toRegex().find(element.parent.text)?.groupValues?.get(2)?.toInt()
                 val version = currentVersion ?: latestVersion
-                nodes["model.$uniqueId.v$version"]
+                nodes["model.$packageId.$uniqueId.v$version"]
             }
-            return element.project.basePath + "/" + node?.originalFilePath
+            return element.project.basePath + packageInfo.second + node?.originalFilePath
         }
     }
 
-    override fun sourceReferenceFileByElement(element: PsiElement): String {
+    override fun sourceReferenceFileByElement(uniqueId: String, element: PsiElement): String {
         return if (manifest == null) {
             ""
         } else {
-            val sources = (manifest as Manifest).sources
-            val source = """source\(['"]([^'"]*)['"],\s*["']([^"']*)['"]\)""".toRegex().replace(element.parent.text) { matchResult ->
-                "${matchResult.groupValues[1]}.${matchResult.groupValues[2]}"
+            val matchedSources = (manifest as Manifest).sources.filterKeys {
+                it.endsWith(uniqueId)
             }
-            val uniqueId = "source.${(manifest as Manifest).getProjectName()}.$source"
-            if (uniqueId in sources) {
-                element.project.basePath + "/" + sources[uniqueId]?.originalFilePath
-            } else {
+            if (matchedSources.isEmpty()){
                 ""
             }
+            else {
+                val source = matchedSources.first().value
+                val packageInfo = getPackageInfo(source.packageName)
+                element.project.basePath + packageInfo.second + source.originalFilePath
+            }
+        }
+    }
+    override fun macroReferenceFileByElement(packageName: String, macroName: String, element: PsiElement): String {
+        return if (manifest == null) {
+            ""
+        } else {
+            val macros = (manifest as Manifest).macros
+            val packageInfo = getPackageInfo(packageName)
+            val packageId = packageInfo.first
+            val macro = macros["macro.$packageId.$macroName"]
+            element.project.basePath + packageInfo.second + macro?.originalFilePath
         }
     }
 }
