@@ -65,38 +65,38 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         gbc.weightx = 1.0 // Expand fields horizontally
         mainPanel.add(dbtInterpreterPath, gbc)
 
-        // Application Settings Section
-        gbc.gridx = 0 // Reset to first column
-        gbc.gridy++
-        gbc.gridwidth = 2 // Span two columns for section label
-        gbc.weightx = 0.0 // Do not expand section label horizontally
-        mainPanel.add(JLabel("Application Settings"), gbc)
-
-        gbc.gridy++
-        gbc.gridwidth = 1 // Reset to one column for labels
-        gbc.weightx = 0.0 // Do not expand labels horizontally
-        mainPanel.add(JLabel("Shell path:"), gbc)
-        gbc.gridx = 1 // Second column for input fields
-        gbc.weightx = 1.0 // Expand fields horizontally
-        mainPanel.add(shellPathField, gbc)
-
-        gbc.gridx = 0
-        gbc.gridy++
-        mainPanel.add(JLabel("Default Tab name:"), gbc)
-        gbc.gridx = 1
-        mainPanel.add(defaultTabNameField, gbc)
-
-        gbc.gridx = 0
-        gbc.gridy++
-        gbc.gridwidth = 2 // Checkbox to span two columns
-        mainPanel.add(audibleBellCheckBox, gbc)
-
-        // Filler at the end to push everything to the top
-        gbc.gridx = 0
-        gbc.gridy++
-        gbc.gridwidth = 2
-        gbc.weighty = 1.0 // Extra vertical space assigned to the filler
-        gbc.fill = GridBagConstraints.BOTH // Fill both horizontally and vertically
+//        // Application Settings Section
+//        gbc.gridx = 0 // Reset to first column
+//        gbc.gridy++
+//        gbc.gridwidth = 2 // Span two columns for section label
+//        gbc.weightx = 0.0 // Do not expand section label horizontally
+//        mainPanel.add(JLabel("Application Settings"), gbc)
+//
+//        gbc.gridy++
+//        gbc.gridwidth = 1 // Reset to one column for labels
+//        gbc.weightx = 0.0 // Do not expand labels horizontally
+//        mainPanel.add(JLabel("Shell path:"), gbc)
+//        gbc.gridx = 1 // Second column for input fields
+//        gbc.weightx = 1.0 // Expand fields horizontally
+//        mainPanel.add(shellPathField, gbc)
+//
+//        gbc.gridx = 0
+//        gbc.gridy++
+//        mainPanel.add(JLabel("Default Tab name:"), gbc)
+//        gbc.gridx = 1
+//        mainPanel.add(defaultTabNameField, gbc)
+//
+//        gbc.gridx = 0
+//        gbc.gridy++
+//        gbc.gridwidth = 2 // Checkbox to span two columns
+//        mainPanel.add(audibleBellCheckBox, gbc)
+//
+//        // Filler at the end to push everything to the top
+//        gbc.gridx = 0
+//        gbc.gridy++
+//        gbc.gridwidth = 2
+//        gbc.weighty = 1.0 // Extra vertical space assigned to the filler
+//        gbc.fill = GridBagConstraints.BOTH // Fill both horizontally and vertically
         mainPanel.add(Box.createGlue(), gbc)
     }
     override fun createComponent(): JComponent {
