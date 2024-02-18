@@ -1,5 +1,6 @@
 package com.github.rinchinov.ijdbtplugin.services
 
+import com.github.rinchinov.ijdbtplugin.extentions.ToolWindowUpdater
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -16,6 +17,7 @@ import java.nio.file.Paths
 class ProjectConfigurations(private val project: Project) {
     private val settings = project.service<ProjectSettings>()
     private val dbtNotifications = project.service<Notifications>()
+    private val toolWindowUpdater = project.service<ToolWindowUpdater>()
     val dbtProjectConfig = DbtProjectConfig(
         "",
         1,
@@ -30,6 +32,9 @@ class ProjectConfigurations(private val project: Project) {
         var profile: String,
         var targetPath: String
     )
+    init {
+        reloadDbtProjectSettings()
+    }
     fun reloadDbtProjectSettings(){
         val filePath = dbtProjectPath().absolutePath.toString()
         try {
@@ -51,20 +56,22 @@ class ProjectConfigurations(private val project: Project) {
         } catch (e: Exception) {
             dbtNotifications.sendNotification("Error loading YAML file", ": ${e.message}\nTBD Instruction and link to the doc", NotificationType.ERROR)
         }
+        toolWindowUpdater.notifyProjectConfigurationsChangeListeners(this)
     }
-    class SettingPath(relativePath: String, basePath: String?) {
-        var absolutePath: Path = Paths.get(basePath.toString(), relativePath)
+    class SettingPath(relativePath: String, basePath: String) {
+        var relativePath: Path = Paths.get(relativePath)
+        var absolutePath: Path = Paths.get(basePath, relativePath)
         var absoluteDir: Path = absolutePath.parent
-        constructor(relativePath: String, dir: String, basePath: String?) : this(
-            relativePath,
-            Paths.get(basePath.toString(), dir).toString()
+        constructor(relativePath: String, dir: String, basePath: String) : this(
+            Paths.get(dir, relativePath).toString(),
+            basePath
         )
     }
     fun sdkPath(): SettingPath {
         return SettingPath(settings.getDbtInterpreterPath(), "")
     }
     fun dbtProjectPath(): SettingPath {
-        return SettingPath(settings.getDbtProjectPath(), project.basePath)
+        return SettingPath(settings.getDbtProjectPath(), project.basePath?: "")
     }
     fun logPath(): SettingPath {
         return SettingPath("dbt.log", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
@@ -76,6 +83,6 @@ class ProjectConfigurations(private val project: Project) {
         return SettingPath("semantic_manifest.json", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
     }
     fun runResultsPath(): SettingPath {
-        return SettingPath("run_results.json", dbtProjectConfig.targetPath, project.basePath)
+        return SettingPath("run_results.json", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
     }
 }

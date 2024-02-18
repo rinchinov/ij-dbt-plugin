@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.Manifest
+import com.github.rinchinov.ijdbtplugin.extentions.ToolWindowUpdater
 import com.intellij.psi.PsiElement
 import com.github.rinchinov.ijdbtplugin.ref.ReferencesProviderInterface
 import com.github.rinchinov.ijdbtplugin.services.Executor
@@ -17,13 +18,14 @@ import java.time.Duration
 
 @Service(Service.Level.PROJECT)
 class ManifestService(project: Project): ReferencesProviderInterface {
-    private var lastUpdated: LocalDateTime = LocalDateTime.of(1, 1, 1, 0, 0)
+    var lastUpdated: LocalDateTime = LocalDateTime.of(1, 1, 1, 0, 0)
     companion object {
         const val UPDATE_INTERVAL = 5
     }
     private val projectConfigurations = project.service<ProjectConfigurations>()
     private val executor = project.service<Executor>()
     private val dbtNotifications = project.service<Notifications>()
+    private val toolWindowUpdater = project.service<ToolWindowUpdater>()
     init {
         parseManifest()
     }
@@ -31,11 +33,12 @@ class ManifestService(project: Project): ReferencesProviderInterface {
         set(value) {
             field = value
             lastUpdated = LocalDateTime.now()
+            toolWindowUpdater.notifyManifestChangeListeners(this)
         }
 
     override fun toString(): String = "Data:, Last Updated: $lastUpdated"
 
-    fun parseManifest() {
+    private fun parseManifest() {
         if (Duration.between(lastUpdated, LocalDateTime.now()).toMinutes() <= UPDATE_INTERVAL) {
             return
         }
@@ -56,8 +59,13 @@ class ManifestService(project: Project): ReferencesProviderInterface {
             Pair(packageName, "/dbt_packages/$packageName/")
         }
     }
+    fun getNodesCount(): Int? = manifest?.nodes?.size
+    fun getMacrosCount(): Int? = manifest?.macros?.size
+    fun getSourcesCount(): Int? = manifest?.sources?.size
+    fun getStatus(): String = if (manifest == null) "Manifest parse failed" else "Manifest successfully parsed"
 
     override fun modelReferenceFileByElement(packageName: String?, uniqueId: String, currentVersion: Int?, element: PsiElement): String {
+        parseManifest()
         if (manifest == null) {
             return ""
         } else {
@@ -79,6 +87,7 @@ class ManifestService(project: Project): ReferencesProviderInterface {
     }
 
     override fun sourceReferenceFileByElement(uniqueId: String, element: PsiElement): String {
+        parseManifest()
         return if (manifest == null) {
             ""
         } else {
@@ -96,6 +105,7 @@ class ManifestService(project: Project): ReferencesProviderInterface {
         }
     }
     override fun macroReferenceFileByElement(packageName: String, macroName: String, element: PsiElement): String {
+        parseManifest()
         return if (manifest == null) {
             ""
         } else {
