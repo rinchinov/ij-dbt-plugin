@@ -39,7 +39,7 @@ class ToolMainWindow : ToolWindowFactory {
         )
     }
 
-    class ProjectInfo(toolWindow: ToolWindow): MyDataChangeListener {
+    class ProjectInfo(private val toolWindow: ToolWindow): MyDataChangeListener {
         private val updater = toolWindow.project.service<ToolWindowUpdater>()
         private var options = NonEditableTableModel().apply {
             addColumn("")
@@ -79,6 +79,12 @@ class ToolMainWindow : ToolWindowFactory {
                 }
             )
             add(scrollPane)
+            onManifestChanged(
+                toolWindow.project.service<ManifestService>()
+            )
+            onProjectConfigurationsChanged(
+                toolWindow.project.service<ProjectConfigurations>()
+            )
         }
         override fun onManifestChanged(manifest: ManifestService) {
             SwingUtilities.invokeLater {

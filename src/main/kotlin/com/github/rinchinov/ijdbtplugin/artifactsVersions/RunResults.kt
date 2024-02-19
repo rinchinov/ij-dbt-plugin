@@ -21,7 +21,7 @@ private fun <T> ObjectMapper.convert(k: kotlin.reflect.KClass<*>, fromJson: (Jso
 })
 
 val mapperRunResults = jacksonObjectMapper().apply {
-    propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
+    propertyNamingStrategy = PropertyNamingStrategies.LOWER_CAMEL_CASE
     setSerializationInclusion(JsonInclude.Include.NON_NULL)
     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     convert(Status::class, { Status.fromValue(it.asText()) }, { "\"${it.value}\"" })
