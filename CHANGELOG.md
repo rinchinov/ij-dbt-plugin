@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1-beta-2] - 2024-02-20
+
+-- Fixed blocking updates of manifest
+-- Restrict compatibility to pycharm professional only
+
 ## [0.0.1-beta-1] - 2024-02-19
 
 - Bump actions/upload-artifact from 3 to 4 by @dependabot in https://github.com/rinchinov/ij-dbt-plugin/pull/2
