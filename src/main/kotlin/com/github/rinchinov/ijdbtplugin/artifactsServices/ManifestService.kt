@@ -14,6 +14,7 @@ import com.jetbrains.rd.util.first
 import java.io.File
 import java.time.LocalDateTime
 import java.time.Duration
+import kotlinx.coroutines.*
 
 
 @Service(Service.Level.PROJECT)
@@ -38,14 +39,17 @@ class ManifestService(project: Project): ReferencesProviderInterface {
 
     override fun toString(): String = "Data:, Last Updated: $lastUpdated"
 
-    private fun parseManifest() {
+    private fun parseManifest() = runBlocking {
         if (Duration.between(lastUpdated, LocalDateTime.now()).toMinutes() <= UPDATE_INTERVAL) {
-            return
+            return@runBlocking
         }
-        executor.executeDbt(listOf("parse"), mapOf()).toString()
-        val jsonString = File(projectConfigurations.manifestPath().absolutePath.toString()).readText(Charsets.UTF_8)
-        manifest = Manifest.fromJson(jsonString)
-        dbtNotifications.sendNotification("Manifest reloaded!", manifest.toString(), NotificationType.INFORMATION)
+        launch(Dispatchers.Default) {
+            executor.executeDbt(listOf("parse"), mapOf()).toString()
+            val jsonString = File(projectConfigurations.manifestPath().absolutePath.toString()).readText(Charsets.UTF_8)
+            manifest = Manifest.fromJson(jsonString)
+            dbtNotifications.sendNotification("Manifest reloaded!", manifest.toString(), NotificationType.INFORMATION)
+        }
+        dbtNotifications.sendNotification("Manifest reload started!", "", NotificationType.INFORMATION)
     }
 
     private fun getPackageInfo(packageName: String?): Pair<String, String> {

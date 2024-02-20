@@ -13,6 +13,7 @@ import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import javax.swing.JButton
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
+import kotlinx.coroutines.runBlocking
 import javax.swing.*
 import java.awt.BorderLayout
 import javax.swing.table.DefaultTableModel
@@ -86,7 +87,7 @@ class ToolMainWindow : ToolWindowFactory {
                 toolWindow.project.service<ProjectConfigurations>()
             )
         }
-        override fun onManifestChanged(manifest: ManifestService) {
+        override fun onManifestChanged(manifest: ManifestService)  = runBlocking {
             SwingUtilities.invokeLater {
                 options.setValueAt(manifest.getStatus(), manifestStatusIndex, 1)
                 options.setValueAt(manifest.lastUpdated, lastManifestUpdateIndex, 1)
@@ -96,7 +97,7 @@ class ToolMainWindow : ToolWindowFactory {
             }
         }
 
-        override fun onProjectConfigurationsChanged(configurations: ProjectConfigurations) {
+        override fun onProjectConfigurationsChanged(configurations: ProjectConfigurations) = runBlocking {
             SwingUtilities.invokeLater {
                 options.setValueAt(configurations.dbtProjectConfig.name, projectFileIndex, 1)
                 options.setValueAt(configurations.dbtProjectPath().relativePath, projectNameIndex, 1)
