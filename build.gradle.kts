@@ -27,7 +27,7 @@ dependencies {
     implementation("org.yaml:snakeyaml:2.2")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3") // Check for the latest version
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2") // Use the latest version
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0") // Use the latest version
 }
 
 // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
