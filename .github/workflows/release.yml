@@ -101,4 +101,3 @@ jobs:
 #            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version." \
 #            --label "$LABEL" \
 #            --head $BRANCH
-# https://github.com/rinchinov/dbt-allure/releases/download/v0.0.1-beta-1/dbt_allure-0.0.1b1.tar.gz
