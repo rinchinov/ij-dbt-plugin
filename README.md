@@ -23,17 +23,59 @@ Before using the DBT, ensure you have a Python SDK configured in PyCharm with db
 
 1. **Install** the DBT directly from the PyCharm Marketplace.
 2. **Configure Python SDK:**
-   - Go to `File` > `Project Structure` > `Project`.
-   - Set the Project SDK to a Python interpreter where dbt is installed.
-   - If dbt is not installed in any Python interpreter, [install dbt](https://docs.getdbt.com/dbt-cli/installation) in your desired environment.
+    - Go to `File` > `Project Structure` > `Project`.
+    - Set the Project SDK to a Python interpreter where dbt is installed.
+    - If dbt is not installed in any Python interpreter, [install dbt](https://docs.getdbt.com/dbt-cli/installation) in your desired environment.
 3. **Specify dbt Project Path:**
-   - In PyCharm, navigate to `Preferences` > `DBT Project Settings` > 
-     - Navigate to `DBT interpreter path`.
-       - Enter the path to your dbt project directory.
-     - Navigate to `DBT profile path`.
-       - Enter the path to your dbt profile location.
+    - In PyCharm, navigate to `Preferences` > `DBT Project Settings`.
+        - For `DBT interpreter path`, enter the path to your dbt project directory.
+        - For `DBT profile path`, enter the path to your dbt profile location.
 4. **Open** any dbt project in PyCharm to automatically activate advanced navigation features.
 5. **Navigate** your dbt project effortlessly, with all your dbt components just a click away.
+## Setup Instructions for dbt Plugin in PyCharm/IntelliJ IDEA
+
+Follow these steps to install and set up the dbt plugin and configure Jinja2 as the template language for `.sql` and `.yml` files.
+
+### Install the dbt Plugin
+
+1. **Install** the dbt plugin directly from the PyCharm Marketplace.
+
+### Configure Python SDK
+
+2. **Navigate to Project Settings:**
+    - Go to `File` > `Project Structure` > `Project`.
+
+3. **Set Project SDK:**
+    - Set the Project SDK to a Python interpreter where dbt is installed.
+    - If dbt is not installed in any Python interpreter, [install dbt](https://docs.getdbt.com/dbt-cli/installation) in your desired environment.
+
+### Specify dbt Project Paths
+
+4. **DBT Project Settings:**
+    - Navigate to `Preferences` > `DBT Project Settings`.
+        - For `DBT interpreter path`, enter the path to your dbt project directory.
+        - For `DBT profile path`, enter the path to your dbt profile location.
+
+5. **Open and Navigate Projects:**
+    - Open any dbt project in PyCharm to activate advanced navigation features.
+    - Effortlessly navigate your dbt project, with all components just a click away.
+
+### Configure Jinja2 for `.sql` and `.yml` Files
+
+6. **Open Template Languages Settings:**
+    - Open `Preferences` (`Settings` on Windows/Linux) by navigating to `File` > `Settings` (or `PyCharm` > `Preferences` on macOS), then go to `Languages & Frameworks` > `Template Languages`.
+
+7. **Set Template Language Directory:**
+    - In the `Template Language` dropdown, select `Jinja2` to apply it as the template language.
+    - Add `sql` and `yml` to `Template File Types` via clicking `+` button. 
+
+8. **Apply and Close:**
+    - Click `Apply`, then `OK` to save your changes and close the settings dialog.
+
+### Restart PyCharm/IntelliJ IDEA (Optional)
+
+9. **Restart Your IDE (Optional):**
+    - It may be necessary to restart your IDE to ensure that the new settings are fully applied.
 
 ## How to Get Started:
 
