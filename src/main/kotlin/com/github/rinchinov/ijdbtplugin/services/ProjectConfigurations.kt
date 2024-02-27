@@ -73,6 +73,9 @@ class ProjectConfigurations(private val project: Project) {
     fun dbtProjectPath(): SettingPath {
         return SettingPath(settings.getDbtProjectPath(), project.basePath?: "")
     }
+    fun targetPath(): SettingPath {
+        return SettingPath("", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
+    }
     fun logPath(): SettingPath {
         return SettingPath("dbt.log", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
     }

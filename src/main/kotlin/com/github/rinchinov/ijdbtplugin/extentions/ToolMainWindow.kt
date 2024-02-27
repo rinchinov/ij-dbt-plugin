@@ -10,13 +10,19 @@ import com.intellij.ui.content.ContentFactory
 import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
-import javax.swing.JButton
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import kotlinx.coroutines.runBlocking
 import javax.swing.*
 import java.awt.BorderLayout
 import javax.swing.table.DefaultTableModel
+import com.intellij.ui.jcef.JBCefApp
+import com.intellij.ui.jcef.JBCefBrowser
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.servlet.ServletContextHandler
+import org.eclipse.jetty.servlet.ServletHolder
+import org.eclipse.jetty.servlet.DefaultServlet
+import java.nio.file.Path
 
 
 class NonEditableTableModel : DefaultTableModel() {
@@ -25,18 +31,19 @@ class NonEditableTableModel : DefaultTableModel() {
     }
 }
 
+
 class ToolMainWindow : ToolWindowFactory {
     override fun shouldBeAvailable(project: Project) = true
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val contentFactory = ContentFactory.getInstance()
         val projectInfo = ProjectInfo(toolWindow)
-        val dag = DAG(toolWindow)
+        val docs = Docs(toolWindow)
         toolWindow.contentManager.addContent(
             contentFactory.createContent(projectInfo.getContent(), "Project Information", false)
         )
         toolWindow.contentManager.addContent(
-            contentFactory.createContent(dag.getContent(), "DAG", false)
+            contentFactory.createContent(docs.getContent(), "Docs", false)
         )
     }
 
@@ -106,17 +113,65 @@ class ToolMainWindow : ToolWindowFactory {
             }
         }
     }
-    class DAG(toolWindow: ToolWindow) {
 
-        private val executor = toolWindow.project.service<Executor>()
-        fun getContent() = JBPanel<JBPanel<*>>().apply {
-            val label = JBLabel()
-            add(label)
-            add(JButton("Debug").apply {
-                addActionListener {
-                    label.text = executor.executeDbt(listOf("run"), mapOf()).toString()
-                }
-            })
+    class Docs(private val toolWindow: ToolWindow): MyDataChangeListener{
+        private val updater = toolWindow.project.service<ToolWindowUpdater>()
+        private val server = Server(0)
+        private var actualPort: Int = 0
+        private var jbCefBrowser = JBCefBrowser("http://localhost:$actualPort")
+        init {
+            updater.addDataChangeListener(this)
+        }
+        fun getContent(): JComponent = JPanel(BorderLayout()) .apply {
+            val docsPanel = JPanel(BorderLayout())
+            if (!JBCefApp.isSupported()) return JLabel("")
+            jbCefBrowser.cefBrowser.createImmediately()
+            val zoomLevel = -1.0 // Approximates to 50% zoom
+            jbCefBrowser.cefBrowser.zoomLevel = zoomLevel
+            docsPanel.add(jbCefBrowser.component, BorderLayout.CENTER)
+            add(docsPanel)
+            onManifestChanged(
+                toolWindow.project.service<ManifestService>()
+            )
+            onProjectConfigurationsChanged(
+                toolWindow.project.service<ProjectConfigurations>()
+            )
+        }
+
+        private fun startServeDocs(path: Path) {
+            val context = ServletContextHandler(ServletContextHandler.SESSIONS).apply {
+                contextPath = "/"
+                resourceBase = path.toString()
+                addServlet(ServletHolder(DefaultServlet::class.java), "/")
+            }
+            server.setHandler(context)
+            try {
+                server.start()
+                actualPort = server.uri.port // Retrieve the actual port the server has bound to
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        private fun stopServeDocs() {
+            try {
+                server.stop()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        override fun onManifestChanged(manifest: ManifestService)  = runBlocking {
+            jbCefBrowser.loadURL("http://localhost:$actualPort")
+        }
+
+        override fun onProjectConfigurationsChanged(configurations: ProjectConfigurations) = runBlocking {
+            val targetPath = configurations.targetPath().absolutePath
+            try {
+                stopServeDocs()
+            }
+            finally {
+                startServeDocs(targetPath)
+                jbCefBrowser.loadURL("http://localhost:$actualPort")
+            }
         }
     }
 }

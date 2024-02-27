@@ -23,6 +23,7 @@
                 isLogByDefault="true"/>
         <toolWindow
                 factoryClass="com.github.rinchinov.ijdbtplugin.extentions.ToolMainWindow"
+                anchor="bottom"
                 id="DBT"/>
         <psi.referenceContributor
                 implementation="com.github.rinchinov.ijdbtplugin.ref.DbtPsiReferenceContributor"
