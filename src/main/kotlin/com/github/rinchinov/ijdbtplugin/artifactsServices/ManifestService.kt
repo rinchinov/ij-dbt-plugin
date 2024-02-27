@@ -75,13 +75,16 @@ class ManifestService(project: Project): ReferencesProviderInterface {
 
     private fun getPackageInfo(packageName: String?): Pair<String, String> {
         return if (packageName == null || packageName == "" || (manifest as Manifest).metadata.projectName == packageName) {
-            Pair((manifest as Manifest).metadata.projectName ?: "", "/")
+            Pair(
+                (manifest as Manifest).metadata.projectName ?: "",
+                projectConfigurations.dbtProjectPath().absoluteDir.toString() + "/"
+            )
         }
         else {
-            // to do get it from project yml
-            // packages-install-path: dbt_packages
-            // https://docs.getdbt.com/reference/project-configs/packages-install-path
-            Pair(packageName, "/dbt_packages/$packageName/")
+            Pair(
+                packageName,
+                "${projectConfigurations.packagesPath().absolutePath}/$packageName/"
+            )
         }
     }
     fun getNodesCount(): Int? = manifest?.nodes?.size
@@ -97,17 +100,34 @@ class ManifestService(project: Project): ReferencesProviderInterface {
             val nodes = (manifest as Manifest).nodes
             val packageInfo = getPackageInfo(packageName)
             val packageId = packageInfo.first
-            val node = if ("model.$packageId.$uniqueId" in nodes) {
-                nodes["model.$packageId.$uniqueId"]
+            val path = if ("model.$packageId.$uniqueId" in nodes) {
+                val node = nodes["model.$packageId.$uniqueId"]
+                packageInfo.second + node?.originalFilePath
             } else if ("seed.$packageId.$uniqueId" in nodes) {
-                nodes["seed.$packageId.$uniqueId"]
+                val node = nodes["seed.$packageId.$uniqueId"]
+                packageInfo.second + node?.originalFilePath
             } else {
-                val latestVersion = nodes.filterKeys { it.startsWith("model.$packageId.$uniqueId") }.first().value.latestVersion?.toJson()
-                    ?.toInt()
-                val version = currentVersion ?: latestVersion
-                nodes["model.$packageId.$uniqueId.v$version"]
+                val versionsCurrentPackage = nodes.filterKeys { it.startsWith("model.$packageId.$uniqueId") }
+                if (versionsCurrentPackage.isNotEmpty()){
+                    val latestVersion = versionsCurrentPackage.first().value.latestVersion?.toJson()
+                        ?.toInt()
+                    val version = currentVersion ?: latestVersion
+                    val node = nodes["model.$packageId.$uniqueId.v$version"]
+                    packageInfo.second + node?.originalFilePath
+                }
+                else {
+                    val versionsAnyPackage = nodes.filterKeys { it.contains(uniqueId) }
+                    if (versionsAnyPackage.isNotEmpty()){
+                        val anyNode = versionsAnyPackage.first().value
+                        val anyPackageInfo = getPackageInfo(anyNode.packageName)
+                        anyPackageInfo.second + anyNode.originalFilePath
+                    }
+                    else {
+                        ""
+                    }
+                }
             }
-            return element.project.basePath + packageInfo.second + node?.originalFilePath
+            return path
         }
     }
 

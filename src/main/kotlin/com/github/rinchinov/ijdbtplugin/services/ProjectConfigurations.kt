@@ -23,14 +23,16 @@ class ProjectConfigurations(private val project: Project) {
         1,
         "",
         "",
-        "target"
+        "target",
+        "dbt_packages"
     )
     data class DbtProjectConfig(
         var name: String,
         var configVersion: Int,
         var version: String,
         var profile: String,
-        var targetPath: String
+        var targetPath: String,
+        var packagesInstallPath: String
     )
     init {
         reloadDbtProjectSettings()
@@ -46,6 +48,10 @@ class ProjectConfigurations(private val project: Project) {
                 dbtProjectConfig.version = projectSettingRaw["version"] as String
                 dbtProjectConfig.profile = projectSettingRaw["profile"] as String
                 dbtProjectConfig.targetPath = projectSettingRaw["target-path"] as String
+                dbtProjectConfig.packagesInstallPath = projectSettingRaw.getOrDefault(
+                    "packages-install-path",
+                    dbtProjectConfig.packagesInstallPath
+                ) as String
                 dbtNotifications.sendNotification("Load project configs", dbtProjectConfig.toString(), NotificationType.INFORMATION)
             }
             else {
@@ -75,6 +81,13 @@ class ProjectConfigurations(private val project: Project) {
     }
     fun targetPath(): SettingPath {
         return SettingPath("", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
+    }
+    fun packagesPath(): SettingPath {
+        return if (dbtProjectConfig.packagesInstallPath.startsWith("/")) {
+            SettingPath("", dbtProjectConfig.packagesInstallPath)
+        } else {
+            SettingPath(dbtProjectConfig.packagesInstallPath, dbtProjectPath().absoluteDir.toString())
+        }
     }
     fun logPath(): SettingPath {
         return SettingPath("dbt.log", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())

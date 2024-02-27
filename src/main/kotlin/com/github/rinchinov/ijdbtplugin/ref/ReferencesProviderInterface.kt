@@ -3,7 +3,7 @@ package com.github.rinchinov.ijdbtplugin.ref
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.*
 import com.jetbrains.jinja2.template.psi.impl.Jinja2MemberNameImpl
-import com.jetbrains.jinja2.template.psi.impl.Jinja2VariableReferenceImpl
+
 
 interface ReferencesProviderInterface {
 
