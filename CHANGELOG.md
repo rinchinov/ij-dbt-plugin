@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1] - 2024-02-27
+
+### added
+- Initial release of DBT for PyCharm.
+- Features including advanced dbt navigation allowing users to jump to definitions and references of macros, models, sources, and seeds within their dbt project.
+- Integrated dbt docs preview feature.
+- Support for specifying the path to the dbt project directory within PyCharm settings.
+- Prerequisites section in documentation for setting up Python SDK with dbt installed.
+
+## [0.0.1-beta-3] - 2024-02-27
+-- manifest loading fixes
+
 ## [0.0.1-beta-2] - 2024-02-20
 
 -- Fixed blocking updates of manifest

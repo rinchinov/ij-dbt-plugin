@@ -7,13 +7,17 @@
 <!-- Plugin description -->
 # DBT for PyCharm
 
-**Navigate Your dbt Projects with Unprecedented Ease**
+**Advanced dbt Navigation with Integrated Documentation Preview**
 
-The DBT is a specialized PyCharm plugin designed exclusively for data engineers and analysts working with dbt. It simplifies navigating through the intricate structure of dbt projects, allowing you to focus on what truly matters - your data.
+The DBT plugin for PyCharm revolutionizes how you navigate and understand your dbt projects, making it an indispensable tool for data engineers and analysts. With our latest update, navigating through the intricate structure of dbt projects has never been more intuitive or efficient.
 
-## Key Feature:
+## Key Features
 
-- **Advanced dbt Navigation:** Instantly jump to the definitions and references of macros, models, sources, and seeds within your dbt project. Our intuitive navigation system eliminates the hassle of manually searching through files, making your workflow seamless and efficient.
+- **Synchronized Navigation:** Dive deeper into your dbt project with enhanced navigation capabilities that intelligently sync with your project files. As you explore models, sources, and tests within PyCharm, the plugin dynamically highlights corresponding entries in the dbt documentation. This seamless integration between code and documentation not only streamlines your workflow but also enriches your project comprehension, facilitating effortless navigation through the complexities of dbt projects.
+
+- **Integrated dbt Docs Preview:** Complementing the advanced navigation, the DBT plugin now includes an integrated dbt Docs preview feature. Without leaving the comfort of your IDE, easily access and interact with your project's dbt documentation in a dedicated plugin window. This feature ensures that your project's data documentation is always just a click away, providing you with instant insights and information relevant to your current work context.
+
+Leverage the DBT plugin for PyCharm to transform your dbt project navigation and documentation review process. Experience a harmonious blend of development and documentation that elevates your productivity and project understanding to unprecedented levels.
 
 ## Prerequisites:
 
