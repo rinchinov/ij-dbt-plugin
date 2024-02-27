@@ -52,7 +52,6 @@ class ProjectConfigurations(private val project: Project) {
                     "packages-install-path",
                     dbtProjectConfig.packagesInstallPath
                 ) as String
-                dbtNotifications.sendNotification("Load project configs", dbtProjectConfig.toString(), NotificationType.INFORMATION)
             }
             else {
                 dbtNotifications.sendNotification("Load project failed", filePath, NotificationType.ERROR)

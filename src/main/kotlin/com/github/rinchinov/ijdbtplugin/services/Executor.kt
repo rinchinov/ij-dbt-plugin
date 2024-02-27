@@ -40,9 +40,7 @@ class Executor(project: Project){
         val exitCode = process.waitFor()
 
         // Handle the output and exit code
-        if (exitCode == 0) {
-            dbtNotifications.sendNotification("Process finished successfully.", "Output: $output", NotificationType.INFORMATION)
-        } else {
+        if (exitCode != 0) {
             val logUrl = "<a href='file://${projectConfigurations.logPath().absolutePath}'>Open log</a>."
             dbtNotifications.sendNotification("Process finished with exit code $exitCode", "$logUrl Output: $output", NotificationType.ERROR)
         }

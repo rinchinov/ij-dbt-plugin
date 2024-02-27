@@ -57,7 +57,7 @@ class ManifestService(project: Project): ReferencesProviderInterface {
                     manifest = Manifest.fromJson(jsonString)
                     dbtNotifications.sendNotification(
                         "Manifest reloaded!",
-                        manifest.toString(),
+                        "",
                         NotificationType.INFORMATION
                     )
                 } catch (e: Exception) {
