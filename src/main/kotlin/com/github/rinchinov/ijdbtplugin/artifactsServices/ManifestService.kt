@@ -15,6 +15,7 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.Duration
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
 
 
 @Service(Service.Level.PROJECT)
@@ -27,6 +28,8 @@ class ManifestService(project: Project): ReferencesProviderInterface {
     private val executor = project.service<Executor>()
     private val dbtNotifications = project.service<Notifications>()
     private val toolWindowUpdater = project.service<ToolWindowUpdater>()
+    private val mutex = Mutex()
+    private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     init {
         parseManifest()
     }
@@ -39,17 +42,35 @@ class ManifestService(project: Project): ReferencesProviderInterface {
 
     override fun toString(): String = "Data:, Last Updated: $lastUpdated"
 
-    private fun parseManifest() = runBlocking {
+    private fun parseManifest() {
         if (Duration.between(lastUpdated, LocalDateTime.now()).toMinutes() <= UPDATE_INTERVAL) {
-            return@runBlocking
+            return
         }
-        launch(Dispatchers.Default) {
-            executor.executeDbt(listOf("parse"), mapOf()).toString()
-            val jsonString = File(projectConfigurations.manifestPath().absolutePath.toString()).readText(Charsets.UTF_8)
-            manifest = Manifest.fromJson(jsonString)
-            dbtNotifications.sendNotification("Manifest reloaded!", manifest.toString(), NotificationType.INFORMATION)
+
+        coroutineScope.launch {
+            if (mutex.tryLock()) {
+                try {
+                    dbtNotifications.sendNotification("Manifest reload started!", "", NotificationType.INFORMATION)
+                    executor.executeDbt(listOf("parse"), mapOf()).toString()
+                    val jsonString =
+                        File(projectConfigurations.manifestPath().absolutePath.toString()).readText(Charsets.UTF_8)
+                    manifest = Manifest.fromJson(jsonString)
+                    dbtNotifications.sendNotification(
+                        "Manifest reloaded!",
+                        manifest.toString(),
+                        NotificationType.INFORMATION
+                    )
+                } catch (e: Exception) {
+                    dbtNotifications.sendNotification(
+                        "Manifest reload failed!",
+                        e.toString(),
+                        NotificationType.ERROR
+                    )
+                } finally {
+                    mutex.unlock()
+                }
+            }
         }
-        dbtNotifications.sendNotification("Manifest reload started!", "", NotificationType.INFORMATION)
     }
 
     private fun getPackageInfo(packageName: String?): Pair<String, String> {
