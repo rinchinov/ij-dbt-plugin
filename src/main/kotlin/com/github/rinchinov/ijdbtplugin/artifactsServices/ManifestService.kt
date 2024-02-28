@@ -20,7 +20,6 @@ import kotlinx.coroutines.sync.Mutex
 
 @Service(Service.Level.PROJECT)
 class ManifestService(project: Project): ReferencesProviderInterface {
-    var lastUpdated: LocalDateTime = LocalDateTime.of(1, 1, 1, 0, 0)
     companion object {
         const val UPDATE_INTERVAL = 5
     }
@@ -30,19 +29,23 @@ class ManifestService(project: Project): ReferencesProviderInterface {
     private val toolWindowUpdater = project.service<ToolWindowUpdater>()
     private val mutex = Mutex()
     private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val manifests: MutableMap<String, Manifest?> = projectConfigurations.targetList().associateWith{ null }.toMutableMap()
+    private val manifestLastUpdated: MutableMap<String, LocalDateTime> = projectConfigurations.targetList().associateWith{ LocalDateTime.of(1, 1, 1, 0, 0) }.toMutableMap()
     init {
         parseManifest()
     }
-    private var manifest: Manifest? = null
-        set(value) {
-            field = value
-            lastUpdated = LocalDateTime.now()
-            toolWindowUpdater.notifyManifestChangeListeners(this)
-        }
-
-    override fun toString(): String = "Data:, Last Updated: $lastUpdated"
-
+    private fun defaultManifest() = manifests[projectConfigurations.defaultTarget()]
+    private fun updateManifest(target: String, manifest: Manifest) {
+        manifests[target] = manifest // Directly modify the backing map
+        toolWindowUpdater.notifyManifestChangeListeners(this)
+        manifestLastUpdated[target] = LocalDateTime.now()
+    }
     private fun parseManifest() {
+        parseManifest(projectConfigurations.defaultTarget())
+    }
+
+    private fun parseManifest(target: String) {
+        val lastUpdated = manifestLastUpdated[target]
         if (Duration.between(lastUpdated, LocalDateTime.now()).toMinutes() <= UPDATE_INTERVAL) {
             return
         }
@@ -50,19 +53,24 @@ class ManifestService(project: Project): ReferencesProviderInterface {
         coroutineScope.launch {
             if (mutex.tryLock()) {
                 try {
-                    dbtNotifications.sendNotification("Manifest reload started!", "", NotificationType.INFORMATION)
+                    dbtNotifications.sendNotification(
+                        "Manifest reload started!",
+                        "",
+                        NotificationType.INFORMATION
+                    )
                     executor.executeDbt(listOf("parse"), mapOf()).toString()
                     val jsonString =
-                        File(projectConfigurations.manifestPath().absolutePath.toString()).readText(Charsets.UTF_8)
-                    manifest = Manifest.fromJson(jsonString)
+                        File(projectConfigurations.manifestPath().absolutePath.toString())
+                            .readText(Charsets.UTF_8)
+                    updateManifest(target, Manifest.fromJson(jsonString))
                     dbtNotifications.sendNotification(
-                        "Manifest reloaded!",
+                        "Manifest reloaded for $target!",
                         "",
                         NotificationType.INFORMATION
                     )
                 } catch (e: Exception) {
                     dbtNotifications.sendNotification(
-                        "Manifest reload failed!",
+                        "Manifest reload failed for $target!!",
                         e.toString(),
                         NotificationType.ERROR
                     )
@@ -74,9 +82,9 @@ class ManifestService(project: Project): ReferencesProviderInterface {
     }
 
     private fun getPackageInfo(packageName: String?): Pair<String, String> {
-        return if (packageName == null || packageName == "" || (manifest as Manifest).metadata.projectName == packageName) {
+        return if (packageName == null || packageName == "" || defaultManifest()?.metadata?.projectName == packageName) {
             Pair(
-                (manifest as Manifest).metadata.projectName ?: "",
+                defaultManifest()?.metadata?.projectName ?: "",
                 projectConfigurations.dbtProjectPath().absoluteDir.toString() + "/"
             )
         }
@@ -87,17 +95,19 @@ class ManifestService(project: Project): ReferencesProviderInterface {
             )
         }
     }
-    fun getNodesCount(): Int? = manifest?.nodes?.size
-    fun getMacrosCount(): Int? = manifest?.macros?.size
-    fun getSourcesCount(): Int? = manifest?.sources?.size
-    fun getStatus(): String = if (manifest == null) "Manifest parse failed" else "Manifest successfully parsed"
+    fun getNodesCount(): Int? = defaultManifest()?.nodes?.size
+    fun getMacrosCount(): Int? = defaultManifest()?.macros?.size
+    fun getSourcesCount(): Int? = defaultManifest()?.sources?.size
+    fun lastUpdated(): LocalDateTime? = manifestLastUpdated[projectConfigurations.defaultTarget()]
+    fun getStatus(): String = if (defaultManifest() == null) "Manifest parse failed" else "Manifest successfully parsed"
 
     override fun modelReferenceFileByElement(packageName: String?, uniqueId: String, currentVersion: Int?, element: PsiElement): String {
         parseManifest()
+        val manifest = defaultManifest()
         if (manifest == null) {
             return ""
         } else {
-            val nodes = (manifest as Manifest).nodes
+            val nodes = manifest.nodes
             val packageInfo = getPackageInfo(packageName)
             val packageId = packageInfo.first
             val path = if ("model.$packageId.$uniqueId" in nodes) {
@@ -133,10 +143,11 @@ class ManifestService(project: Project): ReferencesProviderInterface {
 
     override fun sourceReferenceFileByElement(uniqueId: String, element: PsiElement): String {
         parseManifest()
+        val manifest = defaultManifest()
         return if (manifest == null) {
             ""
         } else {
-            val matchedSources = (manifest as Manifest).sources.filterKeys {
+            val matchedSources = manifest.sources.filterKeys {
                 it.endsWith(uniqueId)
             }
             if (matchedSources.isEmpty()){
@@ -151,10 +162,11 @@ class ManifestService(project: Project): ReferencesProviderInterface {
     }
     override fun macroReferenceFileByElement(packageName: String, macroName: String, element: PsiElement): String {
         parseManifest()
+        val manifest = defaultManifest()
         return if (manifest == null) {
             ""
         } else {
-            val macros = (manifest as Manifest).macros
+            val macros = manifest.macros
             val packageInfo = getPackageInfo(packageName)
             val packageId = packageInfo.first
             val macro = macros["macro.$packageId.$macroName"]

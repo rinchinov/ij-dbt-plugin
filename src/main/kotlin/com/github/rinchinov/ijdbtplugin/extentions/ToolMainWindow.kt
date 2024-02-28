@@ -26,8 +26,18 @@ import java.nio.file.Path
 
 
 class NonEditableTableModel : DefaultTableModel() {
+    private var keys: MutableMap<String, Int> = mutableMapOf()
+    private var index: Int = 0
     override fun isCellEditable(row: Int, column: Int): Boolean {
         return false
+    }
+    fun addRow(id: String, name: String, value: String) {
+        super.addRow(arrayOf(name, value))
+        keys[id] = index
+        index += 1
+    }
+    fun setValue(id: String, value: String) {
+        keys[id]?.let { setValueAt(value, it, 1) }
     }
 }
 
@@ -52,27 +62,21 @@ class ToolMainWindow : ToolWindowFactory {
         private var options = NonEditableTableModel().apply {
             addColumn("")
             addColumn("")
-            addRow(arrayOf("DBT Project details:", ""))
-            addRow(arrayOf("DBT project name:", ""))
-            addRow(arrayOf("DBT project file:", ""))
-            addRow(arrayOf("Manifest file:", ""))
-            addRow(arrayOf("Python SDK:", ""))
-            addRow(arrayOf("Parsed Manifest's details", ""))
-            addRow(arrayOf("Status:", ""))
-            addRow(arrayOf("Last update time", ""))
-            addRow(arrayOf("Total nodes count", ""))
-            addRow(arrayOf("Total sources count", ""))
-            addRow(arrayOf("Total macros count", ""))
+            addRow("projectDetails", "DBT Project details:", "")
+            addRow("dbtProjectName", "DBT project name:", "")
+            addRow("dbtProjectFile", "DBT project file:", "")
+            addRow("manifestFile", "Manifest file:", "")
+            addRow("targetsList", "Targets list:", "")
+            addRow("defaultTarget", "Default target:", "")
+            addRow("pythonSdk", "Python SDK:", "")
+            addRow("parsedManifestDetails", "Parsed Manifest's details", "")
+            addRow("status", "Status:", "")
+            addRow("lastUpdateTime", "Last update time", "")
+            addRow("totalNodesCount", "Total nodes count", "")
+            addRow("totalSourcesCount", "Total sources count", "")
+            addRow("totalMacrosCount", "Total macros count", "")
         }
-        private val projectFileIndex = 1
-        private val projectNameIndex = 2
-        private val manifestFileIndex = 3
-        private val pythonSdkPathIndex = 4
-        private val manifestStatusIndex = 6
-        private val lastManifestUpdateIndex = 7
-        private val totalNodesCountIndex = 8
-        private val totalSourcesCountIndex = 9
-        private val totalMacrosCountIndex = 10
+
         init {
             updater.addDataChangeListener(this)
         }
@@ -96,20 +100,22 @@ class ToolMainWindow : ToolWindowFactory {
         }
         override fun onManifestChanged(manifest: ManifestService)  = runBlocking {
             SwingUtilities.invokeLater {
-                options.setValueAt(manifest.getStatus(), manifestStatusIndex, 1)
-                options.setValueAt(manifest.lastUpdated, lastManifestUpdateIndex, 1)
-                options.setValueAt(manifest.getNodesCount(), totalNodesCountIndex, 1)
-                options.setValueAt(manifest.getSourcesCount(), totalMacrosCountIndex, 1)
-                options.setValueAt(manifest.getMacrosCount(), totalSourcesCountIndex, 1)
+                options.setValue("status", manifest.getStatus())
+                options.setValue("lastUpdateTime", manifest.lastUpdated().toString())
+                options.setValue("totalNodesCount", manifest.getNodesCount().toString())
+                options.setValue("totalSourcesCount", manifest.getSourcesCount().toString())
+                options.setValue("totalMacrosCount", manifest.getMacrosCount().toString())
             }
         }
 
         override fun onProjectConfigurationsChanged(configurations: ProjectConfigurations) = runBlocking {
             SwingUtilities.invokeLater {
-                options.setValueAt(configurations.dbtProjectConfig.name, projectFileIndex, 1)
-                options.setValueAt(configurations.dbtProjectPath().relativePath, projectNameIndex, 1)
-                options.setValueAt(configurations.manifestPath().relativePath, manifestFileIndex, 1)
-                options.setValueAt(configurations.sdkPath().relativePath, pythonSdkPathIndex, 1)
+                options.setValue("dbtProjectName", configurations.dbtProjectConfig.name)
+                options.setValue("dbtProjectFile", configurations.dbtProjectPath().relativePath.toString())
+                options.setValue("manifestFile", configurations.manifestPath().relativePath.toString())
+                options.setValue("pythonSdk", configurations.sdkPath().relativePath.toString())
+                options.setValue("targetsList", configurations.targetList().joinToString(separator = ","))
+                options.setValue("defaultTarget", configurations.defaultTarget())
             }
         }
     }

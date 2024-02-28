@@ -16,12 +16,16 @@ class ProjectSettings(private val project: Project) : PersistentStateComponent<P
         var dbtProfilePath: String = DBT_PROFILE_PATH,
         var dbtRunnerImport: String = DBT_RUNNER_IMPORT,
         var dbtInterpreterPath: String = DBT_INTERPRETER_PATH,
+        var dbtDefaultTarget: String = DBT_DEFAULT_TARGET,
+        var dbtTargetList: List<String> = DBT_TARGET_LIST,
     ){
         companion object {
             const val PROJECT_PATH = "dbt_project.yml"
             const val DBT_PROFILE_PATH = "~/.dbt/profile.yml"
             const val DBT_RUNNER_IMPORT = "from dbt.cli.main import dbtRunner"
             const val DBT_INTERPRETER_PATH = ""
+            const val DBT_DEFAULT_TARGET = "dev"
+            val DBT_TARGET_LIST = listOf("dev,prod")
             fun defaultState() = State() // Returns a state with default values
         }
     }
@@ -60,6 +64,14 @@ class ProjectSettings(private val project: Project) : PersistentStateComponent<P
     fun getDbtInterpreterPath(): String = myState.dbtInterpreterPath
     fun setDbtInterpreterPath(dbtInterpreterPath: String) {
         myState.dbtInterpreterPath = dbtInterpreterPath
+    }
+    fun getDbtDefaultTarget(): String = myState.dbtDefaultTarget
+    fun setDbtDefaultTarget(dbtDefaultTarget: String) {
+        myState.dbtInterpreterPath = dbtDefaultTarget
+    }
+    fun getDbtTargetList(): List<String> = myState.dbtTargetList
+    fun setDbtTargetList(dbtTargetList: String) {
+        myState.dbtTargetList = dbtTargetList.split(",")
     }
 
 }

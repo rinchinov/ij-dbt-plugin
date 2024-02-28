@@ -20,9 +20,8 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
     private val dbtProfilePath: JTextField = JTextField()
     private val dbtRunnerImport: JTextField = JTextField()
     private val dbtInterpreterPath: JTextField = JTextField()
-    private val shellPathField = JTextField(20)
-    private val defaultTabNameField = JTextField(20)
-    private val audibleBellCheckBox = JCheckBox("Audible bell")
+    private val dbtTargetList: JTextField = JTextField()
+    private val dbtDefaultTarget: JTextField = JTextField()
 
     init {
         val gbc = GridBagConstraints()
@@ -64,6 +63,22 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         gbc.gridx = 1 // Second column for input fields
         gbc.weightx = 1.0 // Expand fields horizontally
         mainPanel.add(dbtInterpreterPath, gbc)
+        gbc.gridy++
+        gbc.gridx = 0
+        gbc.gridwidth = 1 // Reset to one column
+        gbc.weightx = 0.0 // Do not expand labels horizontally
+        mainPanel.add(JLabel("DBT target lists"), gbc)
+        gbc.gridx = 1 // Second column for input fields
+        gbc.weightx = 1.0 // Expand fields horizontally
+        mainPanel.add(dbtTargetList, gbc)
+        gbc.gridy++
+        gbc.gridx = 0
+        gbc.gridwidth = 1 // Reset to one column
+        gbc.weightx = 0.0 // Do not expand labels horizontally
+        mainPanel.add(JLabel("DBT plugin default target"), gbc)
+        gbc.gridx = 1 // Second column for input fields
+        gbc.weightx = 1.0 // Expand fields horizontally
+        mainPanel.add(dbtDefaultTarget, gbc)
 
 //        // Application Settings Section
 //        gbc.gridx = 0 // Reset to first column
@@ -108,6 +123,8 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
                 || settings.getDbtProfilePath() != dbtProfilePath.text
                 || settings.getDbtRunnerImport() != dbtRunnerImport.text
                 || settings.getDbtInterpreterPath() != dbtInterpreterPath.text
+                || settings.getDbtDefaultTarget() != dbtDefaultTarget.text
+                || settings.getDbtTargetList() != dbtTargetList.text.split(",")
     }
 
     override fun apply() {
@@ -115,6 +132,8 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         settings.setDbtProfilePath(dbtProfilePath.text)
         settings.setDbtRunnerImport(dbtRunnerImport.text)
         settings.setDbtInterpreterPath(dbtInterpreterPath.text)
+        settings.setDbtDefaultTarget(dbtDefaultTarget.text)
+        settings.setDbtTargetList(dbtTargetList.text)
         projectConfigurations.reloadDbtProjectSettings()
     }
 
@@ -123,6 +142,8 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         dbtProfilePath.text = settings.getDbtProfilePath()
         dbtRunnerImport.text = settings.getDbtRunnerImport()
         dbtInterpreterPath.text = settings.getDbtInterpreterPath()
+        dbtDefaultTarget.text = settings.getDbtDefaultTarget()
+        dbtTargetList.text = settings.getDbtTargetList().joinToString(separator = ",")
     }
 
     override fun getDisplayName(): String = MyBundle.message("settingWindowName")

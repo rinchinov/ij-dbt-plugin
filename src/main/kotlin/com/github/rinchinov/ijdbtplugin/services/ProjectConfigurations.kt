@@ -72,6 +72,12 @@ class ProjectConfigurations(private val project: Project) {
             basePath
         )
     }
+    fun defaultTarget(): String {
+        return settings.getDbtDefaultTarget()
+    }
+    fun targetList(): List<String> {
+        return settings.getDbtTargetList()
+    }
     fun sdkPath(): SettingPath {
         return SettingPath(settings.getDbtInterpreterPath(), "")
     }
