@@ -22,6 +22,7 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
     private val dbtInterpreterPath: JTextField = JTextField()
     private val dbtTargetList: JTextField = JTextField()
     private val dbtDefaultTarget: JTextField = JTextField()
+    private val dbtAdapter: JTextField = JTextField()
 
     init {
         val gbc = GridBagConstraints()
@@ -79,6 +80,14 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         gbc.gridx = 1 // Second column for input fields
         gbc.weightx = 1.0 // Expand fields horizontally
         mainPanel.add(dbtDefaultTarget, gbc)
+        gbc.gridy++
+        gbc.gridx = 0
+        gbc.gridwidth = 1 // Reset to one column
+        gbc.weightx = 0.0 // Do not expand labels horizontally
+        mainPanel.add(JLabel("DBT plugin default adapter"), gbc)
+        gbc.gridx = 1 // Second column for input fields
+        gbc.weightx = 1.0 // Expand fields horizontally
+        mainPanel.add(dbtAdapter, gbc)
 
 //        // Application Settings Section
 //        gbc.gridx = 0 // Reset to first column
@@ -124,6 +133,7 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
                 || settings.getDbtRunnerImport() != dbtRunnerImport.text
                 || settings.getDbtInterpreterPath() != dbtInterpreterPath.text
                 || settings.getDbtDefaultTarget() != dbtDefaultTarget.text
+                || settings.getDbtAdapter() != dbtAdapter.text
                 || settings.getDbtTargetList() != dbtTargetList.text.split(",")
     }
 
@@ -133,6 +143,7 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         settings.setDbtRunnerImport(dbtRunnerImport.text)
         settings.setDbtInterpreterPath(dbtInterpreterPath.text)
         settings.setDbtDefaultTarget(dbtDefaultTarget.text)
+        settings.setDbtAdapter(dbtAdapter.text)
         settings.setDbtTargetList(dbtTargetList.text)
         projectConfigurations.reloadDbtProjectSettings()
     }
@@ -143,6 +154,7 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         dbtRunnerImport.text = settings.getDbtRunnerImport()
         dbtInterpreterPath.text = settings.getDbtInterpreterPath()
         dbtDefaultTarget.text = settings.getDbtDefaultTarget()
+        dbtAdapter.text = settings.getDbtAdapter()
         dbtTargetList.text = settings.getDbtTargetList().joinToString(separator = ",")
     }
 

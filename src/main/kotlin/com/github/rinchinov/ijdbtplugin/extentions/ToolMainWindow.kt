@@ -65,6 +65,7 @@ class ToolMainWindow : ToolWindowFactory {
             addRow("projectDetails", "DBT Project details:", "")
             addRow("dbtProjectName", "DBT project name:", "")
             addRow("dbtProjectFile", "DBT project file:", "")
+            addRow("dbtAdapter", "DBT adapter:", "")
             addRow("manifestFile", "Manifest file:", "")
             addRow("targetsList", "Targets list:", "")
             addRow("defaultTarget", "Default target:", "")
@@ -116,6 +117,7 @@ class ToolMainWindow : ToolWindowFactory {
                 options.setValue("pythonSdk", configurations.sdkPath().relativePath.toString())
                 options.setValue("targetsList", configurations.targetList().joinToString(separator = ","))
                 options.setValue("defaultTarget", configurations.defaultTarget())
+                options.setValue("dbtAdapter", configurations.adapter())
             }
         }
     }

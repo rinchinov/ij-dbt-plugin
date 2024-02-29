@@ -72,6 +72,9 @@ class ProjectConfigurations(private val project: Project) {
             basePath
         )
     }
+    fun adapter(): String {
+        return settings.getDbtAdapter()
+    }
     fun defaultTarget(): String {
         return settings.getDbtDefaultTarget()
     }

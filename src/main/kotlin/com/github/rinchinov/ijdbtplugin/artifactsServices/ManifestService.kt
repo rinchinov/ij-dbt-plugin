@@ -149,17 +149,27 @@ class ManifestService(var project: Project): DbtCoreInterface {
     }
     override fun findMacro(packageName: String?, macroName: String, target: String?): Macro? {
         val manifest= getManifest(target)
-        if (manifest!=null){
-            val lookupArray: Array<String> = if (packageName.isNullOrEmpty()){
-                arrayOf(
-                    arrayOf(defaultProjectName(), "dbt"),
-                    manifest.resourceMap?.get("macro")?.keys?.filter { it.startsWith("dbt_") }?.toTypedArray()?: emptyArray<String>(),
-                    manifest.resourceMap?.get("macro")?.keys?.filter { ! it.startsWith("dbt_") }?.toTypedArray()?: emptyArray<String>()
-                ).flatten().toTypedArray()
+        val macros = manifest?.resourceMap?.get("macro")
+        if (manifest!=null && macros !=null){
+            val adapterName = ADAPTERS[projectConfigurations.adapter()]
+            // start lookup from
+            val mainLookupOrder = arrayOf(
+                macros[packageName?: defaultProjectName()]?.get(macroName), // specified project or default
+                macros[projectConfigurations.adapter()]?.get("${adapterName}__$macroName"), // lookup in adapters macros with dispatch
+                macros[projectConfigurations.adapter()]?.get(macroName), // lookup in adapter without dispatch
+                macros["dbt"]?.get(macroName), // lookup in core macros
+            )
+            mainLookupOrder.forEach {
+                if (it != null) {
+                    return manifest.macros.getValue(it)
+                }
             }
-            else arrayOf(packageName)
-            lookupArray.forEach {
-                val macroId = manifest.resourceMap?.get("macro")?.get(it)?.get(macroName)
+            // if not find try to lookup in the rest packages excluding already checked and adapters
+            macros.keys.filter {
+                it !in arrayOf("dbt", packageName?: defaultProjectName()) &&
+                        it !in ADAPTERS.keys
+            }.forEach{
+                val macroId = macros[it]?.get(macroName)
                 if (macroId != null) {
                     return manifest.macros.getValue(macroId)
                 }
