@@ -1,22 +1,50 @@
-package com.github.rinchinov.ijdbtplugin.ref
+package com.github.rinchinov.ijdbtplugin
 
+import com.github.rinchinov.ijdbtplugin.artifactsVersions.Macro
+import com.github.rinchinov.ijdbtplugin.artifactsVersions.Node
+import com.github.rinchinov.ijdbtplugin.artifactsVersions.SourceDefinition
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.*
 import com.jetbrains.jinja2.template.psi.impl.Jinja2MemberNameImpl
 
 
-interface ReferencesProviderInterface {
+interface DbtCoreInterface {
 
-    fun modelReferenceFileByElement(packageName: String?, uniqueId: String, currentVersion: Int?, element: PsiElement): String
-    fun sourceReferenceFileByElement(uniqueId: String, element: PsiElement): String
-    fun macroReferenceFileByElement(packageName: String, macroName: String, element: PsiElement): String
+    fun findNode(packageName: String?, uniqueId: String, currentVersion: Int?, target: String?): Node?
+    fun findSourceDefinition(uniqueId: String, target: String?): SourceDefinition?
+    fun findMacro(packageName: String?, macroName: String, target: String?): Macro?
+    fun getPackageDir(packageName: String?): String
+    fun modelReferenceFileByElement(packageName: String?, uniqueId: String, currentVersion: Int?, target: String?): String{
+        val node = findNode(packageName, uniqueId, currentVersion, target)
+        return if (node != null){
+            getPackageDir(node.packageName) + "/" + node.originalFilePath
+        } else {
+            ""
+        }
+    }
+    fun sourceReferenceFileByElement(uniqueId: String, target: String?): String{
+        val source = findSourceDefinition(uniqueId, target)
+        return if (source != null){
+            getPackageDir(source.packageName) + "/" + source.originalFilePath
+        } else {
+            ""
+        }
+    }
+    fun macroReferenceFileByElement(packageName: String, macroName: String, target: String?): String{
+        val macro = findMacro(packageName, macroName, target)
+        return if (macro != null){
+            getPackageDir(macro.packageName) + "/" + macro.originalFilePath
+        } else {
+            ""
+        }
+    }
 
     fun macroReference(element: PsiElement): PsiReferenceBase<PsiElement> {
         return object : PsiReferenceBase<PsiElement>(element) {
             override fun resolve(): PsiElement? {
                 val packageName = if (element is Jinja2MemberNameImpl) element.prevSibling.prevSibling.text else ""
                 val macroName = element.text
-                val path: String = macroReferenceFileByElement(packageName, macroName, element)
+                val path: String = macroReferenceFileByElement(packageName, macroName, null)
                 val virtualFile = LocalFileSystem.getInstance().findFileByPath(
                     path
                 ) ?: return null
@@ -37,7 +65,7 @@ interface ReferencesProviderInterface {
                         val uniqueId = modelMatch?.get(3)?.value
                         val currentVersion = modelVersionRegex.find(element.parent.text)?.groupValues?.get(2)?.toInt()
                         if (uniqueId != null) {
-                            modelReferenceFileByElement(packageName, uniqueId, currentVersion, element)
+                            modelReferenceFileByElement(packageName, uniqueId, currentVersion, null)
                         }
                         else {
                             ""
@@ -48,7 +76,7 @@ interface ReferencesProviderInterface {
                             fun(matchResult: MatchResult): CharSequence {
                                 return "${matchResult.groupValues[1]}.${matchResult.groupValues[2]}"
                             })
-                        sourceReferenceFileByElement(uniqueId, element)
+                        sourceReferenceFileByElement(uniqueId, null)
                     }
                     else -> ""
                 }
