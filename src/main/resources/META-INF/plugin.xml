@@ -37,4 +37,15 @@
 
     </extensions>
 
+    <actions>
+        <group
+                id="DbtCopyPasteActionGroup"
+                text="DBT Copy/Paste Target"
+                description="Actions to copy and past SQL replacing refs/sources for target"
+                popup="true">
+            <action id="MyDynamicActionsPlaceholder" class="com.github.rinchinov.ijdbtplugin.actions.DbtCopyPasteActionGroup" />
+            <add-to-group group-id="EditorPopupMenu" anchor="first" />
+        </group>
+    </actions>
+
 </idea-plugin>

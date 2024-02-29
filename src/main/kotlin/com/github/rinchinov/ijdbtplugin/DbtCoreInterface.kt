@@ -3,9 +3,16 @@ package com.github.rinchinov.ijdbtplugin
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.Macro
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.Node
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.SourceDefinition
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.*
 import com.jetbrains.jinja2.template.psi.impl.Jinja2MemberNameImpl
+import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.StringSelection
 
 
 interface DbtCoreInterface {
@@ -84,6 +91,39 @@ interface DbtCoreInterface {
                     path
                 ) ?: return null
                 return PsiManager.getInstance(element.project).findFile(virtualFile)
+            }
+        }
+    }
+
+    fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String
+    fun replaceRefsAndSourcesToJinja2(query: String, target: String): String
+    fun copyWithReplacingRefsAndSources(e: AnActionEvent, target: String){
+        val editor: Editor = e.getRequiredData(CommonDataKeys.EDITOR)
+        val document = editor.document
+        val selectionModel = editor.selectionModel
+        val selectedText = selectionModel.selectedText?: document.text
+        val replacedContent = replaceRefsAndSourcesFromJinja2(selectedText, target)
+        val copyPasteManager = CopyPasteManager.getInstance()
+        copyPasteManager.setContents(StringSelection(replacedContent))
+    }
+    fun pasteWithReplacedRefsAndSources(e: AnActionEvent, target: String){
+        val clipboard = CopyPasteManager.getInstance()
+        val clipboardContents = clipboard.contents
+        val stringContent = clipboardContents?.getTransferData(DataFlavor.stringFlavor) as? String
+        if (!stringContent.isNullOrEmpty()) {
+            val replacedQuery = replaceRefsAndSourcesToJinja2(stringContent, target)
+            WriteCommandAction.runWriteCommandAction(e.project) {
+                val editor: Editor = e.getRequiredData(CommonDataKeys.EDITOR)
+                val document = editor.document
+                if (editor.selectionModel.hasSelection()) {
+                    val start = editor.selectionModel.selectionStart
+                    val end = editor.selectionModel.selectionEnd
+                    document.replaceString(start, end, replacedQuery)
+                } else {
+                    val caretModel = editor.caretModel
+                    val offset = caretModel.offset
+                    document.insertString(offset, replacedQuery)
+                }
             }
         }
     }

@@ -178,4 +178,13 @@ class ManifestService(var project: Project): DbtCoreInterface {
         return null
     }
 
+    override fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String {
+        return query
+
+    }
+
+    override fun replaceRefsAndSourcesToJinja2(query: String, target: String): String {
+        return query
+    }
+
 }
