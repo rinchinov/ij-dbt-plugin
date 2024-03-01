@@ -2,14 +2,11 @@ package com.github.rinchinov.ijdbtplugin.actions
 
 
 import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
-import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
+import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.components.service
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.vfs.VirtualFile
-import java.awt.datatransfer.StringSelection
 
 
 class DbtCopyPasteActionGroup : ActionGroup() {
@@ -20,7 +17,7 @@ class DbtCopyPasteActionGroup : ActionGroup() {
             return EMPTY_ARRAY
         }
         val project = e.project!!
-        val targets = project.service<ProjectConfigurations>().targetList()
+        val targets = project.service<ProjectSettings>().getDbtTargetList()
         val manifestService = project.service<ManifestService>()
         val actions: Array<AnAction> = targets.map { target ->
             listOf(

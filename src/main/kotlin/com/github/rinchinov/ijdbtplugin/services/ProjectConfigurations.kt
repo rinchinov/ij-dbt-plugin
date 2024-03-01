@@ -15,7 +15,7 @@ import java.nio.file.Paths
 
 @Service(Service.Level.PROJECT)
 class ProjectConfigurations(private val project: Project) {
-    private val settings = project.service<ProjectSettings>()
+    val settings = project.service<ProjectSettings>()
     private val dbtNotifications = project.service<Notifications>()
     private val toolWindowUpdater = project.service<ToolWindowUpdater>()
     val dbtProjectConfig = DbtProjectConfig(
@@ -64,31 +64,11 @@ class ProjectConfigurations(private val project: Project) {
         toolWindowUpdater.notifyProjectConfigurationsChangeListeners(this)
     }
     class SettingPath(relativePath: String, basePath: String) {
-        var relativePath: Path = Paths.get(relativePath)
         var absolutePath: Path = Paths.get(basePath, relativePath)
         var absoluteDir: Path = absolutePath.parent
-        constructor(relativePath: String, dir: String, basePath: String) : this(
-            Paths.get(dir, relativePath).toString(),
-            basePath
-        )
-    }
-    fun adapter(): String {
-        return settings.getDbtAdapter()
-    }
-    fun defaultTarget(): String {
-        return settings.getDbtDefaultTarget()
-    }
-    fun targetList(): List<String> {
-        return settings.getDbtTargetList()
-    }
-    fun sdkPath(): SettingPath {
-        return SettingPath(settings.getDbtInterpreterPath(), "")
     }
     fun dbtProjectPath(): SettingPath {
         return SettingPath(settings.getDbtProjectPath(), project.basePath?: "")
-    }
-    fun targetPath(): SettingPath {
-        return SettingPath("", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
     }
     fun packagesPath(): SettingPath {
         return if (dbtProjectConfig.packagesInstallPath.startsWith("/")) {
@@ -97,16 +77,11 @@ class ProjectConfigurations(private val project: Project) {
             SettingPath(dbtProjectConfig.packagesInstallPath, dbtProjectPath().absoluteDir.toString())
         }
     }
-    fun logPath(): SettingPath {
-        return SettingPath("dbt.log", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
-    }
-    fun manifestPath(): SettingPath {
-        return SettingPath("manifest.json", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
-    }
-    fun semanticManifestPath(): SettingPath {
-        return SettingPath("semantic_manifest.json", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
-    }
-    fun runResultsPath(): SettingPath {
-        return SettingPath("run_results.json", dbtProjectConfig.targetPath, dbtProjectPath().absoluteDir.toString())
+
+    fun getDbtProfileDirAbsolute(): Path {
+        return when {
+            settings.getDbtProfileDir().startsWith("~/") -> Paths.get(System.getProperty("user.home"), settings.getDbtProfileDir().replace("~/", ""))
+            else -> Paths.get(settings.getDbtProfileDir())
+        }
     }
 }

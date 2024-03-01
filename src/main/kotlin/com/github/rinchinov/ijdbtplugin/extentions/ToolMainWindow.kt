@@ -4,10 +4,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.ui.components.JBScrollPane
@@ -23,6 +20,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.jetty.servlet.DefaultServlet
 import java.nio.file.Path
+import java.nio.file.Paths
 
 
 class NonEditableTableModel : DefaultTableModel() {
@@ -111,13 +109,11 @@ class ToolMainWindow : ToolWindowFactory {
 
         override fun onProjectConfigurationsChanged(configurations: ProjectConfigurations) = runBlocking {
             SwingUtilities.invokeLater {
-                options.setValue("dbtProjectName", configurations.dbtProjectConfig.name)
-                options.setValue("dbtProjectFile", configurations.dbtProjectPath().relativePath.toString())
-                options.setValue("manifestFile", configurations.manifestPath().relativePath.toString())
-                options.setValue("pythonSdk", configurations.sdkPath().relativePath.toString())
-                options.setValue("targetsList", configurations.targetList().joinToString(separator = ","))
-                options.setValue("defaultTarget", configurations.defaultTarget())
-                options.setValue("dbtAdapter", configurations.adapter())
+                options.setValue("dbtProjectFile", configurations.settings.getDbtProjectPath())
+                options.setValue("pythonSdk", configurations.settings.getDbtInterpreterPath())
+                options.setValue("targetsList", configurations.settings.getDbtTargetList().joinToString(separator = ","))
+                options.setValue("defaultTarget", configurations.settings.getDbtDefaultTarget())
+                options.setValue("dbtAdapter", configurations.settings.getDbtAdapter())
             }
         }
     }
@@ -172,7 +168,7 @@ class ToolMainWindow : ToolWindowFactory {
         }
 
         override fun onProjectConfigurationsChanged(configurations: ProjectConfigurations) = runBlocking {
-            val targetPath = configurations.targetPath().absolutePath
+            val targetPath = Paths.get("target")
             try {
                 stopServeDocs()
             }

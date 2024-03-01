@@ -11,9 +11,9 @@ import com.github.rinchinov.ijdbtplugin.extentions.ToolWindowUpdater
 import com.github.rinchinov.ijdbtplugin.DbtCoreInterface
 import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.github.rinchinov.ijdbtplugin.services.Notifications
+import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
 import com.intellij.notification.NotificationType
 import com.jetbrains.rd.util.first
-import java.io.File
 import java.time.LocalDateTime
 import java.time.Duration
 import kotlinx.coroutines.*
@@ -30,18 +30,19 @@ class ManifestService(var project: Project): DbtCoreInterface {
         )
     }
     private val projectConfigurations = project.service<ProjectConfigurations>()
+    private val settings = project.service<ProjectSettings>()
     private val executor = project.service<Executor>()
     private val dbtPackageLocation = executor.getDbtPythonPackageLocation()
     private val dbtNotifications = project.service<Notifications>()
     private val toolWindowUpdater = project.service<ToolWindowUpdater>()
     private val mutex = Mutex()
     private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private val manifests: MutableMap<String, Manifest?> = projectConfigurations.targetList().associateWith{ null }.toMutableMap()
-    private val manifestLastUpdated: MutableMap<String, LocalDateTime> = projectConfigurations.targetList().associateWith{ LocalDateTime.of(1, 1, 1, 0, 0) }.toMutableMap()
+    private val manifests: MutableMap<String, Manifest?> = settings.getDbtTargetList().associateWith{ null }.toMutableMap()
+    private val manifestLastUpdated: MutableMap<String, LocalDateTime> = settings.getDbtTargetList().associateWith{ LocalDateTime.of(1, 1, 1, 0, 0) }.toMutableMap()
     init {
         parseManifest()
     }
-    private fun defaultManifest() = manifests[projectConfigurations.defaultTarget()]
+    private fun defaultManifest() = manifests[settings.getDbtDefaultTarget()]
     private fun defaultProjectName() = defaultManifest()?.getProjectName()?: ""
     private fun updateManifest(target: String, manifest: Manifest) {
         manifests[target] = manifest // Directly modify the backing map
@@ -49,12 +50,12 @@ class ManifestService(var project: Project): DbtCoreInterface {
         manifestLastUpdated[target] = LocalDateTime.now()
     }
     private fun getManifest(target: String?): Manifest? {
-        val cTarget: String = target?: projectConfigurations.defaultTarget()
+        val cTarget: String = target?: settings.getDbtDefaultTarget()
         parseManifest(cTarget)
         return manifests[cTarget]
     }
     private fun parseManifest() {
-        parseManifest(projectConfigurations.defaultTarget())
+        parseManifest(settings.getDbtDefaultTarget())
     }
 
     private fun parseManifest(target: String) {
@@ -71,11 +72,15 @@ class ManifestService(var project: Project): DbtCoreInterface {
                         "",
                         NotificationType.INFORMATION
                     )
-                    executor.executeDbt(listOf("parse"), mapOf()).toString()
-                    val jsonString =
-                        File(projectConfigurations.manifestPath().absolutePath.toString())
-                            .readText(Charsets.UTF_8)
-                    updateManifest(target, Manifest.fromJson(jsonString))
+                    val manifestString = executor.executeDbt(
+                        listOf("parse", "--no-write-json"),
+                        mapOf(
+                            "target" to target,
+                            "log_format" to "json",
+                            "profiles_dir" to projectConfigurations.getDbtProfileDirAbsolute().toString()
+                        )
+                    )
+                    updateManifest(target, Manifest.fromJson(manifestString))
                     dbtNotifications.sendNotification(
                         "Manifest reloaded for $target!",
                         "",
@@ -107,7 +112,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
     fun getNodesCount(): Int? = defaultManifest()?.nodes?.size
     fun getMacrosCount(): Int? = defaultManifest()?.macros?.size
     fun getSourcesCount(): Int? = defaultManifest()?.sources?.size
-    fun lastUpdated(): LocalDateTime? = manifestLastUpdated[projectConfigurations.defaultTarget()]
+    fun lastUpdated(): LocalDateTime? = manifestLastUpdated[settings.getDbtDefaultTarget()]
     fun getStatus(): String = if (defaultManifest() == null) "Manifest parse failed" else "Manifest successfully parsed"
 
     override fun findNode(packageName: String?, uniqueId: String, currentVersion: Int?, target: String?): Node? {
@@ -151,12 +156,12 @@ class ManifestService(var project: Project): DbtCoreInterface {
         val manifest= getManifest(target)
         val macros = manifest?.resourceMap?.get("macro")
         if (manifest!=null && macros !=null){
-            val adapterName = ADAPTERS[projectConfigurations.adapter()]
+            val adapterName = ADAPTERS[settings.getDbtAdapter()]
             // start lookup from
             val mainLookupOrder = arrayOf(
                 macros[packageName?: defaultProjectName()]?.get(macroName), // specified project or default
-                macros[projectConfigurations.adapter()]?.get("${adapterName}__$macroName"), // lookup in adapters macros with dispatch
-                macros[projectConfigurations.adapter()]?.get(macroName), // lookup in adapter without dispatch
+                macros[settings.getDbtAdapter()]?.get("${adapterName}__$macroName"), // lookup in adapters macros with dispatch
+                macros[settings.getDbtAdapter()]?.get(macroName), // lookup in adapter without dispatch
                 macros["dbt"]?.get(macroName), // lookup in core macros
             )
             mainLookupOrder.forEach {

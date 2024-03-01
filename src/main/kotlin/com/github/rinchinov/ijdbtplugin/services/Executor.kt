@@ -23,16 +23,15 @@ class Executor(project: Project){
 
         // Handle the output and exit code
         if (exitCode != 0) {
-            val logUrl = "<a href='file://${projectConfigurations.logPath().absolutePath}'>Open log</a>."
-            dbtNotifications.sendNotification("Process finished with exit code $exitCode", "$logUrl Output: $output", NotificationType.ERROR)
+            dbtNotifications.sendNotification("Process finished with exit code $exitCode", "Output: $output", NotificationType.ERROR)
         }
         return output
     }
-    fun executeDbt(args: List<String>, kwargs: Map<String, String>) {
+    fun executeDbt(args: List<String>, kwargs: Map<String, String>): String {
         // Access the Python script as a resource
         val url = this::class.java.classLoader.getResource("python/cli.py")
         val scriptTemplate = url?.readText() ?: throw IllegalArgumentException("Script not found")
-        val pythonSdkPath = projectConfigurations.sdkPath().absolutePath.toString()
+        val pythonSdkPath = settings.getDbtInterpreterPath()
         val script = scriptTemplate.replace("RUNNER_IMPORT", settings.getDbtRunnerImport())
         val gson = Gson()
         val processBuilder = ProcessBuilder(
@@ -43,16 +42,17 @@ class Executor(project: Project){
                 gson.toJson(kwargs)
         )
         processBuilder.directory(
-            projectConfigurations.dbtProjectPath().absoluteDir.toFile()
+            projectConfigurations.dbtProjectPath().absoluteDir?.toFile()
         )
-        waitProcess(processBuilder.start())
+        val output =  waitProcess(processBuilder.start())
+        return output.trim().lines().last()
     }
     fun getDbtPythonPackageLocation(): String {
-        val pythonSdkPath = projectConfigurations.sdkPath().absolutePath.toString()
+        val pythonSdkPath = settings.getDbtInterpreterPath()
         val process = ProcessBuilder(
             pythonSdkPath,
             "-c",
-            "import os, dbt;print(os.path.dirname(dbt.__file__))"
+            "import os,dbt;print(os.path.dirname(dbt.__file__))"
         ).start()
         return waitProcess(process).trim()
     }

@@ -10,3 +10,4 @@ kwargs = json.loads(sys.argv[2])
 res: dbtRunnerResult = dbt.invoke(args, **kwargs)
 if not res.success:
     raise res.exception
+print(json.dumps(res.result.to_dict()))

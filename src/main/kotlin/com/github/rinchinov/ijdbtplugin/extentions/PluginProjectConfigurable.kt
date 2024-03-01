@@ -17,7 +17,7 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
     private val projectConfigurations = project.service<ProjectConfigurations>()
     private val mainPanel = JPanel(GridBagLayout())
     private val projectPath: JTextField = JTextField()
-    private val dbtProfilePath: JTextField = JTextField()
+    private val dbtProfileDir: JTextField = JTextField()
     private val dbtRunnerImport: JTextField = JTextField()
     private val dbtInterpreterPath: JTextField = JTextField()
     private val dbtTargetList: JTextField = JTextField()
@@ -47,7 +47,7 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         mainPanel.add(JLabel("DBT profile path"), gbc)
         gbc.gridx = 1 // Second column for input fields
         gbc.weightx = 1.0 // Expand fields horizontally
-        mainPanel.add(dbtProfilePath, gbc)
+        mainPanel.add(dbtProfileDir, gbc)
         gbc.gridy++
         gbc.gridx = 0
         gbc.gridwidth = 1 // Reset to one column
@@ -129,7 +129,7 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
 
     override fun isModified(): Boolean {
         return settings.getDbtProjectPath() != projectPath.text
-                || settings.getDbtProfilePath() != dbtProfilePath.text
+                || settings.getDbtProfileDir() != dbtProfileDir.text
                 || settings.getDbtRunnerImport() != dbtRunnerImport.text
                 || settings.getDbtInterpreterPath() != dbtInterpreterPath.text
                 || settings.getDbtDefaultTarget() != dbtDefaultTarget.text
@@ -139,7 +139,7 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
 
     override fun apply() {
         settings.setDbtProjectPath(projectPath.text)
-        settings.setDbtProfilePath(dbtProfilePath.text)
+        settings.setDbtProfileDir(dbtProfileDir.text)
         settings.setDbtRunnerImport(dbtRunnerImport.text)
         settings.setDbtInterpreterPath(dbtInterpreterPath.text)
         settings.setDbtDefaultTarget(dbtDefaultTarget.text)
@@ -150,7 +150,7 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
 
     override fun reset() {
         projectPath.text = settings.getDbtProjectPath()
-        dbtProfilePath.text = settings.getDbtProfilePath()
+        dbtProfileDir.text = settings.getDbtProfileDir()
         dbtRunnerImport.text = settings.getDbtRunnerImport()
         dbtInterpreterPath.text = settings.getDbtInterpreterPath()
         dbtDefaultTarget.text = settings.getDbtDefaultTarget()
