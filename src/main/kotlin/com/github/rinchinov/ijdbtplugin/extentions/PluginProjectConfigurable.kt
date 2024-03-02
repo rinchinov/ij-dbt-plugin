@@ -25,104 +25,39 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
     private val dbtAdapter: JTextField = JTextField()
 
     init {
-        val gbc = GridBagConstraints()
-        gbc.gridx = 0 // First column
-        gbc.gridy = 0 // Start from first row
-        gbc.gridwidth = 2 // Span two columns
-        gbc.fill = GridBagConstraints.HORIZONTAL // Fill horizontally
-        gbc.insets = JBUI.insets(4)
-        // Project Settings Section
-        mainPanel.add(JLabel("Project Settings"), gbc)
-        gbc.gridy++
-        gbc.gridwidth = 1 // Reset to one column
-        gbc.weightx = 0.0 // Do not expand labels horizontally
-        mainPanel.add(JLabel("Project path"), gbc)
-        gbc.gridx = 1 // Second column for input fields
-        gbc.weightx = 1.0 // Expand fields horizontally
-        mainPanel.add(projectPath, gbc)
-        gbc.gridy++
-        gbc.gridx = 0
-        gbc.gridwidth = 1 // Reset to one column
-        gbc.weightx = 0.0 // Do not expand labels horizontally
-        mainPanel.add(JLabel("DBT profile path"), gbc)
-        gbc.gridx = 1 // Second column for input fields
-        gbc.weightx = 1.0 // Expand fields horizontally
-        mainPanel.add(dbtProfileDir, gbc)
-        gbc.gridy++
-        gbc.gridx = 0
-        gbc.gridwidth = 1 // Reset to one column
-        gbc.weightx = 0.0 // Do not expand labels horizontally
-        mainPanel.add(JLabel("DBT runner import"), gbc)
-        gbc.gridx = 1 // Second column for input fields
-        gbc.weightx = 1.0 // Expand fields horizontally
-        mainPanel.add(dbtRunnerImport, gbc)
-        gbc.gridy++
-        gbc.gridx = 0
-        gbc.gridwidth = 1 // Reset to one column
-        gbc.weightx = 0.0 // Do not expand labels horizontally
-        mainPanel.add(JLabel("DBT interpreter path"), gbc)
-        gbc.gridx = 1 // Second column for input fields
-        gbc.weightx = 1.0 // Expand fields horizontally
-        mainPanel.add(dbtInterpreterPath, gbc)
-        gbc.gridy++
-        gbc.gridx = 0
-        gbc.gridwidth = 1 // Reset to one column
-        gbc.weightx = 0.0 // Do not expand labels horizontally
-        mainPanel.add(JLabel("DBT target lists"), gbc)
-        gbc.gridx = 1 // Second column for input fields
-        gbc.weightx = 1.0 // Expand fields horizontally
-        mainPanel.add(dbtTargetList, gbc)
-        gbc.gridy++
-        gbc.gridx = 0
-        gbc.gridwidth = 1 // Reset to one column
-        gbc.weightx = 0.0 // Do not expand labels horizontally
-        mainPanel.add(JLabel("DBT plugin default target"), gbc)
-        gbc.gridx = 1 // Second column for input fields
-        gbc.weightx = 1.0 // Expand fields horizontally
-        mainPanel.add(dbtDefaultTarget, gbc)
-        gbc.gridy++
-        gbc.gridx = 0
-        gbc.gridwidth = 1 // Reset to one column
-        gbc.weightx = 0.0 // Do not expand labels horizontally
-        mainPanel.add(JLabel("DBT plugin default adapter"), gbc)
-        gbc.gridx = 1 // Second column for input fields
-        gbc.weightx = 1.0 // Expand fields horizontally
-        mainPanel.add(dbtAdapter, gbc)
+        val gbc = GridBagConstraints().apply {
+            gridx = 0
+            gridy = GridBagConstraints.RELATIVE
+            fill = GridBagConstraints.HORIZONTAL
+            weightx = 1.0
+            insets = JBUI.insets(4)
+        }
 
-//        // Application Settings Section
-//        gbc.gridx = 0 // Reset to first column
-//        gbc.gridy++
-//        gbc.gridwidth = 2 // Span two columns for section label
-//        gbc.weightx = 0.0 // Do not expand section label horizontally
-//        mainPanel.add(JLabel("Application Settings"), gbc)
-//
-//        gbc.gridy++
-//        gbc.gridwidth = 1 // Reset to one column for labels
-//        gbc.weightx = 0.0 // Do not expand labels horizontally
-//        mainPanel.add(JLabel("Shell path:"), gbc)
-//        gbc.gridx = 1 // Second column for input fields
-//        gbc.weightx = 1.0 // Expand fields horizontally
-//        mainPanel.add(shellPathField, gbc)
-//
-//        gbc.gridx = 0
-//        gbc.gridy++
-//        mainPanel.add(JLabel("Default Tab name:"), gbc)
-//        gbc.gridx = 1
-//        mainPanel.add(defaultTabNameField, gbc)
-//
-//        gbc.gridx = 0
-//        gbc.gridy++
-//        gbc.gridwidth = 2 // Checkbox to span two columns
-//        mainPanel.add(audibleBellCheckBox, gbc)
-//
-//        // Filler at the end to push everything to the top
-//        gbc.gridx = 0
-//        gbc.gridy++
-//        gbc.gridwidth = 2
-//        gbc.weighty = 1.0 // Extra vertical space assigned to the filler
-//        gbc.fill = GridBagConstraints.BOTH // Fill both horizontally and vertically
-        mainPanel.add(Box.createGlue(), gbc)
+        addLabeledField("Project path", projectPath, mainPanel, gbc)
+        addLabeledField("DBT profile path", dbtProfileDir, mainPanel, gbc)
+        addLabeledField("DBT runner import", dbtRunnerImport, mainPanel, gbc)
+        addLabeledField("DBT interpreter path", dbtInterpreterPath, mainPanel, gbc)
+        addLabeledField("DBT target lists", dbtTargetList, mainPanel, gbc)
+        addLabeledField("DBT plugin default target", dbtDefaultTarget, mainPanel, gbc)
+        addLabeledField("DBT plugin default adapter", dbtAdapter, mainPanel, gbc)
+
+        gbc.weighty = 1.0
+        mainPanel.add(Box.createVerticalGlue(), gbc)
     }
+
+    private fun addLabeledField(labelText: String, field: JTextField, panel: JPanel, gbc: GridBagConstraints) {// Clone the GridBagConstraints to avoid side effects
+        val labelGbc = gbc.clone() as GridBagConstraints
+        labelGbc.gridx = 0
+        labelGbc.weightx = 0.0
+        panel.add(JLabel(labelText), labelGbc)
+
+        val fieldGbc = gbc.clone() as GridBagConstraints
+        fieldGbc.gridx = 1
+        fieldGbc.weightx = 1.0
+        panel.add(field, fieldGbc)
+        gbc.gridy += 2
+    }
+
     override fun createComponent(): JComponent {
         return JBScrollPane(mainPanel) // Wrap the mainPanel in a JScrollPane
     }
