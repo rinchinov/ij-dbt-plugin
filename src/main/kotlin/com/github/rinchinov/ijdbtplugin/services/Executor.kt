@@ -1,4 +1,5 @@
 package com.github.rinchinov.ijdbtplugin.services
+import com.github.rinchinov.ijdbtplugin.extentions.FocusLogsTabAction
 import com.google.gson.Gson
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -9,10 +10,11 @@ import com.intellij.notification.NotificationType
 
 
 @Service(Service.Level.PROJECT)
-class Executor(project: Project){
+class Executor(private val project: Project){
     private val settings = project.service<ProjectSettings>()
     private val projectConfigurations = project.service<ProjectConfigurations>()
     private val dbtNotifications = project.service<Notifications>()
+    private val eventLoggerManager = project.service<EventLoggerManager>()
 
     private fun waitProcess(process: Process): String{
         val reader = BufferedReader(InputStreamReader(process.inputStream))
@@ -20,12 +22,28 @@ class Executor(project: Project){
 
         // Wait for the process to complete
         val exitCode = process.waitFor()
-
+        val logs = output.trim().lines()
         // Handle the output and exit code
         if (exitCode != 0) {
-            dbtNotifications.sendNotification("Process finished with exit code $exitCode", "Output: $output", NotificationType.ERROR)
+            dbtNotifications.sendNotification(
+                "Process finished with exit code $exitCode",
+                "Output: $output",
+                NotificationType.ERROR,
+                FocusLogsTabAction(project)
+            )
+            if (logs.isNotEmpty()){
+                eventLoggerManager.logLines(logs, "dbt")
+            }
         }
-        return output
+        else {
+            if (logs.size > 1){
+                eventLoggerManager.logLines(logs.dropLast(1), "dbt")
+            }
+        }
+        if (logs.isEmpty()){
+            return output.trim()
+        }
+        return logs.last().trim()
     }
     fun executeDbt(args: List<String>, kwargs: Map<String, String>): String {
         // Access the Python script as a resource
@@ -42,10 +60,9 @@ class Executor(project: Project){
                 gson.toJson(kwargs)
         )
         processBuilder.directory(
-            projectConfigurations.dbtProjectPath().absoluteDir?.toFile()
+            projectConfigurations.dbtProjectPath().absoluteDir.toFile()
         )
-        val output =  waitProcess(processBuilder.start())
-        return output.trim().lines().last()
+        return waitProcess(processBuilder.start())
     }
     fun getDbtPythonPackageLocation(): String {
         val pythonSdkPath = settings.getDbtInterpreterPath()
@@ -54,6 +71,6 @@ class Executor(project: Project){
             "-c",
             "import os,dbt;print(os.path.dirname(dbt.__file__))"
         ).start()
-        return waitProcess(process).trim()
+        return waitProcess(process)
     }
 }

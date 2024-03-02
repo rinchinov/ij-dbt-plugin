@@ -7,8 +7,9 @@ import com.intellij.openapi.project.Project
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.Manifest
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.Node
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.SourceDefinition
-import com.github.rinchinov.ijdbtplugin.extentions.ToolWindowUpdater
+import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.DbtCoreInterface
+import com.github.rinchinov.ijdbtplugin.extentions.FocusLogsTabAction
 import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.github.rinchinov.ijdbtplugin.services.Notifications
 import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
@@ -34,7 +35,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
     private val executor = project.service<Executor>()
     private val dbtPackageLocation = executor.getDbtPythonPackageLocation()
     private val dbtNotifications = project.service<Notifications>()
-    private val toolWindowUpdater = project.service<ToolWindowUpdater>()
+    private val eventLoggerManager = project.service<EventLoggerManager>()
     private val mutex = Mutex()
     private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val manifests: MutableMap<String, Manifest?> = settings.getDbtTargetList().associateWith{ null }.toMutableMap()
@@ -46,7 +47,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
     private fun defaultProjectName() = defaultManifest()?.getProjectName()?: ""
     private fun updateManifest(target: String, manifest: Manifest) {
         manifests[target] = manifest // Directly modify the backing map
-        toolWindowUpdater.notifyManifestChangeListeners(this)
+        eventLoggerManager.notifyManifestChangeListeners(this)
         manifestLastUpdated[target] = LocalDateTime.now()
     }
     private fun getManifest(target: String?): Manifest? {
@@ -59,9 +60,9 @@ class ManifestService(var project: Project): DbtCoreInterface {
     }
 
     private fun parseManifest(target: String) {
-        val lastUpdated = manifestLastUpdated[target]
+        val lastUpdated = manifestLastUpdated[target]?: LocalDateTime.of(1, 1, 1, 0, 0)
         if (Duration.between(lastUpdated, LocalDateTime.now()).toMinutes() <= UPDATE_INTERVAL) {
-            return
+                return
         }
 
         coroutineScope.launch {
@@ -76,7 +77,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
                         listOf("parse", "--no-write-json"),
                         mapOf(
                             "target" to target,
-                            "log_format" to "json",
+//                            "log_format" to "json",
                             "profiles_dir" to projectConfigurations.getDbtProfileDirAbsolute().toString()
                         )
                     )
@@ -87,10 +88,12 @@ class ManifestService(var project: Project): DbtCoreInterface {
                         NotificationType.INFORMATION
                     )
                 } catch (e: Exception) {
+                    eventLoggerManager.logLines(e.toString().trim().lines(), "core")
                     dbtNotifications.sendNotification(
                         "Manifest reload failed for $target!!",
-                        e.toString(),
-                        NotificationType.ERROR
+                        "",
+                        NotificationType.ERROR,
+                        FocusLogsTabAction(project)
                     )
                 } finally {
                     mutex.unlock()

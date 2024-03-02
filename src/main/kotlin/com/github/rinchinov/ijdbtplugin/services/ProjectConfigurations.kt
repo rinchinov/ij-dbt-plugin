@@ -1,6 +1,5 @@
 package com.github.rinchinov.ijdbtplugin.services
 
-import com.github.rinchinov.ijdbtplugin.extentions.ToolWindowUpdater
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -17,7 +16,7 @@ import java.nio.file.Paths
 class ProjectConfigurations(private val project: Project) {
     val settings = project.service<ProjectSettings>()
     private val dbtNotifications = project.service<Notifications>()
-    private val toolWindowUpdater = project.service<ToolWindowUpdater>()
+    private val eventLoggerManager = project.service<EventLoggerManager>()
     val dbtProjectConfig = DbtProjectConfig(
         "",
         1,
@@ -61,7 +60,7 @@ class ProjectConfigurations(private val project: Project) {
         } catch (e: Exception) {
             dbtNotifications.sendNotification("Error loading YAML file", ": ${e.message}\nTBD Instruction and link to the doc", NotificationType.ERROR)
         }
-        toolWindowUpdater.notifyProjectConfigurationsChangeListeners(this)
+        eventLoggerManager.notifyProjectConfigurationsChangeListeners(this)
     }
     class SettingPath(relativePath: String, basePath: String) {
         var absolutePath: Path = Paths.get(basePath, relativePath)
