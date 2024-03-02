@@ -83,4 +83,10 @@ class ProjectConfigurations(private val project: Project) {
             else -> Paths.get(settings.getDbtProfileDir())
         }
     }
+
+    fun getDbtCachePath(target: String): Path {
+        val cacheDir = Paths.get(project.basePath?: System.getProperty("user.home"),".dbt_plugin", target)
+        Files.createDirectories(cacheDir) // Ensure the cache directory exists
+        return cacheDir
+    }
 }

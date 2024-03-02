@@ -74,12 +74,13 @@ class ManifestService(var project: Project): DbtCoreInterface {
                         NotificationType.INFORMATION
                     )
                     val manifestString = executor.executeDbt(
-                        listOf("parse", "--no-write-json"),
+                        listOf("parse", "--write-json", "--partial-parse"),
                         mapOf(
                             "target" to target,
-//                            "log_format" to "json",
+                            "target_path" to projectConfigurations.getDbtCachePath(target).toString(),
+                            "log_path" to projectConfigurations.getDbtCachePath(target).toString(),
                             "profiles_dir" to projectConfigurations.getDbtProfileDirAbsolute().toString()
-                        )
+                        ),
                     )
                     updateManifest(target, Manifest.fromJson(manifestString))
                     dbtNotifications.sendNotification(

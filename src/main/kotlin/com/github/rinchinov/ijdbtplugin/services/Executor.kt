@@ -53,11 +53,11 @@ class Executor(private val project: Project){
         val script = scriptTemplate.replace("RUNNER_IMPORT", settings.getDbtRunnerImport())
         val gson = Gson()
         val processBuilder = ProcessBuilder(
-                pythonSdkPath,
-                "-c",
-                script,
-                gson.toJson(args),
-                gson.toJson(kwargs)
+            pythonSdkPath,
+            "-c",
+            script,
+            gson.toJson(args),
+            gson.toJson(kwargs),
         )
         processBuilder.directory(
             projectConfigurations.dbtProjectPath().absoluteDir.toFile()
