@@ -46,6 +46,17 @@ class Executor(private val project: Project){
         return logs.last().trim()
     }
 
+    fun dbtCompileInline(target: String, query: String): String {
+        return dbtInvoke(
+            listOf("compile", "--inline", query),
+            mapOf(
+                "target" to target,
+                "target_path" to projectConfigurations.getDbtCachePath(target).toString(),
+                "log_path" to projectConfigurations.getDbtCachePath(target).toString(),
+                "profiles_dir" to projectConfigurations.getDbtProfileDirAbsolute().toString()
+            )
+        )
+    }
     fun dbtParse(target: String): String {
         return dbtInvoke(
             listOf("parse", "--write-json", "--partial-parse"),

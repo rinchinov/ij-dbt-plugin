@@ -13,6 +13,7 @@ import com.intellij.psi.*
 import com.jetbrains.jinja2.template.psi.impl.Jinja2MemberNameImpl
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.StringSelection
+import javax.swing.SwingUtilities
 
 
 interface DbtCoreInterface {
@@ -98,31 +99,35 @@ interface DbtCoreInterface {
     fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String
     fun replaceRefsAndSourcesToJinja2(query: String, target: String): String
     fun copyWithReplacingRefsAndSources(e: AnActionEvent, target: String){
-        val editor: Editor = e.getRequiredData(CommonDataKeys.EDITOR)
-        val document = editor.document
-        val selectionModel = editor.selectionModel
-        val selectedText = selectionModel.selectedText?: document.text
-        val replacedContent = replaceRefsAndSourcesFromJinja2(selectedText, target)
-        val copyPasteManager = CopyPasteManager.getInstance()
-        copyPasteManager.setContents(StringSelection(replacedContent))
+        SwingUtilities.invokeLater {
+            val editor: Editor = e.getRequiredData(CommonDataKeys.EDITOR)
+            val document = editor.document
+            val selectionModel = editor.selectionModel
+            val selectedText = selectionModel.selectedText?: document.text
+            val replacedContent = replaceRefsAndSourcesFromJinja2(selectedText, target)
+            val copyPasteManager = CopyPasteManager.getInstance()
+            copyPasteManager.setContents(StringSelection(replacedContent))
+        }
     }
     fun pasteWithReplacedRefsAndSources(e: AnActionEvent, target: String){
-        val clipboard = CopyPasteManager.getInstance()
-        val clipboardContents = clipboard.contents
-        val stringContent = clipboardContents?.getTransferData(DataFlavor.stringFlavor) as? String
-        if (!stringContent.isNullOrEmpty()) {
-            val replacedQuery = replaceRefsAndSourcesToJinja2(stringContent, target)
-            WriteCommandAction.runWriteCommandAction(e.project) {
-                val editor: Editor = e.getRequiredData(CommonDataKeys.EDITOR)
-                val document = editor.document
-                if (editor.selectionModel.hasSelection()) {
-                    val start = editor.selectionModel.selectionStart
-                    val end = editor.selectionModel.selectionEnd
-                    document.replaceString(start, end, replacedQuery)
-                } else {
-                    val caretModel = editor.caretModel
-                    val offset = caretModel.offset
-                    document.insertString(offset, replacedQuery)
+        SwingUtilities.invokeLater {
+            val clipboard = CopyPasteManager.getInstance()
+            val clipboardContents = clipboard.contents
+            val stringContent = clipboardContents?.getTransferData(DataFlavor.stringFlavor) as? String
+            if (!stringContent.isNullOrEmpty()) {
+                val replacedQuery = replaceRefsAndSourcesToJinja2(stringContent, target)
+                WriteCommandAction.runWriteCommandAction(e.project) {
+                    val editor: Editor = e.getRequiredData(CommonDataKeys.EDITOR)
+                    val document = editor.document
+                    if (editor.selectionModel.hasSelection()) {
+                        val start = editor.selectionModel.selectionStart
+                        val end = editor.selectionModel.selectionEnd
+                        document.replaceString(start, end, replacedQuery)
+                    } else {
+                        val caretModel = editor.caretModel
+                        val offset = caretModel.offset
+                        document.insertString(offset, replacedQuery)
+                    }
                 }
             }
         }

@@ -31,6 +31,33 @@ fun listToNestedMap(list: List<String>): Map<String, Map<String, Map<String, Str
     }
     return result
 }
+
+fun getRelationMap(nodes: Map<String, Node>, sources: Map<String, SourceDefinition>): Map<String, String> {
+    val result = mutableMapOf<String, String>()
+    nodes.forEach {
+        val version = if (it.value.version != null && it.value.latestVersion != it.value.version) {
+            ", version=$it.value.version"
+        }
+        else {
+            ""
+        }
+        val packageName = it.value.packageName
+        val id = it.key.split(".")[2]
+        val relationName = it.value.relationName
+        if (it.value.relationName != null){
+            result[relationName.toString()] = "{{ ref('$packageName', '$id'$version) }}"
+        }
+    }
+    sources.forEach {
+        val packageName = it.value.sourceName
+        val sourceName = it.value.name
+        val relationName = it.value.relationName
+        if (it.value.relationName != null){
+            result[relationName.toString()] = "{{ source('$packageName', '$sourceName') }}"
+        }
+    }
+    return result
+}
 @Suppress("UNCHECKED_CAST")
 private fun <T> ObjectMapper.convert(k: kotlin.reflect.KClass<*>, fromJson: (JsonNode) -> T, toJson: (T) -> String, isUnion: Boolean = false) = registerModule(SimpleModule().apply {
     addSerializer(k.java as Class<T>, object : StdSerializer<T>(k.java as Class<T>) {
@@ -174,7 +201,8 @@ data class Manifest (
                             String // uniqueId
                             >
                     >
-            >? = listToNestedMap(macros.keys.toList().plus(nodes.keys.toList()).plus(sources.keys.toList()))
+            >? = listToNestedMap(macros.keys.toList().plus(nodes.keys.toList()).plus(sources.keys.toList())),
+    val relationMap:  Map<String, String> = getRelationMap(nodes, sources)
 ){
     fun toJson() = mapperManifest.writeValueAsString(this)
     fun getProjectName(): String{

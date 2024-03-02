@@ -1,25 +1,24 @@
 package com.github.rinchinov.ijdbtplugin.artifactsServices
-import com.github.rinchinov.ijdbtplugin.artifactsVersions.Macro
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.github.rinchinov.ijdbtplugin.artifactsVersions.Manifest
-import com.github.rinchinov.ijdbtplugin.artifactsVersions.Node
-import com.github.rinchinov.ijdbtplugin.artifactsVersions.SourceDefinition
 import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.DbtCoreInterface
+import com.github.rinchinov.ijdbtplugin.artifactsVersions.*
 import com.github.rinchinov.ijdbtplugin.extentions.FocusLogsTabAction
 import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.github.rinchinov.ijdbtplugin.services.Notifications
 import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
 import com.intellij.notification.NotificationType
+import com.jetbrains.python.profiler.getPackageName
 import com.jetbrains.rd.util.first
 import java.time.LocalDateTime
 import java.time.Duration
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
-
+import javax.swing.SwingUtilities
 
 @Service(Service.Level.PROJECT)
 class ManifestService(var project: Project): DbtCoreInterface {
@@ -175,12 +174,34 @@ class ManifestService(var project: Project): DbtCoreInterface {
     }
 
     override fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String {
-        return query
-
+        val result = executor.dbtCompileInline(target, query)
+        val jsonNode = ObjectMapper().readTree(result)
+        val compiledCode = jsonNode.at("/results/0/node/compiled_code").asText()
+        if (compiledCode == null){
+            dbtNotifications.sendNotification(
+                "Failed to replace ref/source for copying!",
+                "",
+                NotificationType.ERROR,
+                FocusLogsTabAction(project)
+            )
+            return query
+        }
+        else {
+            dbtNotifications.sendNotification(
+                "Copied with replaced refs/sources",
+                "",
+                NotificationType.INFORMATION
+            )
+            return compiledCode
+        }
     }
 
     override fun replaceRefsAndSourcesToJinja2(query: String, target: String): String {
-        return query
+        var replaced = query
+        manifests[target]?.relationMap?.forEach{
+            replaced = replaced.replace(it.key, it.value)
+        }
+        return replaced.replace("'${defaultProjectName()}', ", "")
     }
 
 }
