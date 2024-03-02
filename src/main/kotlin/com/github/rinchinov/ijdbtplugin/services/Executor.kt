@@ -45,7 +45,31 @@ class Executor(private val project: Project){
         }
         return logs.last().trim()
     }
-    fun executeDbt(args: List<String>, kwargs: Map<String, String>): String {
+
+    fun dbtParse(target: String): String {
+        return dbtInvoke(
+            listOf("parse", "--write-json", "--partial-parse"),
+            mapOf(
+                "target" to target,
+                "target_path" to projectConfigurations.getDbtCachePath(target).toString(),
+                "log_path" to projectConfigurations.getDbtCachePath(target).toString(),
+                "profiles_dir" to projectConfigurations.getDbtProfileDirAbsolute().toString()
+            )
+        )
+    }
+    fun dbtDocsGenerate(target: String): String {
+        return dbtInvoke(
+            listOf("docs", "generate", "--write-json", "--partial-parse"),
+            mapOf(
+                "target" to target,
+                "target_path" to projectConfigurations.getDbtCachePath(target).toString(),
+                "log_path" to projectConfigurations.getDbtCachePath(target).toString(),
+                "profiles_dir" to projectConfigurations.getDbtProfileDirAbsolute().toString()
+            )
+        )
+    }
+
+    private fun dbtInvoke(args: List<String>, kwargs: Map<String, String>): String {
         // Access the Python script as a resource
         val url = this::class.java.classLoader.getResource("python/cli.py")
         val scriptTemplate = url?.readText() ?: throw IllegalArgumentException("Script not found")

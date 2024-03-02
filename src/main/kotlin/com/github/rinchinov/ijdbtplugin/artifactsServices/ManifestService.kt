@@ -68,20 +68,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
         coroutineScope.launch {
             if (mutex.tryLock()) {
                 try {
-                    dbtNotifications.sendNotification(
-                        "Manifest reload started!",
-                        "",
-                        NotificationType.INFORMATION
-                    )
-                    val manifestString = executor.executeDbt(
-                        listOf("parse", "--write-json", "--partial-parse"),
-                        mapOf(
-                            "target" to target,
-                            "target_path" to projectConfigurations.getDbtCachePath(target).toString(),
-                            "log_path" to projectConfigurations.getDbtCachePath(target).toString(),
-                            "profiles_dir" to projectConfigurations.getDbtProfileDirAbsolute().toString()
-                        ),
-                    )
+                    val manifestString = executor.dbtParse(target)
                     updateManifest(target, Manifest.fromJson(manifestString))
                     dbtNotifications.sendNotification(
                         "Manifest reloaded for $target!",
