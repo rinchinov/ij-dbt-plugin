@@ -8,7 +8,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
-import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -52,7 +51,7 @@ class ProjectInformationPanel(private val toolWindow: ToolWindow): ProjectInfoCh
         )
         add(scrollPane)
     }
-    override fun onManifestChanged(manifest: ManifestService)  = runBlocking {
+    override fun onManifestChanged(manifest: ManifestService) {
         SwingUtilities.invokeLater {
             options.setValue("status", manifest.getStatus())
             options.setValue("lastUpdateTime", manifest.lastUpdated().toString())
@@ -62,7 +61,7 @@ class ProjectInformationPanel(private val toolWindow: ToolWindow): ProjectInfoCh
         }
     }
 
-    override fun onProjectConfigurationsChanged(configurations: ProjectConfigurations) = runBlocking {
+    override fun onProjectConfigurationsChanged(configurations: ProjectConfigurations) {
         SwingUtilities.invokeLater {
             options.setValue("dbtProjectFile", configurations.settings.getDbtProjectPath())
             options.setValue("pythonSdk", configurations.settings.getDbtInterpreterPath())
