@@ -11,6 +11,53 @@ import com.fasterxml.jackson.module.kotlin.*
 import com.jetbrains.rd.util.first
 
 
+fun listToNestedMap(list: List<String>): Map<String, Map<String, Map<String, String>>> {
+    val result = mutableMapOf<String, MutableMap<String, MutableMap<String, String>>>()
+    list.forEach { value ->
+        val parts = value.split(".")
+
+        if (parts.size >= 3) {
+            val firstKey = parts[0]
+            val secondKey = parts[1]
+            val thirdKey = parts.drop(2).joinToString(separator = ".")
+
+            // Ensure the nested maps exist
+            val secondLevelMap = result.getOrPut(firstKey) { mutableMapOf() }
+            val thirdLevelMap = secondLevelMap.getOrPut(secondKey) { mutableMapOf() }
+
+            // Assign the value
+            thirdLevelMap[thirdKey] = value
+        }
+    }
+    return result
+}
+
+fun getRelationMap(nodes: Map<String, Node>, sources: Map<String, SourceDefinition>): Map<String, String> {
+    val result = mutableMapOf<String, String>()
+    nodes.forEach {
+        val version = if (it.value.version != null && it.value.latestVersion != it.value.version) {
+            ", version=$it.value.version"
+        }
+        else {
+            ""
+        }
+        val packageName = it.value.packageName
+        val id = it.key.split(".")[2]
+        val relationName = it.value.relationName
+        if (it.value.relationName != null){
+            result[relationName.toString()] = "{{ ref('$packageName', '$id'$version) }}"
+        }
+    }
+    sources.forEach {
+        val packageName = it.value.sourceName
+        val sourceName = it.value.name
+        val relationName = it.value.relationName
+        if (it.value.relationName != null){
+            result[relationName.toString()] = "{{ source('$packageName', '$sourceName') }}"
+        }
+    }
+    return result
+}
 @Suppress("UNCHECKED_CAST")
 private fun <T> ObjectMapper.convert(k: kotlin.reflect.KClass<*>, fromJson: (JsonNode) -> T, toJson: (T) -> String, isUnion: Boolean = false) = registerModule(SimpleModule().apply {
     addSerializer(k.java as Class<T>, object : StdSerializer<T>(k.java as Class<T>) {
@@ -140,7 +187,22 @@ data class Manifest (
      * The sources defined in the dbt project and its dependencies
      */
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val sources: Map<String, SourceDefinition>
+    val sources: Map<String, SourceDefinition>,
+
+    /**
+     * Maps that help to navigate over manifest faster
+     */
+    val resourceMap: Map<
+            String, // type model/source/test/macro/etc
+            Map<
+                    String, // packageName
+                    Map<
+                            String, // lastPart
+                            String // uniqueId
+                            >
+                    >
+            >? = listToNestedMap(macros.keys.toList().plus(nodes.keys.toList()).plus(sources.keys.toList())),
+    val relationMap:  Map<String, String> = getRelationMap(nodes, sources)
 ){
     fun toJson() = mapperManifest.writeValueAsString(this)
     fun getProjectName(): String{
