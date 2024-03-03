@@ -11,13 +11,14 @@ import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.*
 import com.jetbrains.jinja2.template.psi.impl.Jinja2MemberNameImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.StringSelection
-import javax.swing.SwingUtilities
 
 
 interface DbtCoreInterface {
-
+    val coroutineScope: CoroutineScope
     fun findNode(packageName: String?, uniqueId: String, currentVersion: Int?, target: String?): Node?
     fun findSourceDefinition(uniqueId: String, target: String?): SourceDefinition?
     fun findMacro(packageName: String?, macroName: String, target: String?): Macro?
@@ -99,7 +100,7 @@ interface DbtCoreInterface {
     fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String
     fun replaceRefsAndSourcesToJinja2(query: String, target: String): String
     fun copyWithReplacingRefsAndSources(e: AnActionEvent, target: String){
-        SwingUtilities.invokeLater {
+        coroutineScope.launch {
             val editor: Editor = e.getRequiredData(CommonDataKeys.EDITOR)
             val document = editor.document
             val selectionModel = editor.selectionModel
@@ -110,7 +111,7 @@ interface DbtCoreInterface {
         }
     }
     fun pasteWithReplacedRefsAndSources(e: AnActionEvent, target: String){
-        SwingUtilities.invokeLater {
+        coroutineScope.launch {
             val clipboard = CopyPasteManager.getInstance()
             val clipboardContents = clipboard.contents
             val stringContent = clipboardContents?.getTransferData(DataFlavor.stringFlavor) as? String

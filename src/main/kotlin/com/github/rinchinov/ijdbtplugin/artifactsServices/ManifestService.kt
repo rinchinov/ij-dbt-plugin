@@ -7,18 +7,16 @@ import com.intellij.openapi.project.Project
 import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.DbtCoreInterface
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.*
-import com.github.rinchinov.ijdbtplugin.extentions.FocusLogsTabAction
+import com.github.rinchinov.ijdbtplugin.extensions.FocusLogsTabAction
 import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.github.rinchinov.ijdbtplugin.services.Notifications
 import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
 import com.intellij.notification.NotificationType
-import com.jetbrains.python.profiler.getPackageName
 import com.jetbrains.rd.util.first
 import java.time.LocalDateTime
 import java.time.Duration
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
-import javax.swing.SwingUtilities
 
 @Service(Service.Level.PROJECT)
 class ManifestService(var project: Project): DbtCoreInterface {
@@ -36,7 +34,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
     private val dbtNotifications = project.service<Notifications>()
     private val eventLoggerManager = project.service<EventLoggerManager>()
     private val mutex = Mutex()
-    private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    override val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val manifests: MutableMap<String, Manifest?> = settings.getDbtTargetList().associateWith{ null }.toMutableMap()
     private val manifestLastUpdated: MutableMap<String, LocalDateTime> = settings.getDbtTargetList().associateWith{ LocalDateTime.of(1, 1, 1, 0, 0) }.toMutableMap()
     init {
@@ -177,7 +175,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
         val result = executor.dbtCompileInline(target, query)
         val jsonNode = ObjectMapper().readTree(result)
         val compiledCode = jsonNode.at("/results/0/node/compiled_code").asText()
-        if (compiledCode == null){
+        if (compiledCode == null) {
             dbtNotifications.sendNotification(
                 "Failed to replace ref/source for copying!",
                 "",
@@ -185,8 +183,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
                 FocusLogsTabAction(project)
             )
             return query
-        }
-        else {
+        } else {
             dbtNotifications.sendNotification(
                 "Copied with replaced refs/sources",
                 "",

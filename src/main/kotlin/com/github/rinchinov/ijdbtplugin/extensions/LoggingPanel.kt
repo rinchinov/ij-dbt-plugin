@@ -1,4 +1,4 @@
-package com.github.rinchinov.ijdbtplugin.extentions
+package com.github.rinchinov.ijdbtplugin.extensions
 
 import com.github.rinchinov.ijdbtplugin.LoggingInterface
 import java.awt.BorderLayout

@@ -1,4 +1,4 @@
-package com.github.rinchinov.ijdbtplugin.extentions;
+package com.github.rinchinov.ijdbtplugin.extensions;
 
 import com.github.rinchinov.ijdbtplugin.ProjectInfoChangeListenerInterface
 import com.intellij.ui.jcef.JBCefApp

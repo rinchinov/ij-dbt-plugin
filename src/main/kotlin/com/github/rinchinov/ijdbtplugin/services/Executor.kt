@@ -1,5 +1,5 @@
 package com.github.rinchinov.ijdbtplugin.services
-import com.github.rinchinov.ijdbtplugin.extentions.FocusLogsTabAction
+import com.github.rinchinov.ijdbtplugin.extensions.FocusLogsTabAction
 import com.google.gson.Gson
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service

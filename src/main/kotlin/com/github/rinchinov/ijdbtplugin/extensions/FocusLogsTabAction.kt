@@ -1,4 +1,4 @@
-package com.github.rinchinov.ijdbtplugin.extentions
+package com.github.rinchinov.ijdbtplugin.extensions
 
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationAction
