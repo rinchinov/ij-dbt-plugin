@@ -22,7 +22,7 @@ interface DbtCoreInterface {
     fun findNode(packageName: String?, uniqueId: String, currentVersion: Int?, target: String?): Node?
     fun findSourceDefinition(uniqueId: String, target: String?): SourceDefinition?
     fun findMacro(packageName: String?, macroName: String, target: String?): Macro?
-    fun getPackageDir(packageName: String?): String
+    fun getPackageDir(packageName: String): String
     fun modelReferenceFileByElement(packageName: String?, uniqueId: String, currentVersion: Int?, target: String?): String{
         val node = findNode(packageName, uniqueId, currentVersion, target)
         return if (node != null){
