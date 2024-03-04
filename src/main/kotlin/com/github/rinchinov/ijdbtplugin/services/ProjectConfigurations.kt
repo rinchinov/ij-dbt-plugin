@@ -4,9 +4,10 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectRootManager
+import com.jetbrains.python.sdk.PythonSdkType
 import org.yaml.snakeyaml.Yaml
-import java.io.FileNotFoundException
-import java.io.InputStream
+import java.io.*
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -17,7 +18,7 @@ class ProjectConfigurations(private val project: Project) {
     val settings = project.service<ProjectSettings>()
     private val dbtNotifications = project.service<Notifications>()
     private val eventLoggerManager = project.service<EventLoggerManager>()
-    val dbtProjectConfig = DbtProjectConfig(
+    private val dbtProjectConfig = DbtProjectConfig(
         "",
         1,
         "",
@@ -88,5 +89,43 @@ class ProjectConfigurations(private val project: Project) {
         val cacheDir = Paths.get(project.basePath?: System.getProperty("user.home"),".dbt_plugin", target)
         Files.createDirectories(cacheDir) // Ensure the cache directory exists
         return cacheDir
+    }
+
+    private fun findDbtPython(): String? {
+        val command = if (System.getProperty("os.name").startsWith("Windows")) "where dbt" else "which dbt"
+        try {
+            val process = Runtime.getRuntime().exec(command)
+            BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
+                val path = reader.readLine()
+                if (path != null && path.isNotEmpty()) {
+                    val file = File(path)
+                    val shebangRegex = "^#!\\s*(.*/python[23]?)".toRegex()
+                    file.useLines { lines ->
+                        val shebangLine = lines.firstOrNull()
+                        val matchResult = shebangRegex.find(shebangLine ?: "")
+                        return matchResult?.value?.trim()?.substringAfter("#!")?.trim()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
+    }
+    fun getProjectPythonSdk(): String {
+        if (settings.getDbtInterpreterPath().isNotEmpty()){
+            return settings.getDbtInterpreterPath()
+        }
+        val projectSdk = ProjectRootManager.getInstance(project).projectSdk
+        if (projectSdk != null && projectSdk.sdkType is PythonSdkType) {
+            return projectSdk.homePath.toString()
+        }
+        val dbtPython = findDbtPython()
+        if (dbtPython != null) {
+            return dbtPython
+        }
+        eventLoggerManager.logLine("Can't find python interpreter", "core")
+        dbtNotifications.sendNotification("Can't find python interpreter", "", NotificationType.ERROR)
+        return ""
     }
 }

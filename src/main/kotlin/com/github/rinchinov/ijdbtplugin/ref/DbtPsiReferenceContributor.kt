@@ -1,6 +1,4 @@
 package com.github.rinchinov.ijdbtplugin.ref
-import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
-import com.intellij.openapi.components.service
 import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PsiElementPattern.Capture
@@ -14,14 +12,13 @@ import com.jetbrains.jinja2.template.psi.impl.Jinja2MemberNameImpl
 import com.jetbrains.jinja2.template.psi.impl.Jinja2VariableReferenceImpl
 
 
-fun nextSiblingIsLPar() = object : PatternCondition<PsiElement>("nextSiblingIsLPar") {
-    override fun accepts(t: PsiElement, context: ProcessingContext?): Boolean {
-        return t.nextSibling != null && t.nextSibling.text == "("
-    }
-}
-
-
 class DbtPsiReferenceContributor : PsiReferenceContributor() {
+    private fun nextSiblingIsLPar() = object : PatternCondition<PsiElement>("nextSiblingIsLPar") {
+        override fun accepts(t: PsiElement, context: ProcessingContext?): Boolean {
+            return t.nextSibling != null && t.nextSibling.text == "("
+        }
+    }
+
     override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
         val macroPattern = StandardPatterns.or(
             PlatformPatterns.psiElement(Jinja2MemberNameImpl::class.java).withParent(
@@ -44,19 +41,11 @@ class DbtPsiReferenceContributor : PsiReferenceContributor() {
             )
         registrar.registerReferenceProvider(
             refOrSourcePattern,
-            object : PsiReferenceProvider() {
-                override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
-                    return arrayOf(element.project.service<ManifestService>().refOrSourceReference(element))
-                }
-            }
+            RefOrSourceReferenceProvider()
         )
         registrar.registerReferenceProvider(
             macroPattern,
-            object : PsiReferenceProvider() {
-                override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
-                    return arrayOf(element.project.service<ManifestService>().macroReference(element))
-                }
-            }
+            MacroReferenceProvider()
         )
     }
 }

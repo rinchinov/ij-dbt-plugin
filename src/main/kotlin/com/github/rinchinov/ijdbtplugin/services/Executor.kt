@@ -1,5 +1,5 @@
 package com.github.rinchinov.ijdbtplugin.services
-import com.github.rinchinov.ijdbtplugin.extentions.FocusLogsTabAction
+import com.github.rinchinov.ijdbtplugin.extensions.FocusLogsTabAction
 import com.google.gson.Gson
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import com.intellij.notification.NotificationType
+import java.io.File
 
 
 @Service(Service.Level.PROJECT)
@@ -18,7 +19,9 @@ class Executor(private val project: Project){
 
     private fun waitProcess(process: Process): String{
         val reader = BufferedReader(InputStreamReader(process.inputStream))
-        val output = reader.readText()
+        val output = BufferedReader(InputStreamReader(process.inputStream)).use { it.readText() }
+        val errorOutput = BufferedReader(InputStreamReader(process.errorStream)).use { it.readText() }
+        val errorLogs = errorOutput.trim().lines()
 
         // Wait for the process to complete
         val exitCode = process.waitFor()
@@ -34,10 +37,16 @@ class Executor(private val project: Project){
             if (logs.isNotEmpty()){
                 eventLoggerManager.logLines(logs, "dbt")
             }
+            if (errorLogs.isNotEmpty()){
+                eventLoggerManager.logLines(errorLogs, "dbt")
+            }
         }
         else {
             if (logs.size > 1){
                 eventLoggerManager.logLines(logs.dropLast(1), "dbt")
+            }
+            if (errorLogs.isNotEmpty()){
+                eventLoggerManager.logLines(errorLogs, "dbt")
             }
         }
         if (logs.isEmpty()){
@@ -80,32 +89,57 @@ class Executor(private val project: Project){
         )
     }
 
+    private fun runPython(command: List<String>, directory: File?): String {
+        try {
+            val pythonSdkPath = projectConfigurations.getProjectPythonSdk()
+            eventLoggerManager.logLine("using $pythonSdkPath","core")
+            val processBuilder = ProcessBuilder(
+                listOf(
+                    listOf(pythonSdkPath),
+                    command
+                ).flatten()
+            )
+            if (directory != null){
+                processBuilder.directory(directory)
+            }
+            val process = processBuilder.start()
+            return waitProcess(process)
+        } catch (e: Exception) {
+            dbtNotifications.sendNotification(
+                "Failed to run dbt command",
+                "Exception: $e",
+                NotificationType.ERROR,
+                FocusLogsTabAction(project)
+            )
+            eventLoggerManager.logLine("Caught an exception: ${e.message}", "core")
+            eventLoggerManager.logLine(e.printStackTrace().toString(), "core")
+            return e.message.toString()
+        }
+    }
+
     private fun dbtInvoke(args: List<String>, kwargs: Map<String, String>): String {
-        // Access the Python script as a resource
         val url = this::class.java.classLoader.getResource("python/cli.py")
         val scriptTemplate = url?.readText() ?: throw IllegalArgumentException("Script not found")
-        val pythonSdkPath = settings.getDbtInterpreterPath()
         val script = scriptTemplate.replace("RUNNER_IMPORT", settings.getDbtRunnerImport())
         val gson = Gson()
-        val processBuilder = ProcessBuilder(
-            pythonSdkPath,
-            "-c",
-            script,
-            gson.toJson(args),
-            gson.toJson(kwargs),
-        )
-        processBuilder.directory(
+        return runPython(
+            listOf(
+                "-c",
+                script,
+                gson.toJson(args),
+                gson.toJson(kwargs),
+            ),
             projectConfigurations.dbtProjectPath().absoluteDir.toFile()
         )
-        return waitProcess(processBuilder.start())
     }
+
     fun getDbtPythonPackageLocation(): String {
-        val pythonSdkPath = settings.getDbtInterpreterPath()
-        val process = ProcessBuilder(
-            pythonSdkPath,
-            "-c",
-            "import os,dbt;print(os.path.dirname(dbt.__file__))"
-        ).start()
-        return waitProcess(process)
+         return runPython(
+             listOf(
+                "-c",
+                "import os,dbt;print(os.path.dirname(dbt.__file__))"
+             ),
+             null
+        )
     }
 }
