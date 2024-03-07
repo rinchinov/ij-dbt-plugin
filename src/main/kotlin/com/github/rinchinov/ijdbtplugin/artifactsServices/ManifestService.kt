@@ -30,10 +30,10 @@ class ManifestService(var project: Project): DbtCoreInterface {
     private val dbtPackageLocation = executor.getDbtPythonPackageLocation()
     private val dbtNotifications = project.service<Notifications>()
     private val eventLoggerManager = project.service<EventLoggerManager>()
-    private val mutex = Mutex()
     override val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val manifests: MutableMap<String, Manifest?> = settings.getDbtTargetList().associateWith{ null }.toMutableMap()
     private val manifestLastUpdated: MutableMap<String, LocalDateTime> = settings.getDbtTargetList().associateWith{ LocalDateTime.of(1, 1, 1, 0, 0) }.toMutableMap()
+    private val mutex: MutableMap<String, Mutex> = settings.getDbtTargetList().associateWith{ Mutex() }.toMutableMap()
     init {
         parseManifest()
     }
@@ -53,14 +53,14 @@ class ManifestService(var project: Project): DbtCoreInterface {
         parseManifest(settings.getDbtDefaultTarget())
     }
 
-    private fun parseManifest(target: String) {
+    fun parseManifest(target: String) {
         val lastUpdated = manifestLastUpdated[target]?: LocalDateTime.of(1, 1, 1, 0, 0)
         if (Duration.between(lastUpdated, LocalDateTime.now()).toMinutes() <= UPDATE_INTERVAL) {
                 return
         }
 
         coroutineScope.launch {
-            if (mutex.tryLock()) {
+            if (mutex[target]?.tryLock() == true) {
                 try {
                     val manifestString = executor.dbtParse(target)
                     updateManifest(target, Manifest.fromJson(manifestString))
@@ -78,7 +78,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
                         FocusLogsTabAction(project)
                     )
                 } finally {
-                    mutex.unlock()
+                    mutex[target]?.unlock()
                 }
             }
         }
