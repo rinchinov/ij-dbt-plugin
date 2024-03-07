@@ -15,6 +15,10 @@ import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.intellij.openapi.ui.ComboBox
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import javax.swing.*
 import java.awt.BorderLayout
 import java.awt.FlowLayout
@@ -29,6 +33,8 @@ class DocumentationViewPanel(private val toolWindow: ToolWindow): ProjectInfoCha
     private var actualPort: Int = 0
     private var jbCefBrowser = JBCefBrowser()
     private var comboBox: JComboBox<String> = ComboBox<String>()
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
     init {
         eventLoggerManager.addDataChangeListener(this)
         startServeDocs(configurations.settings.getDbtDefaultTarget())
@@ -52,8 +58,10 @@ class DocumentationViewPanel(private val toolWindow: ToolWindow): ProjectInfoCha
             val documentation = JButton("Generate Documentation").apply {
                 addActionListener {
                     comboBox.selectedItem?.let {
-                        executor.dbtDocsGenerate(it.toString())
-                        restartServeDocs()
+                        coroutineScope.launch {
+                            executor.dbtDocsGenerate(it.toString())
+                            restartServeDocs()
+                        }
                     }
                 }
             }
@@ -61,14 +69,18 @@ class DocumentationViewPanel(private val toolWindow: ToolWindow): ProjectInfoCha
             // Add a button
             val reload = JButton("Reload").apply {
                 addActionListener {
+                    coroutineScope.launch {
                     restartServeDocs()
+                        }
                 }
             }
             add(reload)
 
             comboBox = JComboBox<String>(configurations.settings.getDbtTargetList().toTypedArray()).apply {
                 addItemListener {
-                    restartServeDocs()
+                    coroutineScope.launch {
+                        restartServeDocs()
+                    }
                 }
             }
             add(comboBox)
@@ -112,7 +124,7 @@ class DocumentationViewPanel(private val toolWindow: ToolWindow): ProjectInfoCha
         }
         else {
             jbCefBrowser.zoomLevel = 1.0
-            jbCefBrowser.loadURL("https://plugins.jetbrains.com/plugin/23789-dbt?ref=pluginDocView")
+            jbCefBrowser.loadURL("")
         }
     }
     override fun onManifestChanged(manifest: ManifestService) = restartServeDocs()
