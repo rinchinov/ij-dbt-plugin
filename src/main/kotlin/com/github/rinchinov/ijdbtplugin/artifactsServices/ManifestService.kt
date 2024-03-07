@@ -18,6 +18,8 @@ import java.time.Duration
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 
 @Service(Service.Level.PROJECT)
 class ManifestService(var project: Project): DbtCoreInterface {
@@ -35,7 +37,13 @@ class ManifestService(var project: Project): DbtCoreInterface {
     private val manifestLastUpdated: MutableMap<String, LocalDateTime> = settings.getDbtTargetList().associateWith{ LocalDateTime.of(1, 1, 1, 0, 0) }.toMutableMap()
     private val mutex: MutableMap<String, Mutex> = settings.getDbtTargetList().associateWith{ Mutex() }.toMutableMap()
     init {
-        parseManifest()
+        settings.getDbtTargetList().forEach { target ->
+            val path = Paths.get(projectConfigurations.getDbtCachePath(target).toString(), "manifest.json")
+            if (Files.exists(path)) {
+                val manifestJson = File(path.toString()).readText(Charsets.UTF_8)
+                updateManifest(target, Manifest.fromJson(manifestJson))
+            }
+        }
     }
     private fun defaultManifest() = manifests[settings.getDbtDefaultTarget()]
     private fun defaultProjectName() = defaultManifest()?.getProjectName()?: ""
@@ -48,9 +56,6 @@ class ManifestService(var project: Project): DbtCoreInterface {
         val cTarget: String = target?: settings.getDbtDefaultTarget()
         parseManifest(cTarget)
         return manifests[cTarget]
-    }
-    fun parseManifest() {
-        parseManifest(settings.getDbtDefaultTarget())
     }
 
     fun parseManifest(target: String) {
