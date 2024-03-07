@@ -41,8 +41,8 @@ class ManifestService(var project: Project): DbtCoreInterface {
     private fun defaultProjectName() = defaultManifest()?.getProjectName()?: ""
     private fun updateManifest(target: String, manifest: Manifest) {
         manifests[target] = manifest // Directly modify the backing map
-        eventLoggerManager.notifyManifestChangeListeners(this)
         manifestLastUpdated[target] = LocalDateTime.now()
+        eventLoggerManager.notifyManifestChangeListeners(this)
     }
     private fun getManifest(target: String?): Manifest? {
         val cTarget: String = target?: settings.getDbtDefaultTarget()
