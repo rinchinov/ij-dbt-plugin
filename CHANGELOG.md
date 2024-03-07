@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2024-03-07
+### Added
+- Support of multiple targets
+- Navigation to dbt core macros
+- Added logic to look up dbt installation(not only from venv)(from settings-> from project Interpreter -> dbt installed on computer)
+- Window for logging for run dbt commands
+- Added error handling and logging it
+- Enhanced Documentation panel: added button to generate docs, selector for targets
+
 ## [0.0.1] - 2024-02-27
 
 ### added
