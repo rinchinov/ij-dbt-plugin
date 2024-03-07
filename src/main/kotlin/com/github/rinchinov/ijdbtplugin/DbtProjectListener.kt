@@ -28,6 +28,9 @@ class DbtProjectListener: ProjectActivity {
     }
 
     private fun loadPlugin(project: Project){
-        project.service<ManifestService>().parseManifest()
+        val manifestService = project.service<ManifestService>()
+        project.service<ProjectSettings>().getDbtTargetList().forEach{
+            manifestService.parseManifest(it)
+        }
     }
 }

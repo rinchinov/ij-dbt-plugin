@@ -1,5 +1,4 @@
 package com.github.rinchinov.ijdbtplugin.artifactsServices
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -8,6 +7,8 @@ import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.DbtCoreInterface
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.*
 import com.github.rinchinov.ijdbtplugin.extensions.FocusLogsTabAction
+import com.github.rinchinov.ijdbtplugin.renderJinjaRef
+import com.github.rinchinov.ijdbtplugin.renderJinjaSource
 import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.github.rinchinov.ijdbtplugin.services.Notifications
 import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
@@ -18,6 +19,8 @@ import java.time.Duration
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 
 @Service(Service.Level.PROJECT)
 class ManifestService(var project: Project): DbtCoreInterface {
@@ -30,37 +33,40 @@ class ManifestService(var project: Project): DbtCoreInterface {
     private val dbtPackageLocation = executor.getDbtPythonPackageLocation()
     private val dbtNotifications = project.service<Notifications>()
     private val eventLoggerManager = project.service<EventLoggerManager>()
-    private val mutex = Mutex()
     override val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val manifests: MutableMap<String, Manifest?> = settings.getDbtTargetList().associateWith{ null }.toMutableMap()
     private val manifestLastUpdated: MutableMap<String, LocalDateTime> = settings.getDbtTargetList().associateWith{ LocalDateTime.of(1, 1, 1, 0, 0) }.toMutableMap()
+    private val mutex: MutableMap<String, Mutex> = settings.getDbtTargetList().associateWith{ Mutex() }.toMutableMap()
     init {
-        parseManifest()
+        settings.getDbtTargetList().forEach { target ->
+            val path = Paths.get(projectConfigurations.getDbtCachePath(target).toString(), "manifest.json")
+            if (Files.exists(path)) {
+                val manifestJson = File(path.toString()).readText(Charsets.UTF_8)
+                updateManifest(target, Manifest.fromJson(manifestJson))
+            }
+        }
     }
     private fun defaultManifest() = manifests[settings.getDbtDefaultTarget()]
     private fun defaultProjectName() = defaultManifest()?.getProjectName()?: ""
     private fun updateManifest(target: String, manifest: Manifest) {
         manifests[target] = manifest // Directly modify the backing map
-        eventLoggerManager.notifyManifestChangeListeners(this)
         manifestLastUpdated[target] = LocalDateTime.now()
+        eventLoggerManager.notifyManifestChangeListeners(this)
     }
     private fun getManifest(target: String?): Manifest? {
         val cTarget: String = target?: settings.getDbtDefaultTarget()
         parseManifest(cTarget)
         return manifests[cTarget]
     }
-    fun parseManifest() {
-        parseManifest(settings.getDbtDefaultTarget())
-    }
 
-    private fun parseManifest(target: String) {
+    fun parseManifest(target: String) {
         val lastUpdated = manifestLastUpdated[target]?: LocalDateTime.of(1, 1, 1, 0, 0)
         if (Duration.between(lastUpdated, LocalDateTime.now()).toMinutes() <= UPDATE_INTERVAL) {
                 return
         }
 
         coroutineScope.launch {
-            if (mutex.tryLock()) {
+            if (mutex[target]?.tryLock() == true) {
                 try {
                     val manifestString = executor.dbtParse(target)
                     updateManifest(target, Manifest.fromJson(manifestString))
@@ -78,7 +84,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
                         FocusLogsTabAction(project)
                     )
                 } finally {
-                    mutex.unlock()
+                    mutex[target]?.unlock()
                 }
             }
         }
@@ -188,10 +194,12 @@ class ManifestService(var project: Project): DbtCoreInterface {
     }
 
     override fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String {
-        val result = executor.dbtCompileInline(target, query)
-        val jsonNode = ObjectMapper().readTree(result)
-        val compiledCode = jsonNode.at("/results/0/node/compiled_code").asText()
-        if (compiledCode == null) {
+        val manifest = manifests[target]
+        if (manifest == null) {
+//        val result = executor.dbtCompileInline(target, query)
+//        val jsonNode = ObjectMapper().readTree(result)
+//        val compiledCode = jsonNode.at("/results/0/node/compiled_code").asText()
+//        if (compiledCode == null) {
             dbtNotifications.sendNotification(
                 "Failed to replace ref/source for copying!",
                 "",
@@ -205,7 +213,8 @@ class ManifestService(var project: Project): DbtCoreInterface {
                 "",
                 NotificationType.INFORMATION
             )
-            return compiledCode
+            val step1 = renderJinjaSource(query, manifest.sourceMap)
+            return renderJinjaRef(step1, manifest.refMap)
         }
     }
 
