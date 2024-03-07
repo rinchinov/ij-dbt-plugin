@@ -1,6 +1,6 @@
 package com.github.rinchinov.ijdbtplugin.services
 
-import com.github.rinchinov.ijdbtplugin.replaceJinjaWithEnvOrDefault
+import com.github.rinchinov.ijdbtplugin.renderJinjaEnvVar
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -53,7 +53,7 @@ class ProjectConfigurations(private val project: Project) {
                     "packages-install-path",
                     dbtProjectConfig.packagesInstallPath
                 ) as String
-                dbtProjectConfig.packagesInstallPath = replaceJinjaWithEnvOrDefault(packagesInstallPath)
+                dbtProjectConfig.packagesInstallPath = renderJinjaEnvVar(packagesInstallPath)
             }
             else {
                 dbtNotifications.sendNotification("Load project failed", filePath, NotificationType.ERROR)

@@ -58,6 +58,44 @@ fun getRelationMap(nodes: Map<String, Node>, sources: Map<String, SourceDefiniti
     }
     return result
 }
+fun getSourceMap( sources: Map<String, SourceDefinition>): Map<String, String> {
+    val result = mutableMapOf<String, String>()
+    sources.forEach {
+        val packageName = it.value.sourceName
+        val sourceName = it.value.name
+        val relationName = it.value.relationName
+        if (relationName != null){
+            result["${packageName}.${sourceName}"] = relationName
+        }
+    }
+    return result
+
+}
+fun getRefMap( nodes: Map<String, Node>): Map<String, String> {
+    val result = mutableMapOf<String, String>()
+    nodes.forEach {
+        val packageName = it.value.packageName
+        val name = it.value.name
+        val latestVersion = it.value.latestVersion
+        val version = it.value.version
+        val relationName = it.value.relationName
+        if (relationName != null){
+            if (version != null) {
+                result["${name}.${version}"] = relationName
+                result["${packageName}.${name}.${version}"] = relationName
+                if (version==latestVersion){
+                    result[name] = relationName
+                    result["${packageName}.${name}"] = relationName
+                }
+            }
+            else {
+                result[name] = relationName
+                result["${packageName}.${name}"] = relationName
+            }
+        }
+    }
+    return result
+}
 @Suppress("UNCHECKED_CAST")
 private fun <T> ObjectMapper.convert(k: kotlin.reflect.KClass<*>, fromJson: (JsonNode) -> T, toJson: (T) -> String, isUnion: Boolean = false) = registerModule(SimpleModule().apply {
     addSerializer(k.java as Class<T>, object : StdSerializer<T>(k.java as Class<T>) {
@@ -202,7 +240,9 @@ data class Manifest (
                             >
                     >
             >? = listToNestedMap(macros.keys.toList().plus(nodes.keys.toList()).plus(sources.keys.toList())),
-    val relationMap:  Map<String, String> = getRelationMap(nodes, sources)
+    val relationMap:  Map<String, String> = getRelationMap(nodes, sources),
+    val sourceMap: Map<String, String> = getSourceMap(sources),
+    val refMap: Map<String, String> = getRefMap(nodes)
 ){
     fun toJson() = mapperManifest.writeValueAsString(this)
     fun getProjectName(): String{

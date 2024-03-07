@@ -1,5 +1,4 @@
 package com.github.rinchinov.ijdbtplugin.artifactsServices
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -8,6 +7,8 @@ import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.DbtCoreInterface
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.*
 import com.github.rinchinov.ijdbtplugin.extensions.FocusLogsTabAction
+import com.github.rinchinov.ijdbtplugin.renderJinjaRef
+import com.github.rinchinov.ijdbtplugin.renderJinjaSource
 import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.github.rinchinov.ijdbtplugin.services.Notifications
 import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
@@ -193,10 +194,12 @@ class ManifestService(var project: Project): DbtCoreInterface {
     }
 
     override fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String {
-        val result = executor.dbtCompileInline(target, query)
-        val jsonNode = ObjectMapper().readTree(result)
-        val compiledCode = jsonNode.at("/results/0/node/compiled_code").asText()
-        if (compiledCode == null) {
+        val manifest = manifests[target]
+        if (manifest == null) {
+//        val result = executor.dbtCompileInline(target, query)
+//        val jsonNode = ObjectMapper().readTree(result)
+//        val compiledCode = jsonNode.at("/results/0/node/compiled_code").asText()
+//        if (compiledCode == null) {
             dbtNotifications.sendNotification(
                 "Failed to replace ref/source for copying!",
                 "",
@@ -210,7 +213,8 @@ class ManifestService(var project: Project): DbtCoreInterface {
                 "",
                 NotificationType.INFORMATION
             )
-            return compiledCode
+            val step1 = renderJinjaSource(query, manifest.sourceMap)
+            return renderJinjaRef(step1, manifest.refMap)
         }
     }
 
