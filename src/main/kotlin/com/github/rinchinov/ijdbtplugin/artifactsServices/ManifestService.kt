@@ -49,7 +49,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
         parseManifest(cTarget)
         return manifests[cTarget]
     }
-    private fun parseManifest() {
+    fun parseManifest() {
         parseManifest(settings.getDbtDefaultTarget())
     }
 
