@@ -1,6 +1,5 @@
 package com.github.rinchinov.ijdbtplugin.services
 import com.intellij.openapi.components.*
-import com.intellij.openapi.project.Project
 
 
 @Service(Service.Level.PROJECT)
@@ -8,7 +7,7 @@ import com.intellij.openapi.project.Project
         name = "DBTSettings",
         storages = [Storage("dbtSettings.xml")]
 )
-class ProjectSettings(project: Project) : PersistentStateComponent<ProjectSettings.State> {
+class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
     private var myState = State()
 
     data class State(

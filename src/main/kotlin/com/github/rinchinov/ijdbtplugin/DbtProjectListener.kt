@@ -4,12 +4,12 @@ import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.startup.StartupActivity
+import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.vfs.VirtualFileManager
 
 
-class DbtProjectListener: StartupActivity {
-    override fun runActivity(project: Project) {
+class DbtProjectListener: ProjectActivity {
+    override suspend fun execute(project: Project) {
         val settings = project.service<ProjectSettings>()
         arrayOf(
             settings.getDbtProjectPath(),
