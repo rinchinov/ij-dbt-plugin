@@ -15,7 +15,7 @@ import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
 
 
-class ProjectInformationPanel(private val toolWindow: ToolWindow): ProjectInfoChangeListenerInterface {
+class ProjectInformationPanel(toolWindow: ToolWindow): ProjectInfoChangeListenerInterface {
     private val eventLoggerManager = toolWindow.project.service<EventLoggerManager>()
     private var options = NonEditableTableModel().apply {
         addColumn("")
