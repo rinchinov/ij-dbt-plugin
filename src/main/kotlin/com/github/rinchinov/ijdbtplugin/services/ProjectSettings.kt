@@ -1,8 +1,5 @@
 package com.github.rinchinov.ijdbtplugin.services
 import com.intellij.openapi.components.*
-import com.intellij.openapi.project.Project
-import java.nio.file.Path
-import java.nio.file.Paths
 
 
 @Service(Service.Level.PROJECT)
@@ -10,7 +7,7 @@ import java.nio.file.Paths
         name = "DBTSettings",
         storages = [Storage("dbtSettings.xml")]
 )
-class ProjectSettings(private val project: Project) : PersistentStateComponent<ProjectSettings.State> {
+class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
     private var myState = State()
 
     data class State(
@@ -28,9 +25,8 @@ class ProjectSettings(private val project: Project) : PersistentStateComponent<P
             const val DBT_RUNNER_IMPORT = "from dbt.cli.main import dbtRunner"
             const val DBT_INTERPRETER_PATH = ""
             const val DBT_DEFAULT_TARGET = "dev"
-            const val DBT_DEFAULT_ADAPTER = "dbt_postgres"
+            const val DBT_DEFAULT_ADAPTER = "postgres"
             val DBT_TARGET_LIST = listOf("dev,prod")
-            fun defaultState() = State() // Returns a state with default values
         }
     }
 

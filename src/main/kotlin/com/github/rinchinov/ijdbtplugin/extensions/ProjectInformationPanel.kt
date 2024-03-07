@@ -15,19 +15,19 @@ import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
 
 
-class ProjectInformationPanel(private val toolWindow: ToolWindow): ProjectInfoChangeListenerInterface {
+class ProjectInformationPanel(toolWindow: ToolWindow): ProjectInfoChangeListenerInterface {
     private val eventLoggerManager = toolWindow.project.service<EventLoggerManager>()
     private var options = NonEditableTableModel().apply {
         addColumn("")
         addColumn("")
         addRow("projectDetails", "DBT Project details:", "")
-        addRow("dbtProjectName", "DBT project name:", "")
         addRow("dbtProjectFile", "DBT project file:", "")
+        addRow("dbtProfileDir", "DBT profile directory:", "")
         addRow("dbtAdapter", "DBT adapter:", "")
-        addRow("manifestFile", "Manifest file:", "")
         addRow("targetsList", "Targets list:", "")
         addRow("defaultTarget", "Default target:", "")
         addRow("pythonSdk", "Python SDK:", "")
+        addRow("packagesPath", "Packages install path", "")
         addRow("parsedManifestDetails", "Parsed Manifest's details", "")
         addRow("status", "Status:", "")
         addRow("lastUpdateTime", "Last update time", "")
@@ -64,10 +64,12 @@ class ProjectInformationPanel(private val toolWindow: ToolWindow): ProjectInfoCh
     override fun onProjectConfigurationsChanged(configurations: ProjectConfigurations) {
         SwingUtilities.invokeLater {
             options.setValue("dbtProjectFile", configurations.settings.getDbtProjectPath())
-            options.setValue("pythonSdk", configurations.settings.getDbtInterpreterPath())
+            options.setValue("pythonSdk", configurations.getProjectPythonSdk())
             options.setValue("targetsList", configurations.settings.getDbtTargetList().joinToString(separator = ","))
             options.setValue("defaultTarget", configurations.settings.getDbtDefaultTarget())
             options.setValue("dbtAdapter", configurations.settings.getDbtAdapter())
+            options.setValue("packagesPath", configurations.packagesPath().absolutePath.toString())
+            options.setValue("dbtProfileDir", configurations.getDbtProfileDirAbsolute().toString())
         }
     }
 }

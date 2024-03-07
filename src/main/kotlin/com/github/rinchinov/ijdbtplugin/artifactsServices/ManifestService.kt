@@ -17,15 +17,12 @@ import java.time.LocalDateTime
 import java.time.Duration
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
+import java.io.File
 
 @Service(Service.Level.PROJECT)
 class ManifestService(var project: Project): DbtCoreInterface {
     companion object {
         const val UPDATE_INTERVAL = 5
-        val ADAPTERS: Map<String, String> = mapOf(
-            "dbt_postgres" to "postgres",
-            "dbt_bigquery" to "bigquery"
-        )
     }
     private val projectConfigurations = project.service<ProjectConfigurations>()
     private val settings = project.service<ProjectSettings>()
@@ -52,7 +49,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
         parseManifest(cTarget)
         return manifests[cTarget]
     }
-    private fun parseManifest() {
+    fun parseManifest() {
         parseManifest(settings.getDbtDefaultTarget())
     }
 
@@ -87,14 +84,20 @@ class ManifestService(var project: Project): DbtCoreInterface {
         }
     }
 
-    override fun getPackageDir(packageName: String?): String {
-        return when (packageName) {
-            defaultProjectName() -> {
-                project.basePath?: ""
+    override fun getPackageDir(packageName: String): String {
+        when {
+            packageName == defaultProjectName() -> return project.basePath ?: ""
+            packageName == "dbt" -> return "$dbtPackageLocation/include/global_project"
+            else -> {
+                if (packageName.startsWith("dbt_")) {
+                    val path = """$dbtPackageLocation/include/${packageName.drop(4)}"""
+                    val directory = File(path)
+                    if (directory.exists() && directory.isDirectory) {
+                        return path
+                    }
+                }
+                return "${projectConfigurations.packagesPath().absolutePath}/$packageName/"
             }
-            "dbt" -> "$dbtPackageLocation/include/global_project"
-            in ADAPTERS.keys -> "$dbtPackageLocation/include/${ADAPTERS[packageName]}"
-            else -> "${projectConfigurations.packagesPath().absolutePath}/$packageName/"
         }
     }
     fun getNodesCount(): Int? = defaultManifest()?.nodes?.size
@@ -105,26 +108,39 @@ class ManifestService(var project: Project): DbtCoreInterface {
 
     override fun findNode(packageName: String?, uniqueId: String, currentVersion: Int?, target: String?): Node? {
         val manifest= getManifest(target)
-        var nodeResult: Node? = null
         if (manifest != null) {
-            val packageId = if (packageName == null || packageName == "") defaultProjectName() else packageName
-            val nodesMap = manifest.resourceMap?.get("model")?.get(packageId)
-            val fullUniqueId = nodesMap?.get(uniqueId)
-            if (fullUniqueId != null) {
-                nodeResult = manifest.nodes[fullUniqueId]
-                if (nodeResult != null) return nodeResult
+            if (packageName == null || packageName == "") {
+                manifest.resourceMap?.get("model")?.forEach{
+                    val node = findNode(it.key, uniqueId, currentVersion, manifest)
+                    if (node!=null) {
+                        return node
+                    }
+                }
             }
-            val seedUniqueId = manifest.resourceMap?.get("seed")?.get(packageId)?.get(uniqueId)
-            if (seedUniqueId != null){
-                nodeResult = manifest.nodes[seedUniqueId]
-                if (nodeResult != null) return nodeResult
+            else {
+                return findNode(packageName, uniqueId, currentVersion, manifest)
             }
-            val versionsCurrentPackage = nodesMap?.filterKeys { it.startsWith(uniqueId) }
-            if (!versionsCurrentPackage.isNullOrEmpty()){
-                val latestVersion =  manifest.nodes[versionsCurrentPackage.first().value]?.latestVersion?.toJson()?.toInt()
-                val version = currentVersion ?: latestVersion
-                nodeResult = manifest.nodes["model.$packageId.$uniqueId.v$version"]
-            }
+        }
+        return null
+    }
+    private fun findNode(packageName: String, uniqueId: String, currentVersion: Int?, manifest: Manifest): Node? {
+        var nodeResult: Node? = null
+        val nodesMap = manifest.resourceMap?.get("model")?.get(packageName)
+        val fullUniqueId = nodesMap?.get(uniqueId)
+        if (fullUniqueId != null) {
+            nodeResult = manifest.nodes[fullUniqueId]
+            if (nodeResult != null) return nodeResult
+        }
+        val seedUniqueId = manifest.resourceMap?.get("seed")?.get(packageName)?.get(uniqueId)
+        if (seedUniqueId != null){
+            nodeResult = manifest.nodes[seedUniqueId]
+            if (nodeResult != null) return nodeResult
+        }
+        val versionsCurrentPackage = nodesMap?.filterKeys { it.startsWith(uniqueId) }
+        if (!versionsCurrentPackage.isNullOrEmpty()){
+            val latestVersion =  manifest.nodes[versionsCurrentPackage.first().value]?.latestVersion?.toJson()?.toInt()
+            val version = currentVersion ?: latestVersion
+            nodeResult = manifest.nodes["model.$packageName.$uniqueId.v$version"]
         }
         return nodeResult
     }
@@ -144,12 +160,12 @@ class ManifestService(var project: Project): DbtCoreInterface {
         val manifest= getManifest(target)
         val macros = manifest?.resourceMap?.get("macro")
         if (manifest!=null && macros !=null){
-            val adapterName = ADAPTERS[settings.getDbtAdapter()]
+            val adapterType = manifest.metadata.adapterType ?: settings.getDbtAdapter()
             // start lookup from
             val mainLookupOrder = arrayOf(
                 macros[packageName?: defaultProjectName()]?.get(macroName), // specified project or default
-                macros[settings.getDbtAdapter()]?.get("${adapterName}__$macroName"), // lookup in adapters macros with dispatch
-                macros[settings.getDbtAdapter()]?.get(macroName), // lookup in adapter without dispatch
+                macros["dbt_$adapterType"]?.get("${adapterType}__$macroName"), // lookup in adapters macros with dispatch
+                macros["dbt_$adapterType"]?.get(macroName), // lookup in adapter without dispatch
                 macros["dbt"]?.get(macroName), // lookup in core macros
             )
             mainLookupOrder.forEach {
@@ -160,7 +176,7 @@ class ManifestService(var project: Project): DbtCoreInterface {
             // if not find try to lookup in the rest packages excluding already checked and adapters
             macros.keys.filter {
                 it !in arrayOf("dbt", packageName?: defaultProjectName()) &&
-                        it !in ADAPTERS.keys
+                        !it.startsWith("dbt_")
             }.forEach{
                 val macroId = macros[it]?.get(macroName)
                 if (macroId != null) {

@@ -18,7 +18,6 @@ class Executor(private val project: Project){
     private val eventLoggerManager = project.service<EventLoggerManager>()
 
     private fun waitProcess(process: Process): String{
-        val reader = BufferedReader(InputStreamReader(process.inputStream))
         val output = BufferedReader(InputStreamReader(process.inputStream)).use { it.readText() }
         val errorOutput = BufferedReader(InputStreamReader(process.errorStream)).use { it.readText() }
         val errorLogs = errorOutput.trim().lines()
@@ -68,7 +67,7 @@ class Executor(private val project: Project){
     }
     fun dbtParse(target: String): String {
         return dbtInvoke(
-            listOf("parse", "--write-json", "--partial-parse"),
+            listOf("parse", "--partial-parse"),
             mapOf(
                 "target" to target,
                 "target_path" to projectConfigurations.getDbtCachePath(target).toString(),
@@ -79,7 +78,7 @@ class Executor(private val project: Project){
     }
     fun dbtDocsGenerate(target: String): String {
         return dbtInvoke(
-            listOf("docs", "generate", "--write-json", "--partial-parse"),
+            listOf("docs", "generate", "--partial-parse"),
             mapOf(
                 "target" to target,
                 "target_path" to projectConfigurations.getDbtCachePath(target).toString(),

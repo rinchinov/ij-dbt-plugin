@@ -1,5 +1,5 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin>
+<idea-plugin require-restart="false" on-demand="true" >
     <id>com.github.rinchinov.ijdbtplugin</id>
     <name>DBT</name>
     <vendor>rinchinov</vendor>
@@ -12,10 +12,12 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.github.rinchinov.ijdbtplugin.DbtProjectListener"/>
         <projectConfigurable
                 id="DBTPluginProjectConfigurable"
                 instance="com.github.rinchinov.ijdbtplugin.extensions.PluginProjectConfigurable"
-                displayName="DBT Project Settings"/>
+                displayName="DBT Project Settings"
+                dynamic="true"/>
         <notificationGroup
                 id="DBT Notification Group"
                 displayType="BALLOON"
