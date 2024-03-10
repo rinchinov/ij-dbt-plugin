@@ -1,5 +1,7 @@
 package com.github.rinchinov.ijdbtplugin.artifactsServices
 
+import com.github.rinchinov.ijdbtplugin.AnnotationsInterface
+import com.github.rinchinov.ijdbtplugin.ReferenceInterface
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -20,7 +22,13 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 @Service(Service.Level.PROJECT)
-class ManifestService(override var project: Project): ManifestReferences, ManifestCopyPasteActions, ManifestCompletion {
+class ManifestService(override var project: Project):
+    ManifestLookup,
+    ManifestCopyPasteActions,
+    ManifestCompletion,
+    AnnotationsInterface,
+    ReferenceInterface
+{
     companion object {
         const val UPDATE_INTERVAL = 5
     }
@@ -44,7 +52,7 @@ class ManifestService(override var project: Project): ManifestReferences, Manife
         }
     }
     override fun defaultManifest() = manifests[settings.getDbtDefaultTarget()]
-    override fun defaultProjectName() = defaultManifest()?.getProjectName()?: ""
+    override fun defaultProjectName() = defaultManifest()?.getPackageName()?: ""
     private fun updateManifest(target: String, manifest: Manifest) {
         manifests[target] = manifest // Directly modify the backing map
         manifestLastUpdated[target] = LocalDateTime.now()

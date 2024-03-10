@@ -20,9 +20,8 @@ interface DbtCompletionProvider {
         return false
     }
 
-    fun findClosestRightStringLiteral(startElement: PsiElement): PsiElement? {
+    fun findClosestPrevStringSibling(startElement: PsiElement): PsiElement? {
         var currentElement = startElement.prevSibling
-
         while (currentElement != null) {
             if (currentElement is PsiWhiteSpace || currentElement is PsiComment) {
                 currentElement = currentElement.prevSibling

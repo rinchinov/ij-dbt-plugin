@@ -14,7 +14,7 @@ class SourceArgsCompletionProvider : DbtCompletionProvider, CompletionProvider<C
     ) {
 
         if ((ancientIsMacroName(parameters.position, "source")) ) {
-            val prevStringSibling= findClosestRightStringLiteral(parameters.position.parent)
+            val prevStringSibling= findClosestPrevStringSibling(parameters.position.parent)
             val suggestions = if (prevStringSibling == null) {
                 getManifestService(parameters).getSourcesNamesList()
             } else {
@@ -23,7 +23,7 @@ class SourceArgsCompletionProvider : DbtCompletionProvider, CompletionProvider<C
                 )
             }
             suggestions.forEach { suggestion ->
-                resultSet.addElement(LookupElementBuilder.create(suggestion))
+                resultSet.addElement(LookupElementBuilder.create(suggestion).withPriority(100.0))
             }
         }
     }

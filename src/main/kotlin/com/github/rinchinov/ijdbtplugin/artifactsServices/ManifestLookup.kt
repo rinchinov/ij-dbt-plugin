@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.first
 import java.io.File
 
-interface ManifestReferences: ReferenceInterface {
+interface ManifestLookup: ReferenceInterface {
     val settings: ProjectSettings
     var project: Project
     val dbtPackageLocation: String

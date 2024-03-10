@@ -13,7 +13,7 @@ class RefArgsCompletionProvider : DbtCompletionProvider, CompletionProvider<Comp
         resultSet: CompletionResultSet
     ) {
         if (ancientIsMacroName(parameters.position,"ref")) {
-            val prevStringSibling= findClosestRightStringLiteral(parameters.position.parent)
+            val prevStringSibling= findClosestPrevStringSibling(parameters.position.parent)
             val suggestions = if (prevStringSibling == null) {
                 getManifestService(parameters).getRefNamesList()
             } else {
@@ -22,7 +22,7 @@ class RefArgsCompletionProvider : DbtCompletionProvider, CompletionProvider<Comp
                 )
             }
             suggestions.forEach { suggestion ->
-                resultSet.addElement(LookupElementBuilder.create(suggestion))
+                resultSet.addElement(LookupElementBuilder.create(suggestion).withPriority(100.0))
             }
         }
     }
