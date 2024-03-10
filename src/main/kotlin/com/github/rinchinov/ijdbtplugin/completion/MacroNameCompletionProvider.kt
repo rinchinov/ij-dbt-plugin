@@ -4,6 +4,7 @@ import com.github.rinchinov.ijdbtplugin.annotations.DbtJinjaFunctions
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
 
@@ -28,7 +29,7 @@ class MacroNameCompletionProvider: DbtCompletionProvider, CompletionProvider<Com
             resultSet.addElement(
                 LookupElementBuilder.create(macroName)
                     .withInsertHandler(MyFunctionInsertHandler())
-                    .withPriority(priority)
+                    .let { PrioritizedLookupElement.withPriority(it, priority) }
             )
         }
     }

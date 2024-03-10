@@ -14,8 +14,3 @@ class MyFunctionInsertHandler : InsertHandler<LookupElement> {
         caretModel.moveToOffset(tailOffset - 1)
     }
 }
-
-fun LookupElementBuilder.withPriority(priority: Double): LookupElement {
-    return this.withLookupString(this.lookupString).withInsertHandler { context, item ->
-    }.let { PrioritizedLookupElement.withPriority(it, priority) }
-}

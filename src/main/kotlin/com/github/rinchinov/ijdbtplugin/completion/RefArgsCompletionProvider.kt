@@ -3,6 +3,7 @@ package com.github.rinchinov.ijdbtplugin.completion
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
 
@@ -22,7 +23,10 @@ class RefArgsCompletionProvider : DbtCompletionProvider, CompletionProvider<Comp
                 )
             }
             suggestions.forEach { suggestion ->
-                resultSet.addElement(LookupElementBuilder.create(suggestion).withPriority(100.0))
+                resultSet.addElement(
+                    LookupElementBuilder.create(suggestion)
+                        .let { PrioritizedLookupElement.withPriority(it, 100.0) }
+                )
             }
         }
     }
