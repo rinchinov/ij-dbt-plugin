@@ -1,6 +1,6 @@
 package com.github.rinchinov.ijdbtplugin.services
 
-import com.github.rinchinov.ijdbtplugin.renderJinjaEnvVar
+import com.github.rinchinov.ijdbtplugin.utils.renderJinjaEnvVar
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service

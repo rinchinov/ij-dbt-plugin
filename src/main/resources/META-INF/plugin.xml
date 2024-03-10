@@ -37,6 +37,14 @@
         <lang.elementManipulator
                 forClass="com.jetbrains.jinja2.template.psi.impl.Jinja2VariableReferenceImpl"
                 implementationClass="com.github.rinchinov.ijdbtplugin.ref.Jinja2VariableReferenceManipulator"/>
+        <completion.contributor
+                language="DjangoTemplate"
+                implementationClass="com.github.rinchinov.ijdbtplugin.completion.DbtJinja2CompletionContributor"/>
+        <annotator
+                language="DjangoTemplate"
+                implementationClass="com.github.rinchinov.ijdbtplugin.annotations.ModelAnnotations"/>
+<!--        <fileEditorProvider-->
+<!--                implementation="com.github.rinchinov.ijdbtplugin.QueryPreviewEditorProvider"/>-->
 
     </extensions>
 

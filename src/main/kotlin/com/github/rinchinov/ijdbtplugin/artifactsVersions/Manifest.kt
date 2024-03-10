@@ -245,7 +245,7 @@ data class Manifest (
     val refMap: Map<String, String> = getRefMap(nodes)
 ){
     fun toJson() = mapperManifest.writeValueAsString(this)
-    fun getProjectName(): String{
+    fun getPackageName(): String{
         return metadata.projectName ?: nodes.first().value.packageName
     }
     companion object {
