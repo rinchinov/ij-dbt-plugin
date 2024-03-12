@@ -6,7 +6,6 @@
 
 ![Alt text](https://s9.gifyu.com/images/SUcFi.md.gif "Usage")
 
-<iframe src="https://share.zight.com/E0uJevrW?embed=true&amp;branding=true&amp;title=true" width="100%" height="100%" style="border:none" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowtransparency="true" allowfullscreen="true"></iframe>
 <!-- Plugin description -->
 # DBT for idea IDEs
 
