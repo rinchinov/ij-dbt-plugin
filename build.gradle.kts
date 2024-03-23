@@ -28,7 +28,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
-    implementation("org.eclipse.jetty:jetty-server:11.0.20")
+    implementation("org.eclipse.jetty:jetty-server:12.0.7")
     implementation("org.eclipse.jetty:jetty-servlet:11.0.20")
 }
 
