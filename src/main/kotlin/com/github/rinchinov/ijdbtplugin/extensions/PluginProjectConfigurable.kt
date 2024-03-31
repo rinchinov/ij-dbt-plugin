@@ -20,9 +20,6 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
     private val dbtProfileDir: JTextField = JTextField()
     private val dbtRunnerImport: JTextField = JTextField()
     private val dbtInterpreterPath: JTextField = JTextField()
-    private val dbtTargetList: JTextField = JTextField()
-    private val dbtDefaultTarget: JTextField = JTextField()
-    private val dbtAdapter: JTextField = JTextField()
 
     init {
         val gbc = GridBagConstraints().apply {
@@ -37,9 +34,6 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         addLabeledField("DBT profile path", dbtProfileDir, mainPanel, gbc)
         addLabeledField("DBT runner import", dbtRunnerImport, mainPanel, gbc)
         addLabeledField("DBT interpreter path", dbtInterpreterPath, mainPanel, gbc)
-        addLabeledField("DBT target lists", dbtTargetList, mainPanel, gbc)
-        addLabeledField("DBT plugin default target", dbtDefaultTarget, mainPanel, gbc)
-        addLabeledField("DBT plugin default adapter", dbtAdapter, mainPanel, gbc)
 
         gbc.weighty = 1.0
         mainPanel.add(Box.createVerticalGlue(), gbc)
@@ -67,9 +61,6 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
                 || settings.getDbtProfileDir() != dbtProfileDir.text
                 || settings.getDbtRunnerImport() != dbtRunnerImport.text
                 || settings.getDbtInterpreterPath() != dbtInterpreterPath.text
-                || settings.getDbtDefaultTarget() != dbtDefaultTarget.text
-                || settings.getDbtAdapter() != dbtAdapter.text
-                || settings.getDbtTargetList() != dbtTargetList.text.split(",")
     }
 
     override fun apply() {
@@ -77,9 +68,6 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         settings.setDbtProfileDir(dbtProfileDir.text)
         settings.setDbtRunnerImport(dbtRunnerImport.text)
         settings.setDbtInterpreterPath(dbtInterpreterPath.text)
-        settings.setDbtDefaultTarget(dbtDefaultTarget.text)
-        settings.setDbtAdapter(dbtAdapter.text)
-        settings.setDbtTargetList(dbtTargetList.text)
         projectConfigurations.reloadDbtProjectSettings()
     }
 
@@ -88,9 +76,6 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         dbtProfileDir.text = settings.getDbtProfileDir()
         dbtRunnerImport.text = settings.getDbtRunnerImport()
         dbtInterpreterPath.text = settings.getDbtInterpreterPath()
-        dbtDefaultTarget.text = settings.getDbtDefaultTarget()
-        dbtAdapter.text = settings.getDbtAdapter()
-        dbtTargetList.text = settings.getDbtTargetList().joinToString(separator = ",")
     }
 
     override fun getDisplayName(): String = MyBundle.message("settingWindowName")

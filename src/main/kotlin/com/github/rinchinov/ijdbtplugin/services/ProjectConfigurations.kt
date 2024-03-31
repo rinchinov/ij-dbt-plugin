@@ -19,13 +19,17 @@ class ProjectConfigurations(private val project: Project) {
     val settings = project.service<ProjectSettings>()
     private val dbtNotifications = project.service<Notifications>()
     private val eventLoggerManager = project.service<EventLoggerManager>()
-    private val dbtProjectConfig = DbtProjectConfig(
+    val dbtProjectConfig = DbtProjectConfig(
         "",
         1,
         "",
         "",
         "target",
-        "dbt_packages"
+        "dbt_packages",
+        null,
+        null,
+        emptyList(),
+        null
     )
     data class DbtProjectConfig(
         var name: String,
@@ -33,10 +37,27 @@ class ProjectConfigurations(private val project: Project) {
         var version: String,
         var profile: String,
         var targetPath: String,
-        var packagesInstallPath: String
+        var packagesInstallPath: String,
+        var projectProfiles: Map<String, Map<String, Any>>?,
+        var defaultTarget: String?,
+        var targets: List<String>,
+        var adapterName: String?
     )
     init {
         reloadDbtProjectSettings()
+    }
+    fun getProfileDetails(target: String): Map<String, Any>? {
+        return dbtProjectConfig.projectProfiles?.get(target)
+    }
+    private fun loadProfileDetails(){
+        val profileFile = Paths.get(getDbtProfileDirAbsolute().toString(), "profiles.yml")
+        val inputStream: InputStream = Files.newInputStream(profileFile)
+        val profilesRaw = Yaml().load(inputStream) as Map<String, Map<String, Map<String, Map<String, Any>>>>?
+        val raw = profilesRaw?.get(dbtProjectConfig.name)
+        dbtProjectConfig.projectProfiles = raw?.get("outputs") as Map<String, Map<String, Any>>
+        dbtProjectConfig.defaultTarget = raw["target"] as String
+        dbtProjectConfig.targets = dbtProjectConfig.projectProfiles?.keys?.toList() ?: emptyList()
+        dbtProjectConfig.adapterName = dbtProjectConfig.projectProfiles!![dbtProjectConfig.defaultTarget!!]?.get("type") as String
     }
     fun reloadDbtProjectSettings(){
         val filePath = dbtProjectPath().absolutePath.toString()
@@ -54,6 +75,7 @@ class ProjectConfigurations(private val project: Project) {
                     dbtProjectConfig.packagesInstallPath
                 ) as String
                 dbtProjectConfig.packagesInstallPath = renderJinjaEnvVar(packagesInstallPath)
+                loadProfileDetails()
             }
             else {
                 dbtNotifications.sendNotification("Load project failed", filePath, NotificationType.ERROR)
@@ -130,4 +152,5 @@ class ProjectConfigurations(private val project: Project) {
         dbtNotifications.sendNotification("Can't find python interpreter", "", NotificationType.ERROR)
         return ""
     }
+
 }

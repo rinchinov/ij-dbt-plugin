@@ -2,7 +2,7 @@ package com.github.rinchinov.ijdbtplugin.actions
 
 
 import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
-import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
+import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -17,7 +17,7 @@ class DbtCopyPasteActionGroup : ActionGroup() {
             return EMPTY_ARRAY
         }
         val project = e.project!!
-        val targets = project.service<ProjectSettings>().getDbtTargetList()
+        val targets = project.service<ProjectConfigurations>().dbtProjectConfig.targets
         val manifestService = project.service<ManifestService>()
         val actions: Array<AnAction> = targets.map { target ->
             listOf(

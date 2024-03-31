@@ -39,11 +39,11 @@ class ManifestService(override var project: Project):
     override val dbtNotifications = project.service<Notifications>()
     private val eventLoggerManager = project.service<EventLoggerManager>()
     override val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    override val manifests: MutableMap<String, Manifest?> = settings.getDbtTargetList().associateWith{ null }.toMutableMap()
-    private val manifestLastUpdated: MutableMap<String, LocalDateTime> = settings.getDbtTargetList().associateWith{ LocalDateTime.of(1, 1, 1, 0, 0) }.toMutableMap()
-    private val mutex: MutableMap<String, Mutex> = settings.getDbtTargetList().associateWith{ Mutex() }.toMutableMap()
+    override val manifests: MutableMap<String, Manifest?> = projectConfigurations.dbtProjectConfig.targets.associateWith{ null }.toMutableMap()
+    private val manifestLastUpdated: MutableMap<String, LocalDateTime> = projectConfigurations.dbtProjectConfig.targets.associateWith{ LocalDateTime.of(1, 1, 1, 0, 0) }.toMutableMap()
+    private val mutex: MutableMap<String, Mutex> = projectConfigurations.dbtProjectConfig.targets.associateWith{ Mutex() }.toMutableMap()
     init {
-        settings.getDbtTargetList().forEach { target ->
+        projectConfigurations.dbtProjectConfig.targets.forEach { target ->
             val path = Paths.get(projectConfigurations.getDbtCachePath(target).toString(), "manifest.json")
             if (Files.exists(path)) {
                 val manifestJson = File(path.toString()).readText(Charsets.UTF_8)
@@ -51,7 +51,7 @@ class ManifestService(override var project: Project):
             }
         }
     }
-    override fun defaultManifest() = manifests[settings.getDbtDefaultTarget()]
+    override fun defaultManifest() = manifests[projectConfigurations.dbtProjectConfig.defaultTarget]
     override fun defaultProjectName() = defaultManifest()?.getPackageName()?: ""
     private fun updateManifest(target: String, manifest: Manifest) {
         manifests[target] = manifest // Directly modify the backing map
@@ -59,7 +59,7 @@ class ManifestService(override var project: Project):
         eventLoggerManager.notifyManifestChangeListeners(this)
     }
     override fun getManifest(target: String?): Manifest? {
-        val cTarget: String = target?: settings.getDbtDefaultTarget()
+        val cTarget: String = (target?: projectConfigurations.dbtProjectConfig.defaultTarget).toString()
         parseManifest(cTarget)
         return manifests[cTarget]
     }
@@ -97,7 +97,7 @@ class ManifestService(override var project: Project):
     fun getNodesCount(): Int? = defaultManifest()?.nodes?.size
     fun getMacrosCount(): Int? = defaultManifest()?.macros?.size
     fun getSourcesCount(): Int? = defaultManifest()?.sources?.size
-    fun lastUpdated(): LocalDateTime? = manifestLastUpdated[settings.getDbtDefaultTarget()]
+    fun lastUpdated(): LocalDateTime? = manifestLastUpdated[projectConfigurations.dbtProjectConfig.defaultTarget]
     fun getStatus(): String = if (defaultManifest() == null) "Manifest parse failed" else "Manifest successfully parsed"
 
 }

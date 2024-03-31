@@ -14,19 +14,13 @@ class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
         var dbtProjectPath: String = PROJECT_PATH,
         var dbtProfileDir: String = DBT_PROFILE_DIR,
         var dbtRunnerImport: String = DBT_RUNNER_IMPORT,
-        var dbtInterpreterPath: String = DBT_INTERPRETER_PATH,
-        var dbtDefaultTarget: String = DBT_DEFAULT_TARGET,
-        var dbtAdapter: String = DBT_DEFAULT_ADAPTER,
-        var dbtTargetList: List<String> = DBT_TARGET_LIST,
+        var dbtInterpreterPath: String = DBT_INTERPRETER_PATH
     ){
         companion object {
             const val PROJECT_PATH = "dbt_project.yml"
             const val DBT_PROFILE_DIR = "~/.dbt"
             const val DBT_RUNNER_IMPORT = "from dbt.cli.main import dbtRunner"
             const val DBT_INTERPRETER_PATH = ""
-            const val DBT_DEFAULT_TARGET = "dev"
-            const val DBT_DEFAULT_ADAPTER = "postgres"
-            val DBT_TARGET_LIST = listOf("dev,prod")
         }
     }
 
@@ -57,17 +51,4 @@ class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
     fun setDbtInterpreterPath(dbtInterpreterPath: String) {
         myState.dbtInterpreterPath = dbtInterpreterPath
     }
-    fun getDbtDefaultTarget(): String = myState.dbtDefaultTarget
-    fun setDbtDefaultTarget(dbtDefaultTarget: String) {
-        myState.dbtDefaultTarget = dbtDefaultTarget
-    }
-    fun getDbtAdapter(): String = myState.dbtAdapter
-    fun setDbtAdapter(dbtAdapter: String) {
-        myState.dbtAdapter = dbtAdapter
-    }
-    fun getDbtTargetList(): List<String> = myState.dbtTargetList
-    fun setDbtTargetList(dbtTargetList: String) {
-        myState.dbtTargetList = dbtTargetList.split(",")
-    }
-
 }
