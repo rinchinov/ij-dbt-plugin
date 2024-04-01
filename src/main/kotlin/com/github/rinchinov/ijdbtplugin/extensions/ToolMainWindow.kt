@@ -15,10 +15,14 @@ class ToolMainWindow : ToolWindowFactory {
         val contentFactory = ContentFactory.getInstance()
         val projectInfo = ProjectInformationPanel(toolWindow)
         val docs = DocumentationViewPanel(toolWindow)
+        val queryRun = QueryRunResultsPanel(toolWindow)
         val loggingPanel = LoggingPanel()
         project.service<EventLoggerManager>().addLogger(loggingPanel)
         toolWindow.contentManager.addContent(
             contentFactory.createContent(projectInfo.getContent(), "Project Information", false)
+        )
+        toolWindow.contentManager.addContent(
+            contentFactory.createContent(queryRun.getContent(), "Query Run Results", false)
         )
         toolWindow.contentManager.addContent(
             contentFactory.createContent(docs.getContent(), "Documentation", false)

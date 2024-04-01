@@ -8,6 +8,7 @@
     <depends>com.intellij.modules.python</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.ultimate</depends>
+    <depends>com.intellij.database</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
@@ -43,9 +44,6 @@
         <annotator
                 language="DjangoTemplate"
                 implementationClass="com.github.rinchinov.ijdbtplugin.annotations.ModelAnnotations"/>
-<!--        <fileEditorProvider-->
-<!--                implementation="com.github.rinchinov.ijdbtplugin.QueryPreviewEditorProvider"/>-->
-
     </extensions>
 
     <actions>
@@ -57,6 +55,18 @@
             <action
                     id="MyDynamicActionsPlaceholder"
                     class="com.github.rinchinov.ijdbtplugin.actions.DbtCopyPasteActionGroup" />
+            <add-to-group
+                    group-id="EditorPopupMenu"
+                    anchor="first"/>
+        </group>
+        <group
+                id="RunSelectedQuery"
+                text="Run Selected Query"
+                description="Actions to run selected query for target"
+                popup="true">
+            <action
+                    id="MyDynamicActionsRunQuery"
+                    class="com.github.rinchinov.ijdbtplugin.actions.DbtRunQueryActionGroup" />
             <add-to-group
                     group-id="EditorPopupMenu"
                     anchor="first"/>
