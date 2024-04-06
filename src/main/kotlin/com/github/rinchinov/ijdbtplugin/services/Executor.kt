@@ -132,6 +132,25 @@ class Executor(private val project: Project){
         )
     }
 
+    fun dbtQueryCall(target: String, sql: String, fetch: Boolean): String {
+        val gson = Gson()
+        val url = this::class.java.classLoader.getResource("python/db.py")
+        val script = url?.readText() ?: throw IllegalArgumentException("Script not found")
+        return runPython(
+            listOf(
+                "-c",
+                script,
+                "run_query",
+                "--target",
+                target,
+                "--_plugin_custom_sql",
+                sql,
+                "--_plugin_custom_fetch",
+                if (fetch) "true" else "false"
+            ),
+            projectConfigurations.dbtProjectPath().absoluteDir.toFile()
+        )
+    }
     fun getDbtPythonPackageLocation(): String {
          return runPython(
              listOf(

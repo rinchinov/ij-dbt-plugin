@@ -20,6 +20,10 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
     private val dbtProfileDir: JTextField = JTextField()
     private val dbtRunnerImport: JTextField = JTextField()
     private val dbtInterpreterPath: JTextField = JTextField()
+    private val dbtQueryRunPaginationTemplate: JTextField = JTextField()
+    private val dbtQueryRunCountTemplate: JTextField = JTextField()
+    private val dbtQueryRunDryTemplate: JTextField = JTextField()
+    private val dbtQueryRunPlanTemplate: JTextField = JTextField()
 
     init {
         val gbc = GridBagConstraints().apply {
@@ -35,20 +39,26 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         addLabeledField("DBT runner import", dbtRunnerImport, mainPanel, gbc)
         addLabeledField("DBT interpreter path", dbtInterpreterPath, mainPanel, gbc)
 
+        addLabeledField("Query run SQL templates:", null, mainPanel, gbc)
+        addLabeledField("Query paginated template", dbtQueryRunPaginationTemplate, mainPanel, gbc)
+        addLabeledField("Query count template", dbtQueryRunCountTemplate, mainPanel, gbc)
+        addLabeledField("Query plan template", dbtQueryRunPlanTemplate, mainPanel, gbc)
+        addLabeledField("Query dry run template", dbtQueryRunDryTemplate, mainPanel, gbc)
         gbc.weighty = 1.0
         mainPanel.add(Box.createVerticalGlue(), gbc)
     }
 
-    private fun addLabeledField(labelText: String, field: JTextField, panel: JPanel, gbc: GridBagConstraints) {// Clone the GridBagConstraints to avoid side effects
+    private fun addLabeledField(labelText: String, field: JTextField?, panel: JPanel, gbc: GridBagConstraints) {// Clone the GridBagConstraints to avoid side effects
         val labelGbc = gbc.clone() as GridBagConstraints
         labelGbc.gridx = 0
         labelGbc.weightx = 0.0
         panel.add(JLabel(labelText), labelGbc)
-
-        val fieldGbc = gbc.clone() as GridBagConstraints
-        fieldGbc.gridx = 1
-        fieldGbc.weightx = 1.0
-        panel.add(field, fieldGbc)
+        if (field!=null){
+            val fieldGbc = gbc.clone() as GridBagConstraints
+            fieldGbc.gridx = 1
+            fieldGbc.weightx = 1.0
+            panel.add(field, fieldGbc)
+        }
         gbc.gridy += 2
     }
 
@@ -61,6 +71,10 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
                 || settings.getDbtProfileDir() != dbtProfileDir.text
                 || settings.getDbtRunnerImport() != dbtRunnerImport.text
                 || settings.getDbtInterpreterPath() != dbtInterpreterPath.text
+                || settings.getDbtQueryRunPlanTemplate() != dbtQueryRunPaginationTemplate.text
+                || settings.getDbtQueryRunCountTemplate() != dbtQueryRunCountTemplate.text
+                || settings.getDbtQueryRunPlanTemplate() != dbtQueryRunPlanTemplate.text
+                || settings.getDbtQueryRunDryTemplate() != dbtQueryRunDryTemplate.text
     }
 
     override fun apply() {
@@ -68,6 +82,10 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         settings.setDbtProfileDir(dbtProfileDir.text)
         settings.setDbtRunnerImport(dbtRunnerImport.text)
         settings.setDbtInterpreterPath(dbtInterpreterPath.text)
+        settings.setDbtQueryRunPaginationTemplate(dbtQueryRunPaginationTemplate.text)
+        settings.setDbtQueryRunCountTemplate(dbtQueryRunCountTemplate.text)
+        settings.setDbtQueryRunDryTemplate(dbtQueryRunDryTemplate.text)
+        settings.setDbtQueryRunPlanTemplate(dbtQueryRunPlanTemplate.text)
         projectConfigurations.reloadDbtProjectSettings()
     }
 
@@ -76,6 +94,10 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
         dbtProfileDir.text = settings.getDbtProfileDir()
         dbtRunnerImport.text = settings.getDbtRunnerImport()
         dbtInterpreterPath.text = settings.getDbtInterpreterPath()
+        dbtQueryRunPaginationTemplate.text = settings.getDbtQueryRunPaginationTemplate()
+        dbtQueryRunCountTemplate.text = settings.getDbtQueryRunCountTemplate()
+        dbtQueryRunDryTemplate.text = settings.getDbtQueryRunDryTemplate()
+        dbtQueryRunPlanTemplate.text = settings.getDbtQueryRunPlanTemplate()
     }
 
     override fun getDisplayName(): String = MyBundle.message("settingWindowName")

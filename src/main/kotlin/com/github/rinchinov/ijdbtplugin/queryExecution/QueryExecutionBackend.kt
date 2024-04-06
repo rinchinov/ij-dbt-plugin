@@ -2,8 +2,8 @@ package com.github.rinchinov.ijdbtplugin.queryExecution
 
 import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
 import com.github.rinchinov.ijdbtplugin.queryExecution.executionManagers.BigQueryQueryExecutionManager
-import com.github.rinchinov.ijdbtplugin.queryExecution.executionManagers.DummyQueryExecutionManager
 import com.github.rinchinov.ijdbtplugin.queryExecution.executionManagers.PostgresQueryExecutionManager
+import com.github.rinchinov.ijdbtplugin.queryExecution.executionManagers.QueryExecutionDbtManager
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.*
@@ -40,13 +40,13 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
     private var myState = State()
 
     private var queryExecutionManager: QueryExecutionManagerInterface = when (project.service<ProjectConfigurations>().dbtProjectConfig.adapterName) {
-        "bigquery" -> {
-            BigQueryQueryExecutionManager(project)
-        }
-        "postgres" -> {
-            PostgresQueryExecutionManager(project)
-        }
-        else -> DummyQueryExecutionManager(project)
+//        "bigquery" -> {
+//            BigQueryQueryExecutionManager(project)
+//        }
+//        "postgres" -> {
+//            PostgresQueryExecutionManager(project)
+//        }
+        else -> QueryExecutionDbtManager(project)
     }
     private val listeners = mutableListOf<QueryChangeListener>()
     fun addQueryChangeListener(listener: QueryChangeListener) {
