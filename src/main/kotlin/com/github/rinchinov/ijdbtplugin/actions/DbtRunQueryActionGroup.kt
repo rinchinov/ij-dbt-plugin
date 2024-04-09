@@ -12,7 +12,6 @@ import com.intellij.openapi.vfs.VirtualFile
 class DbtRunQueryActionGroup : ActionGroup() {
 
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
-
         if ( e == null || e.project == null ){
             return EMPTY_ARRAY
         }
@@ -22,13 +21,13 @@ class DbtRunQueryActionGroup : ActionGroup() {
         val actions: Array<AnAction> = targets.map { target ->
             listOf(
                 object : AnAction("Run query for $target") {
-                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, "runQuery")
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, QueryExecutionBackend.QueryTypes.PAGINATED)
                 },
                 object : AnAction("Get query plan for $target") {
-                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, "runQueryPlan")
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, QueryExecutionBackend.QueryTypes.PLAN)
                 },
                 object : AnAction("Dry run query for $target") {
-                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, "dryRunQuery")
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, QueryExecutionBackend.QueryTypes.DRY)
                 },
             )
         }.flatten().toTypedArray()
