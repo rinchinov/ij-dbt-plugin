@@ -29,11 +29,6 @@ interface ManifestCopyPasteActions: CopyPasteActionsInterface {
             )
             return query
         } else {
-            dbtNotifications.sendNotification(
-                "Copied with replaced refs/sources",
-                "",
-                NotificationType.INFORMATION
-            )
             val step1 = renderJinjaSource(query, manifest.sourceMap)
             return renderJinjaRef(step1, manifest.refMap)
         }
