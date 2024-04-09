@@ -13,6 +13,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowManager
 
 
 @Service(Service.Level.PROJECT)
@@ -139,6 +140,19 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
         )
     }
     fun runQuery(e: AnActionEvent, target: String, type: QueryTypes){
+        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("DBT")
+        if (toolWindow != null) {
+            toolWindow.show(null)
+            toolWindow.activate(null)
+            toolWindow.contentManager.let { contentManager ->
+                for (content in contentManager.contents) {
+                    if (content.displayName == "Query Run Results") {
+                        contentManager.setSelectedContent(content)
+                        break
+                    }
+                }
+            }
+        }
         ProgressManager.getInstance().run(object : BaseQueryTask(project, "Running query in Background"){
                 override fun executeTask(indicator: ProgressIndicator): QueryExecution {
                     val manifestService = project.service<ManifestService>()

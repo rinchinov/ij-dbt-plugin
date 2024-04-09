@@ -1,4 +1,4 @@
-package com.github.rinchinov.ijdbtplugin.extensions;
+package com.github.rinchinov.ijdbtplugin.extensions
 
 import com.github.rinchinov.ijdbtplugin.queryExecution.QueryChangeListener
 import com.github.rinchinov.ijdbtplugin.queryExecution.QueryExecutionBackend

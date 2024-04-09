@@ -37,7 +37,6 @@ interface SimpleJdbcManagerQueryExecutionManagerInterface: SimpleQueryExecutionM
                     url
                 }
             }
-            else -> url
         }
     }
     private fun getConnection(target: String): Connection {
