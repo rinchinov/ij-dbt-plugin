@@ -97,7 +97,7 @@ class QueryRunResultsPanel(toolWindow: ToolWindow): QueryChangeListener {
     private val paginationPanel = object : JPanel() {
         private var totalPages = 1
         private var currentPage = 1
-        private lateinit var currentQueryExecution: QueryExecutionBackend.QueryExecution
+        private var currentQueryExecution: QueryExecutionBackend.QueryExecution? = null
         val label = JLabel("Total pages: ")
         init {
             isVisible = false
@@ -113,21 +113,21 @@ class QueryRunResultsPanel(toolWindow: ToolWindow): QueryChangeListener {
         }
 
         val firstPageButton = createPageButton("<<") {
-            queryExecutionBackend.getExecutionResultPageNumber(currentQueryExecution, 1)
+            queryExecutionBackend.getExecutionResultPageNumber(currentQueryExecution!!, 1)
         }
 
         val prevPageButton = createPageButton("<") {
-            queryExecutionBackend.getExecutionResultPageNumber(currentQueryExecution, currentPage - 1)
+            queryExecutionBackend.getExecutionResultPageNumber(currentQueryExecution!!, currentPage - 1)
         }
 
         val currentPageButton = JButton("").apply { isEnabled = false }
 
         val nextPageButton = createPageButton(">") {
-            queryExecutionBackend.getExecutionResultPageNumber(currentQueryExecution, currentPage + 1)
+            queryExecutionBackend.getExecutionResultPageNumber(currentQueryExecution!!, currentPage + 1)
         }
 
         val lastPageButton = createPageButton(">>") {
-            queryExecutionBackend.getExecutionResultPageNumber(currentQueryExecution, totalPages)
+            queryExecutionBackend.getExecutionResultPageNumber(currentQueryExecution!!, totalPages)
         }
 
         init {

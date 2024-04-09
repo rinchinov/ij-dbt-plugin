@@ -1,8 +1,12 @@
 package com.github.rinchinov.ijdbtplugin.queryExecution
 
 import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
+import com.github.rinchinov.ijdbtplugin.extensions.FocusLogsTabAction
 import com.github.rinchinov.ijdbtplugin.queryExecution.executionManagers.*
+import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
+import com.github.rinchinov.ijdbtplugin.services.Notifications
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.*
 import com.intellij.openapi.progress.ProgressIndicator
@@ -75,8 +79,10 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
         project: Project?,
         title: String,
     ) : Task.Backgroundable(project, title, true) {
-        lateinit var queryExecution: QueryExecution
+        var queryExecution: QueryExecution? = null
         var pageNumber: Int = 1
+        var query: String? = null
+        var target: String? = null
 
         abstract fun executeTask(indicator: ProgressIndicator): QueryExecution
 
@@ -88,13 +94,31 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
 
         override fun onSuccess() {
             super.onSuccess()
-            queryExecution.status = QueryStatus.SUCCESS
-            listeners.forEach { it.displayExecutedQuery(queryExecution, pageNumber) }
+            queryExecution!!.status = QueryStatus.SUCCESS
+            listeners.forEach { it.displayExecutedQuery(queryExecution!!, pageNumber) }
         }
 
         override fun onThrowable(error: Throwable) {
-            super.onThrowable(error)
-            queryExecution.status = QueryStatus.FAILED
+            if (queryExecution == null){
+                queryExecution = QueryExecution(query?: "", target ?: "", "")
+            }
+            queryExecution!!.status = QueryStatus.FAILED
+            queryExecution!!.pages[1] = listOf(
+                listOf("Execution error:"),
+                listOf(error.message.toString()),
+                listOf("Query:"),
+                listOf(queryExecution!!.query)
+            )
+            project.service<Notifications>().sendNotification(
+                "Failed to run query",
+                "Exception: ${error.message.toString()}",
+                NotificationType.ERROR,
+                FocusLogsTabAction(project)
+            )
+            val eventLoggerManager = project.service<EventLoggerManager>()
+            eventLoggerManager.logLine("Caught an exception: ${error.message.toString()}", "core")
+            eventLoggerManager.logLines(error.stackTraceToString().lines(), "core")
+            listeners.forEach { it.displayExecutedQuery(queryExecution!!, pageNumber) }
         }
     }
 
@@ -119,9 +143,11 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
                 override fun executeTask(indicator: ProgressIndicator): QueryExecution {
                     val manifestService = project.service<ManifestService>()
                     val query = manifestService.getWithReplacingRefsAndSources(e, target)
+                    this.query = query
+                    this.target = target
                     queryExecution = queryExecutionManager.runQuery(type, query, target)
-                    pushExecution(queryExecution)
-                    return queryExecution
+                    pushExecution(queryExecution!!)
+                    return queryExecution!!
                 }
             }
         )
