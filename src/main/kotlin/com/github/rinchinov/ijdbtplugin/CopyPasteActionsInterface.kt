@@ -20,7 +20,7 @@ interface CopyPasteActionsInterface {
     fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String
     fun replaceRefsAndSourcesToJinja2(query: String, target: String): String
     fun getWithReplacingRefsAndSources(e: AnActionEvent, target: String): String {
-            var replacedContentResult: String = ""
+            var replacedContentResult = ""
             ApplicationManager.getApplication().runReadAction {
                 val editor: Editor = e.getRequiredData(CommonDataKeys.EDITOR)
                 val document = editor.document

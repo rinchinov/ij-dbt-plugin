@@ -12,7 +12,7 @@ import javax.swing.*
 import com.intellij.ui.components.JBScrollPane
 
 
-class PluginProjectConfigurable(private val project: Project) : Configurable {
+class PluginProjectConfigurable(project: Project) : Configurable {
     private val settings = project.service<ProjectSettings>()
     private val projectConfigurations = project.service<ProjectConfigurations>()
     private val mainPanel = JPanel(GridBagLayout())
