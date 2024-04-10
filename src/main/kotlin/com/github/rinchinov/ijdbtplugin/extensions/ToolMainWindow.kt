@@ -23,16 +23,16 @@ class ToolMainWindow : ToolWindowFactory {
         val loggingPanel = LoggingPanel()
         project.service<EventLoggerManager>().addLogger(loggingPanel)
         toolWindow.contentManager.addContent(
-            contentFactory.createContent(queryRun.getContent(), "Query Run Results", false)
+            contentFactory.createContent(queryRun.getContent(), MainToolWindowService.Tab.QUERY_RUN.toString(), false)
         )
         toolWindow.contentManager.addContent(
-            contentFactory.createContent(projectInfo.getContent(), "Project Information", false)
+            contentFactory.createContent(projectInfo.getContent(), MainToolWindowService.Tab.PROJECT_INFORMATION.toString(), false)
         )
         toolWindow.contentManager.addContent(
-            contentFactory.createContent(docs.getContent(), "Documentation", false)
+            contentFactory.createContent(docs.getContent(), MainToolWindowService.Tab.DOCUMENTATION.toString(), false)
         )
         toolWindow.contentManager.addContent(
-            contentFactory.createContent(loggingPanel, "Logs", false)
+            contentFactory.createContent(loggingPanel, MainToolWindowService.Tab.LOGS.toString(), false)
         )
         toolWindow.contentManager.addContentManagerListener(
             object : ContentManagerListener {

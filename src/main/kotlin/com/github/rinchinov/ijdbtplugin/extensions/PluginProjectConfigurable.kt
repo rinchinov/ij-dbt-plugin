@@ -101,7 +101,5 @@ class PluginProjectConfigurable(private val project: Project) : Configurable {
     }
 
     override fun getDisplayName(): String = MyBundle.message("settingWindowName")
-    override fun disposeUIResources() {
-
-    }
+    override fun disposeUIResources() {}
 }

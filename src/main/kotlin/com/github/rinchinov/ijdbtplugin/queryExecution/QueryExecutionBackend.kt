@@ -1,7 +1,7 @@
 package com.github.rinchinov.ijdbtplugin.queryExecution
 
 import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
-import com.github.rinchinov.ijdbtplugin.extensions.FocusLogsTabAction
+import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
 import com.github.rinchinov.ijdbtplugin.queryExecution.executionManagers.*
 import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.services.Notifications
@@ -52,6 +52,7 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
     }
 
     private var myState = State()
+    private val mainToolService = project.service<MainToolWindowService>()
 
     private var queryExecutionManager: BaseQueryExecutionManagerInterface = when (project.service<ProjectConfigurations>().dbtProjectConfig.adapterName) {
 //        "bigquery" -> BigQueryQueryExecutionManager(project)
@@ -114,7 +115,7 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
                 "Failed to run query",
                 "Exception: ${error.message.toString()}",
                 NotificationType.ERROR,
-                FocusLogsTabAction(project)
+                MainToolWindowService.Tab.LOGS
             )
             val eventLoggerManager = project.service<EventLoggerManager>()
             eventLoggerManager.logLine("Caught an exception: ${error.message.toString()}", "core")
@@ -140,19 +141,7 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
         )
     }
     fun runQuery(e: AnActionEvent, target: String, type: QueryTypes){
-        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("DBT")
-        if (toolWindow != null) {
-            toolWindow.show(null)
-            toolWindow.activate(null)
-            toolWindow.contentManager.let { contentManager ->
-                for (content in contentManager.contents) {
-                    if (content.displayName == "Query Run Results") {
-                        contentManager.setSelectedContent(content)
-                        break
-                    }
-                }
-            }
-        }
+        mainToolService.activateTab(MainToolWindowService.Tab.QUERY_RUN)
         ProgressManager.getInstance().run(object : BaseQueryTask(project, "Running query in Background"){
                 override fun executeTask(indicator: ProgressIndicator): QueryExecution {
                     val manifestService = project.service<ManifestService>()

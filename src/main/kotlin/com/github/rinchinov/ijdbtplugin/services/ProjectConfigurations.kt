@@ -1,5 +1,6 @@
 package com.github.rinchinov.ijdbtplugin.services
 
+import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
 import com.github.rinchinov.ijdbtplugin.utils.renderJinjaEnvVar
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
@@ -81,9 +82,11 @@ class ProjectConfigurations(private val project: Project) {
                 dbtNotifications.sendNotification("Load project failed", filePath, NotificationType.ERROR)
             }
         } catch (e: FileNotFoundException) {
-            dbtNotifications.sendNotification("File not found", "$filePath\n TBD Instruction and link to the doc", NotificationType.ERROR)
+            eventLoggerManager.logLines(e.stackTraceToString().lines(), "core")
+            dbtNotifications.sendNotification("File not found", "Failed to open `$filePath`", NotificationType.ERROR, MainToolWindowService.Tab.LOGS)
         } catch (e: Exception) {
-            dbtNotifications.sendNotification("Error loading YAML file", ": ${e.message}\nTBD Instruction and link to the doc", NotificationType.ERROR)
+            eventLoggerManager.logLines(e.stackTraceToString().lines(), "core")
+            dbtNotifications.sendNotification("Error loading YAML file", "Failed to open `$filePath`", NotificationType.ERROR, MainToolWindowService.Tab.LOGS)
         }
         eventLoggerManager.notifyProjectConfigurationsChangeListeners(this)
     }
