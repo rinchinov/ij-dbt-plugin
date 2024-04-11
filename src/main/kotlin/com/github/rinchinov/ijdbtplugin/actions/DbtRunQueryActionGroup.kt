@@ -1,7 +1,7 @@
 package com.github.rinchinov.ijdbtplugin.actions
 
 
-import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
+import com.github.rinchinov.ijdbtplugin.queryExecution.QueryExecutionBackend
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.components.service
@@ -9,24 +9,26 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.vfs.VirtualFile
 
 
-class DbtCopyPasteActionGroup : ActionGroup() {
+class DbtRunQueryActionGroup : ActionGroup() {
 
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
-
         if ( e == null || e.project == null ){
             return EMPTY_ARRAY
         }
         val project = e.project!!
         val targets = project.service<ProjectConfigurations>().dbtProjectConfig.targets
-        val manifestService = project.service<ManifestService>()
+        val queryExecutionBackend = project.service<QueryExecutionBackend>()
         val actions: Array<AnAction> = targets.map { target ->
             listOf(
-                object : AnAction("Copy for $target") {
-                    override fun actionPerformed(e: AnActionEvent) = manifestService.copyWithReplacingRefsAndSources(e, target)
+                object : AnAction("Run query for $target") {
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, QueryExecutionBackend.QueryTypes.PAGINATED)
                 },
-                object : AnAction("Paste as $target") {
-                    override fun actionPerformed(e: AnActionEvent) = manifestService.pasteWithReplacedRefsAndSources(e, target)
-                }
+                object : AnAction("Get query plan for $target") {
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, QueryExecutionBackend.QueryTypes.PLAN)
+                },
+                object : AnAction("Dry run query for $target") {
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, QueryExecutionBackend.QueryTypes.DRY)
+                },
             )
         }.flatten().toTypedArray()
         return actions

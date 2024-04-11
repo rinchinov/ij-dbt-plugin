@@ -1,6 +1,7 @@
 package com.github.rinchinov.ijdbtplugin
 import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
 import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
+import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -29,7 +30,7 @@ class DbtProjectListener: ProjectActivity {
 
     private fun loadPlugin(project: Project){
         val manifestService = project.service<ManifestService>()
-        project.service<ProjectSettings>().getDbtTargetList().forEach{
+        project.service<ProjectConfigurations>().dbtProjectConfig.targets.forEach{
             manifestService.parseManifest(it)
         }
     }

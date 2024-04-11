@@ -73,7 +73,7 @@ interface ManifestLookup: ReferenceInterface {
         val manifest= getManifest(target)
         val macros = manifest?.resourceMap?.get("macro")
         if (manifest!=null && macros !=null){
-            val adapterType = manifest.metadata.adapterType ?: settings.getDbtAdapter()
+            val adapterType = manifest.metadata.adapterType ?: projectConfigurations.dbtProjectConfig.adapterName
             // start lookup from
             val mainLookupOrder = arrayOf(
                 macros[packageName?: defaultProjectName()]?.get(macroName), // specified project or default

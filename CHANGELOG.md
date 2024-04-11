@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2024-04-11
+### Added 
+- Loading some parameters from profiles
+- MVP for query execution feature
+### Changed
+- Updated error handling
+
+
 ## [0.1.4] - 2024-03-12
 ### Changed
 - Support only ultimate editions of IDEs

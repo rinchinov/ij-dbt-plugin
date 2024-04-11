@@ -37,7 +37,7 @@ class DocumentationViewPanel(private val toolWindow: ToolWindow): ProjectInfoCha
 
     init {
         eventLoggerManager.addDataChangeListener(this)
-        startServeDocs(configurations.settings.getDbtDefaultTarget())
+        configurations.dbtProjectConfig.defaultTarget?.let { startServeDocs(it) }
     }
     fun getContent(): JComponent {
         val mainPanel = JPanel(BorderLayout())
@@ -76,7 +76,7 @@ class DocumentationViewPanel(private val toolWindow: ToolWindow): ProjectInfoCha
             }
             add(reload)
 
-            comboBox = JComboBox<String>(configurations.settings.getDbtTargetList().toTypedArray()).apply {
+            comboBox = JComboBox<String>(configurations.dbtProjectConfig.targets.toTypedArray()).apply {
                 addItemListener {
                     coroutineScope.launch {
                         restartServeDocs()

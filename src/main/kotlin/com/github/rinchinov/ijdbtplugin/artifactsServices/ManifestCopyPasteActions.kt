@@ -2,7 +2,7 @@ package com.github.rinchinov.ijdbtplugin.artifactsServices
 
 import com.github.rinchinov.ijdbtplugin.CopyPasteActionsInterface
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.Manifest
-import com.github.rinchinov.ijdbtplugin.extensions.FocusLogsTabAction
+import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
 import com.github.rinchinov.ijdbtplugin.services.Notifications
 import com.github.rinchinov.ijdbtplugin.utils.renderJinjaRef
 import com.github.rinchinov.ijdbtplugin.utils.renderJinjaSource
@@ -25,15 +25,10 @@ interface ManifestCopyPasteActions: CopyPasteActionsInterface {
                 "Failed to replace ref/source for copying!",
                 "",
                 NotificationType.ERROR,
-                FocusLogsTabAction(project)
+                MainToolWindowService.Tab.LOGS
             )
             return query
         } else {
-            dbtNotifications.sendNotification(
-                "Copied with replaced refs/sources",
-                "",
-                NotificationType.INFORMATION
-            )
             val step1 = renderJinjaSource(query, manifest.sourceMap)
             return renderJinjaRef(step1, manifest.refMap)
         }

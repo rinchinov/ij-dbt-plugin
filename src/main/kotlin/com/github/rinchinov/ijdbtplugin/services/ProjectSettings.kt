@@ -15,18 +15,20 @@ class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
         var dbtProfileDir: String = DBT_PROFILE_DIR,
         var dbtRunnerImport: String = DBT_RUNNER_IMPORT,
         var dbtInterpreterPath: String = DBT_INTERPRETER_PATH,
-        var dbtDefaultTarget: String = DBT_DEFAULT_TARGET,
-        var dbtAdapter: String = DBT_DEFAULT_ADAPTER,
-        var dbtTargetList: List<String> = DBT_TARGET_LIST,
+        var dbtQueryRunPaginationTemplate: String  = DBT_QUERY_RUN_PAGINATION_TEMPLATE,
+        var dbtQueryRunCountTemplate: String  = DBT_QUERY_RUN_COUNT_TEMPLATE,
+        var dbtQueryRunDryTemplate: String = DBT_QUERY_RUN_DRY_TEMPLATE,
+        var dbtQueryRunPlanTemplate: String = DBT_QUERY_RUN_PLAN_TEMPLATE,
     ){
         companion object {
             const val PROJECT_PATH = "dbt_project.yml"
             const val DBT_PROFILE_DIR = "~/.dbt"
             const val DBT_RUNNER_IMPORT = "from dbt.cli.main import dbtRunner"
             const val DBT_INTERPRETER_PATH = ""
-            const val DBT_DEFAULT_TARGET = "dev"
-            const val DBT_DEFAULT_ADAPTER = "postgres"
-            val DBT_TARGET_LIST = listOf("dev,prod")
+            const val DBT_QUERY_RUN_PAGINATION_TEMPLATE = "%s LIMIT ? OFFSET ?"
+            const val DBT_QUERY_RUN_COUNT_TEMPLATE = "SELECT COUNT(*) FROM (%s)"
+            const val DBT_QUERY_RUN_DRY_TEMPLATE = "%s LIMIT 10"
+            const val DBT_QUERY_RUN_PLAN_TEMPLATE = "EXPLAIN %s"
         }
     }
 
@@ -57,17 +59,20 @@ class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
     fun setDbtInterpreterPath(dbtInterpreterPath: String) {
         myState.dbtInterpreterPath = dbtInterpreterPath
     }
-    fun getDbtDefaultTarget(): String = myState.dbtDefaultTarget
-    fun setDbtDefaultTarget(dbtDefaultTarget: String) {
-        myState.dbtDefaultTarget = dbtDefaultTarget
+    fun getDbtQueryRunPaginationTemplate(): String = myState.dbtQueryRunPaginationTemplate
+    fun setDbtQueryRunPaginationTemplate(dbtQueryRunPaginationTemplate: String) {
+        myState.dbtQueryRunPaginationTemplate = dbtQueryRunPaginationTemplate
     }
-    fun getDbtAdapter(): String = myState.dbtAdapter
-    fun setDbtAdapter(dbtAdapter: String) {
-        myState.dbtAdapter = dbtAdapter
+    fun getDbtQueryRunCountTemplate(): String = myState.dbtQueryRunCountTemplate
+    fun setDbtQueryRunCountTemplate(dbtQueryRunCountTemplate: String) {
+        myState.dbtQueryRunCountTemplate = dbtQueryRunCountTemplate
     }
-    fun getDbtTargetList(): List<String> = myState.dbtTargetList
-    fun setDbtTargetList(dbtTargetList: String) {
-        myState.dbtTargetList = dbtTargetList.split(",")
+    fun getDbtQueryRunDryTemplate(): String = myState.dbtQueryRunDryTemplate
+    fun setDbtQueryRunDryTemplate(dbtQueryRunDryTemplate: String) {
+        myState.dbtQueryRunDryTemplate = dbtQueryRunDryTemplate
     }
-
+    fun getDbtQueryRunPlanTemplate(): String = myState.dbtQueryRunPlanTemplate
+    fun setDbtQueryRunPlanTemplate(dbtQueryRunPlanTemplate: String) {
+        myState.dbtQueryRunPlanTemplate = dbtQueryRunPlanTemplate
+    }
 }

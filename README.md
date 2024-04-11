@@ -21,6 +21,8 @@ The [DBT](https://docs.getdbt.com/docs/introduction) plugin for PyCharm revoluti
 
 - **Copy/Paste Feature**: Improve efficiency with the ability to copy and paste queries, seamlessly replacing refs/sources for database operations.
 
+- **Run selected query**: Improve efficiency with the ability to run query parts right inside the IDE.
+
 - **Integrated DBT Documentation Preview**: Access DBT documentation without leaving PyCharm. A dedicated plugin window provides instant insights and information relevant to your current context, enriching your development experience with immediate access to your project's data documentation.
 
 - **Annotations**: Annotations for macros, models, and sources

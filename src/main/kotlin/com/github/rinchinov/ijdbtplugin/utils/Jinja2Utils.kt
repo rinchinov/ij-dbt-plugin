@@ -10,7 +10,6 @@ fun renderJinjaEnvVar(input: String): String {
     }
 }
 
-
 fun renderJinjaSource(input: String, mapper: Map<String, String>): String {
     // Pattern to match source function with arguments in single or double quotes
     val regexPattern = """\{\{\s*source\(\s*(["'])(.*?)\1\s*,\s*(["'])(.*?)\3\s*\)\s*}}""".toRegex()
@@ -20,7 +19,6 @@ fun renderJinjaSource(input: String, mapper: Map<String, String>): String {
         mapper["${arg1}.${arg2}"] ?: input
     }
 }
-
 
 fun renderJinjaRef(input: String, mapper: Map<String, String>): String {
     // Pattern to match ref function with two optional positional arguments and an optional keyword argument (version or v)

@@ -65,9 +65,9 @@ class ProjectInformationPanel(toolWindow: ToolWindow): ProjectInfoChangeListener
         SwingUtilities.invokeLater {
             options.setValue("dbtProjectFile", configurations.settings.getDbtProjectPath())
             options.setValue("pythonSdk", configurations.getProjectPythonSdk())
-            options.setValue("targetsList", configurations.settings.getDbtTargetList().joinToString(separator = ","))
-            options.setValue("defaultTarget", configurations.settings.getDbtDefaultTarget())
-            options.setValue("dbtAdapter", configurations.settings.getDbtAdapter())
+            options.setValue("targetsList", configurations.dbtProjectConfig.targets.joinToString(separator = ","))
+            options.setValue("defaultTarget", configurations.dbtProjectConfig.defaultTarget ?: "")
+            options.setValue("dbtAdapter", configurations.dbtProjectConfig.adapterName ?: "")
             options.setValue("packagesPath", configurations.packagesPath().absolutePath.toString())
             options.setValue("dbtProfileDir", configurations.getDbtProfileDirAbsolute().toString())
         }
