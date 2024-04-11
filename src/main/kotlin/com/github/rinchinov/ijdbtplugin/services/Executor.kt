@@ -1,5 +1,5 @@
 package com.github.rinchinov.ijdbtplugin.services
-import com.github.rinchinov.ijdbtplugin.extensions.FocusLogsTabAction
+import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
 import com.google.gson.Gson
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -11,7 +11,7 @@ import java.io.File
 
 
 @Service(Service.Level.PROJECT)
-class Executor(private val project: Project){
+class Executor(project: Project){
     private val settings = project.service<ProjectSettings>()
     private val projectConfigurations = project.service<ProjectConfigurations>()
     private val dbtNotifications = project.service<Notifications>()
@@ -31,7 +31,7 @@ class Executor(private val project: Project){
                 "Process finished with exit code $exitCode",
                 "Output: $output",
                 NotificationType.ERROR,
-                FocusLogsTabAction(project)
+                MainToolWindowService.Tab.LOGS
             )
             if (logs.isNotEmpty()){
                 eventLoggerManager.logLines(logs, "dbt")
@@ -108,7 +108,7 @@ class Executor(private val project: Project){
                 "Failed to run dbt command",
                 "Exception: $e",
                 NotificationType.ERROR,
-                FocusLogsTabAction(project)
+                MainToolWindowService.Tab.LOGS
             )
             eventLoggerManager.logLine("Caught an exception: ${e.message}", "core")
             eventLoggerManager.logLine(e.printStackTrace().toString(), "core")

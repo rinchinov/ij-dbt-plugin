@@ -8,7 +8,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.*
-import com.github.rinchinov.ijdbtplugin.extensions.FocusLogsTabAction
+import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
 import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.github.rinchinov.ijdbtplugin.services.Notifications
 import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
@@ -86,7 +86,7 @@ class ManifestService(override var project: Project):
                         "Manifest reload failed for $target!!",
                         "",
                         NotificationType.ERROR,
-                        FocusLogsTabAction(project)
+                        MainToolWindowService.Tab.LOGS
                     )
                 } finally {
                     mutex[target]?.unlock()
