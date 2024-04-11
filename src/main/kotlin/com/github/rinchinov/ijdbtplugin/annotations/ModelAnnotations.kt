@@ -1,15 +1,15 @@
-package com.github.rinchinov.ijdbtplugin.annotations;
+package com.github.rinchinov.ijdbtplugin.annotations
 
 import com.github.rinchinov.ijdbtplugin.artifactsServices.ManifestService
 import com.intellij.lang.annotation.AnnotationHolder
-import com.intellij.lang.annotation.Annotator;
+import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.components.service
 import com.intellij.psi.PsiElement
-import com.jetbrains.jinja2.psi.Jinja2StringLiteral
-import com.jetbrains.jinja2.tags.Jinja2FunctionCall
-import com.jetbrains.jinja2.template.psi.impl.Jinja2MemberNameImpl
-import com.jetbrains.jinja2.template.psi.impl.Jinja2VariableReferenceImpl
+import com.intellij.jinja.psi.Jinja2StringLiteral
+import com.intellij.jinja.tags.Jinja2FunctionCall
+import com.intellij.jinja.template.psi.impl.Jinja2MemberNameImpl
+import com.intellij.jinja.template.psi.impl.Jinja2VariableReferenceImpl
 
 class ModelAnnotations : Annotator {
 

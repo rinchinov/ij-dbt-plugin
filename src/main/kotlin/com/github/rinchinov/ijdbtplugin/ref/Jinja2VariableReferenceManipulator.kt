@@ -3,7 +3,7 @@ package com.github.rinchinov.ijdbtplugin.ref
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.AbstractElementManipulator
 import com.intellij.util.IncorrectOperationException
-import com.jetbrains.jinja2.template.psi.impl.Jinja2VariableReferenceImpl
+import com.intellij.jinja.template.psi.impl.Jinja2VariableReferenceImpl
 
 
 class Jinja2VariableReferenceManipulator : AbstractElementManipulator<Jinja2VariableReferenceImpl>() {

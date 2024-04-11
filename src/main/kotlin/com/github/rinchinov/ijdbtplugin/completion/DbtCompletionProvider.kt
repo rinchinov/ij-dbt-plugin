@@ -6,7 +6,7 @@ import com.intellij.openapi.components.service
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
-import com.jetbrains.jinja2.psi.Jinja2StringLiteral
+import com.intellij.jinja.psi.Jinja2StringLiteral
 
 interface DbtCompletionProvider {
 
