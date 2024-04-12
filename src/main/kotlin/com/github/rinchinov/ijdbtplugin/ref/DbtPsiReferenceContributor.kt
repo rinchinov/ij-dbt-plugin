@@ -5,11 +5,11 @@ import com.intellij.patterns.PsiElementPattern.Capture
 import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.*
 import com.intellij.util.ProcessingContext
-import com.jetbrains.jinja2.tags.Jinja2FunctionCall
-import com.jetbrains.jinja2.template.psi.impl.DjangoLiteral
-import com.jetbrains.jinja2.template.psi.impl.Jinja2MemberExpressionImpl
-import com.jetbrains.jinja2.template.psi.impl.Jinja2MemberNameImpl
-import com.jetbrains.jinja2.template.psi.impl.Jinja2VariableReferenceImpl
+import com.intellij.jinja.tags.Jinja2FunctionCall
+import com.intellij.jinja.template.psi.impl.DjangoLiteral
+import com.intellij.jinja.template.psi.impl.Jinja2MemberExpressionImpl
+import com.intellij.jinja.template.psi.impl.Jinja2MemberNameImpl
+import com.intellij.jinja.template.psi.impl.Jinja2VariableReferenceImpl
 
 
 class DbtPsiReferenceContributor : PsiReferenceContributor() {

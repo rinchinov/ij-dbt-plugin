@@ -1,4 +1,4 @@
-package com.github.rinchinov.ijdbtplugin.extensions;
+package com.github.rinchinov.ijdbtplugin.extensions
 
 import com.github.rinchinov.ijdbtplugin.ProjectInfoChangeListenerInterface
 import com.intellij.ui.jcef.JBCefApp
@@ -25,19 +25,22 @@ import java.awt.FlowLayout
 import java.nio.file.Files
 
 
-class DocumentationViewPanel(private val toolWindow: ToolWindow): ProjectInfoChangeListenerInterface {
+class DocumentationViewPanel(toolWindow: ToolWindow): ProjectInfoChangeListenerInterface {
     private val eventLoggerManager = toolWindow.project.service<EventLoggerManager>()
     private val executor = toolWindow.project.service<Executor>()
     private val configurations = toolWindow.project.service<ProjectConfigurations>()
     private val server = Server(0)
     private var actualPort: Int = 0
-    private var jbCefBrowser = JBCefBrowser()
+    private var jbCefBrowser: JBCefBrowser ? = null
     private var comboBox: JComboBox<String> = ComboBox<String>()
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     init {
         eventLoggerManager.addDataChangeListener(this)
-        configurations.dbtProjectConfig.defaultTarget?.let { startServeDocs(it) }
+        if (JBCefApp.isSupported()) {
+            jbCefBrowser = JBCefBrowser()
+            configurations.dbtProjectConfig.defaultTarget?.let { startServeDocs(it) }
+        }
     }
     fun getContent(): JComponent {
         val mainPanel = JPanel(BorderLayout())
@@ -48,7 +51,7 @@ class DocumentationViewPanel(private val toolWindow: ToolWindow): ProjectInfoCha
 
         // Panel that contains the browser
         val docsPanel = JPanel(BorderLayout()).apply {
-            add(jbCefBrowser.component, BorderLayout.CENTER)
+            jbCefBrowser?.component?.let { add(it, BorderLayout.CENTER) }
         }
 
         // Panel for the button and dropdown
@@ -120,11 +123,11 @@ class DocumentationViewPanel(private val toolWindow: ToolWindow): ProjectInfoCha
 
     private fun loadDocs(target: String){
         if (Files.exists(Paths.get(configurations.getDbtCachePath(target).toString(), "index.html"))) {
-            jbCefBrowser.loadURL("http://localhost:$actualPort/index.html")
+            jbCefBrowser?.loadURL("http://localhost:$actualPort/index.html")
         }
         else {
-            jbCefBrowser.zoomLevel = 1.0
-            jbCefBrowser.loadURL("")
+            jbCefBrowser?.zoomLevel = 1.0
+            jbCefBrowser?.loadURL("")
         }
     }
     override fun onManifestChanged(manifest: ManifestService) = restartServeDocs()

@@ -2,7 +2,7 @@ package com.github.rinchinov.ijdbtplugin.completion
 import com.intellij.codeInsight.completion.*
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
-import com.jetbrains.jinja2.template.DjangoTemplateLanguage
+import com.intellij.jinja.template.DjangoTemplateLanguage
 
 class DbtJinja2CompletionContributor : CompletionContributor() {
     init {

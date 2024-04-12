@@ -4,7 +4,7 @@ import com.github.rinchinov.ijdbtplugin.artifactsVersions.Macro
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.Node
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.SourceDefinition
 import com.intellij.psi.PsiElement
-import com.jetbrains.jinja2.template.psi.impl.Jinja2MemberNameImpl
+import com.intellij.jinja.template.psi.impl.Jinja2MemberNameImpl
 
 interface PsiLookupInterface {
     fun findNode(packageName: String?, uniqueId: String, currentVersion: Int?, target: String?): Node?

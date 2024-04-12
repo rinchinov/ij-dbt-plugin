@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-04-11
+### Changed
+- Set minimal supported version 241.* (there is incompatible change https://plugins.jetbrains.com/docs/intellij/api-changes-list-2024.html#django-plugin-20241)
+
 ## [0.1.5] - 2024-04-11
 ### Added 
 - Loading some parameters from profiles
