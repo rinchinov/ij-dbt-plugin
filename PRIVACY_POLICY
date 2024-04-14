@@ -1,0 +1,80 @@
+Privacy Policy for ij-dbt-plugin
+
+Last updated: 13.04.2024
+
+Introduction
+
+Thank you for choosing ij-dbt-plugin. We are committed to protecting your
+privacy and handling your data in an open and transparent manner. This privacy
+policy outlines how we collect, use, store, and safeguard your information when
+you use our IntelliJ IDEA plugin.
+
+Information We Collect
+
+In order to enhance the functionality of our plugin and provide a better user
+experience, we collect the following types of information:
+
+- IDEA Type and Version: To understand the different environments in which our
+  plugin is used.
+- Operating System Type and Version: To ensure our plugin performs well across
+  different systems.
+- Session ID (Epoch Time): To monitor session lengths and usage patterns.
+- Device ID: Used to uniquely identify a device for analytics. If you do not
+  consent, a random UUID is generated that cannot be traced back to you.
+- DBT Adapter Type: To identify which adapters are most popular among our
+  users.
+- Errors: We collect information about failures in specific environments
+  and features, without storing detailed logs.
+
+How We Use Your Information
+
+Your information is used to:
+
+1. Prioritize and test the most popular adapters and operating systems to ensure
+   optimal compatibility and performance.
+2. Analyze the most frequently used features to enhance their functionality and
+   user experience.
+3. Identify and troubleshoot issues that may occur in specific environments or
+   features.
+
+How We Store and Protect Your Information
+
+We take the security of your data seriously. Your information is stored in
+secured servers and protected using a combination of physical, administrative,
+and technical safeguards. Access to the information stored in Amplitude is
+strictly limited to the repository holder, who is the only one authorized to
+handle this data. This control is enforced to ensure that the information is used
+solely for the purposes of operating, developing, and improving our plugin.
+
+Third-Party Analytics Providers
+
+We use third-party service providers, such as Amplitude, to monitor and analyze
+the use of our plugin. Amplitude helps us improve our plugin by tracking user
+activities and collecting information that includes but is not limited to your
+device ID, session information, and interactions with our plugin. For more
+information on the privacy practices of Amplitude, please visit the Amplitude
+Privacy Policy web page.
+
+Your Privacy Rights
+
+You have the right to access, correct, or delete your personal information. You
+also have the right to withdraw your consent at any time. Please contact us at
+https://github.com/rinchinov/ij-dbt-plugin if you wish to exercise these rights.
+
+Changes to This Privacy Policy
+
+We may update our Privacy Policy from time to time. We will notify you of any
+changes by posting the new Privacy Policy on this page. You are advised to
+review this Privacy Policy periodically for any changes.
+
+Contact Us
+
+If you have any questions about this Privacy Policy, please contact us:
+
+- By email: roman1001001@gmail.com
+- By visiting this page on our website: https://github.com/rinchinov/ij-dbt-plugin
+
+Additional Resources
+
+This privacy policy is available on our GitHub repository at
+https://github.com/rinchinov/ij-dbt-plugin for ease of access and transparency.

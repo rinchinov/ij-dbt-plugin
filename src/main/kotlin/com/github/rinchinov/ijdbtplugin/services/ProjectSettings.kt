@@ -32,6 +32,9 @@ class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
         }
     }
 
+    init {
+        Statistics.getInstance().setProjectSettings(this)
+    }
     override fun getState(): State {
         return myState
     }

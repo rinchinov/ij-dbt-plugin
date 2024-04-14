@@ -13,7 +13,7 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity implementation="com.github.rinchinov.ijdbtplugin.DbtProjectListener"/>
+        <backgroundPostStartupActivity implementation="com.github.rinchinov.ijdbtplugin.DbtBackgroundPostStartupActivity"/>
         <projectConfigurable
                 id="DBTPluginProjectConfigurable"
                 instance="com.github.rinchinov.ijdbtplugin.extensions.PluginProjectConfigurable"

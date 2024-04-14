@@ -53,6 +53,13 @@ jobs:
         with:
           gradle-home-cache-cleanup: true
 
+      # Create a statistics.properties file from GitHub secrets
+      - name: Create statistics properties
+        run: |
+          cat << EOF > src/main/resources/statistics.properties
+          statisticsToken=${{ secrets.STATISTIC_API_KEY }}
+          EOF
+
       # Set environment variables
       - name: Export Properties
         id: properties
@@ -117,6 +124,13 @@ jobs:
         with:
           gradle-home-cache-cleanup: true
 
+      # Create a statistics.properties file from GitHub secrets
+      - name: Create statistics properties
+        run: |
+          cat << EOF > src/main/resources/statistics.properties
+          statisticsToken=${{ secrets.STATISTIC_API_KEY }}
+          EOF
+
       # Run tests
       - name: Run Tests
         run: ./gradlew check
@@ -164,6 +178,13 @@ jobs:
           distribution: zulu
           java-version: 17
 
+      # Create a statistics.properties file from GitHub secrets
+      - name: Create statistics properties
+        run: |
+          cat << EOF > src/main/resources/statistics.properties
+          statisticsToken=${{ secrets.STATISTIC_API_KEY }}
+          EOF
+
       # Run Qodana inspections
       - name: Qodana - Code Inspection
         uses: JetBrains/qodana-action@v2023.3.2
@@ -207,6 +228,13 @@ jobs:
         with:
           path: ${{ needs.build.outputs.pluginVerifierHomeDir }}/ides
           key: plugin-verifier-${{ hashFiles('build/listProductsReleases.txt') }}
+
+      # Create a statistics.properties file from GitHub secrets
+      - name: Create statistics properties
+        run: |
+          cat << EOF > src/main/resources/statistics.properties
+          statisticsToken=${{ secrets.STATISTIC_API_KEY }}
+          EOF
 
       # Run Verify Plugin task and IntelliJ Plugin Verifier tool
       - name: Run Plugin Verification tasks
