@@ -1,7 +1,7 @@
 package com.github.rinchinov.ijdbtplugin.services
 
 import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
-import com.github.rinchinov.ijdbtplugin.utils.renderJinjaEnvVar
+import com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils.renderJinjaEnvVar
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service

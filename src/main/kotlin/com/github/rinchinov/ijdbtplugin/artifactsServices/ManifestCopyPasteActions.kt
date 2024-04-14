@@ -4,8 +4,8 @@ import com.github.rinchinov.ijdbtplugin.CopyPasteActionsInterface
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.Manifest
 import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
 import com.github.rinchinov.ijdbtplugin.services.Notifications
-import com.github.rinchinov.ijdbtplugin.utils.renderJinjaRef
-import com.github.rinchinov.ijdbtplugin.utils.renderJinjaSource
+import com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils.renderJinjaRef
+import com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils.renderJinjaSource
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 

@@ -1,4 +1,4 @@
-package com.github.rinchinov.ijdbtplugin.utils
+package com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils
 
 
 fun renderJinjaEnvVar(input: String): String {
