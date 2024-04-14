@@ -101,6 +101,8 @@ class Executor(project: Project){
             if (directory != null){
                 processBuilder.directory(directory)
             }
+            val environment = processBuilder.environment()
+            environment.putAll(settings.getDbtEnvVariables())
             val process = processBuilder.start()
             return waitProcess(process)
         } catch (e: Exception) {

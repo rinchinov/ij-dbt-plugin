@@ -27,6 +27,7 @@ class PluginProjectConfigurable(project: Project) : Configurable {
     private val dbtProfileDir: JBTextField = JBTextField()
     private val dbtRunnerImport: JBTextField = JBTextField()
     private val dbtInterpreterPath: JBTextField = JBTextField()
+    private val dbtEnvVariables: JBTextField = JBTextField()
     private val dbtQueryRunPaginationTemplate: JBTextField = JBTextField()
     private val dbtQueryRunCountTemplate: JBTextField = JBTextField()
     private val dbtQueryRunDryTemplate: JBTextField = JBTextField()
@@ -45,6 +46,7 @@ class PluginProjectConfigurable(project: Project) : Configurable {
         addLabeledField("DBT profile path", dbtProfileDir, mainPanel, gbc)
         addLabeledField("DBT runner import", dbtRunnerImport, mainPanel, gbc)
         addLabeledField("DBT interpreter path", dbtInterpreterPath, mainPanel, gbc)
+        addLabeledField("DBT environment variables", dbtEnvVariables, mainPanel, gbc)
 
         addLabeledField("Query run SQL templates:", null, mainPanel, gbc)
         addLabeledField("Query paginated template", dbtQueryRunPaginationTemplate, mainPanel, gbc)
@@ -113,6 +115,7 @@ class PluginProjectConfigurable(project: Project) : Configurable {
                 || settings.getDbtProfileDir() != dbtProfileDir.text
                 || settings.getDbtRunnerImport() != dbtRunnerImport.text
                 || settings.getDbtInterpreterPath() != dbtInterpreterPath.text
+                || settings.getDbtEnvVariablesText() != dbtEnvVariables.text
                 || settings.getDbtQueryRunPlanTemplate() != dbtQueryRunPaginationTemplate.text
                 || settings.getDbtQueryRunCountTemplate() != dbtQueryRunCountTemplate.text
                 || settings.getDbtQueryRunPlanTemplate() != dbtQueryRunPlanTemplate.text
@@ -125,6 +128,7 @@ class PluginProjectConfigurable(project: Project) : Configurable {
         settings.setDbtProfileDir(dbtProfileDir.text)
         settings.setDbtRunnerImport(dbtRunnerImport.text)
         settings.setDbtInterpreterPath(dbtInterpreterPath.text)
+        settings.setDbtEnvVariables(dbtEnvVariables.text)
         settings.setDbtQueryRunPaginationTemplate(dbtQueryRunPaginationTemplate.text)
         settings.setDbtQueryRunCountTemplate(dbtQueryRunCountTemplate.text)
         settings.setDbtQueryRunDryTemplate(dbtQueryRunDryTemplate.text)
@@ -138,6 +142,7 @@ class PluginProjectConfigurable(project: Project) : Configurable {
         dbtProfileDir.text = settings.getDbtProfileDir()
         dbtRunnerImport.text = settings.getDbtRunnerImport()
         dbtInterpreterPath.text = settings.getDbtInterpreterPath()
+        dbtEnvVariables.text = settings.getDbtEnvVariablesText()
         dbtQueryRunPaginationTemplate.text = settings.getDbtQueryRunPaginationTemplate()
         dbtQueryRunCountTemplate.text = settings.getDbtQueryRunCountTemplate()
         dbtQueryRunDryTemplate.text = settings.getDbtQueryRunDryTemplate()

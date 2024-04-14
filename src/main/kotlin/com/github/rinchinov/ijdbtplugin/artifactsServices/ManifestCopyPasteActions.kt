@@ -4,8 +4,7 @@ import com.github.rinchinov.ijdbtplugin.CopyPasteActionsInterface
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.Manifest
 import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
 import com.github.rinchinov.ijdbtplugin.services.Notifications
-import com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils.renderJinjaRef
-import com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils.renderJinjaSource
+import com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 
@@ -13,6 +12,7 @@ interface ManifestCopyPasteActions: CopyPasteActionsInterface {
     val manifests: MutableMap<String, Manifest?>
     val dbtNotifications: Notifications
     var project: Project
+    val jinja2Utils: Jinja2Utils
     fun defaultProjectName(): String
     override fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String {
         val manifest = manifests[target]
@@ -29,8 +29,8 @@ interface ManifestCopyPasteActions: CopyPasteActionsInterface {
             )
             return query
         } else {
-            val step1 = renderJinjaSource(query, manifest.sourceMap)
-            return renderJinjaRef(step1, manifest.refMap)
+            val step1 = jinja2Utils.renderJinjaSource(query, manifest.sourceMap)
+            return jinja2Utils.renderJinjaRef(step1, manifest.refMap)
         }
     }
 

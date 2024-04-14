@@ -12,6 +12,7 @@ import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
 import com.github.rinchinov.ijdbtplugin.services.Executor
 import com.github.rinchinov.ijdbtplugin.services.Notifications
 import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
+import com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils
 import com.intellij.notification.NotificationType
 import java.time.LocalDateTime
 import java.time.Duration
@@ -33,6 +34,7 @@ class ManifestService(override var project: Project):
         const val UPDATE_INTERVAL = 5
     }
     override val projectConfigurations = project.service<ProjectConfigurations>()
+    override val jinja2Utils = project.service<Jinja2Utils>()
     override val settings = project.service<ProjectSettings>()
     private val executor = project.service<Executor>()
     override val dbtPackageLocation = executor.getDbtPythonPackageLocation()
@@ -67,7 +69,7 @@ class ManifestService(override var project: Project):
     fun parseManifest(target: String) {
         val lastUpdated = manifestLastUpdated[target]?: LocalDateTime.of(1, 1, 1, 0, 0)
         if (Duration.between(lastUpdated, LocalDateTime.now()).toMinutes() <= UPDATE_INTERVAL) {
-                return
+            return
         }
 
         coroutineScope.launch {
