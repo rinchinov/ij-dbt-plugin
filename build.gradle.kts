@@ -40,7 +40,6 @@ dependencies {
     intellijPlatform {
         create(properties("platformType"), properties("platformVersion"))
 
-        // pycharmProfessional(properties("platformVersion"))
         bundledPlugins(properties("platformBundledPlugins").map { it.split(',') })
 
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
