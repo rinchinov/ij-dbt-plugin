@@ -29,6 +29,8 @@
                 anchor="bottom"
                 id="DBT"/>
 
+        <lang.substitutor language="SQL" implementationClass="com.github.rinchinov.ijdbtplugin.DbtJinjaLanguageSubstitutor" order="first"/>
+
         <psi.referenceContributor
                 implementation="com.github.rinchinov.ijdbtplugin.ref.DbtPsiReferenceContributor"
                 language="DjangoTemplate"/>
