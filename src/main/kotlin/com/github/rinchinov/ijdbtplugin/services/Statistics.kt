@@ -63,7 +63,7 @@ class Statistics: PersistentStateComponent<Statistics.State>, Disposable {
     }
 
     private fun getAmplitudeKey(): String {
-        val inputStream = javaClass.classLoader.getResourceAsStream("statistics1.properties")
+        val inputStream = javaClass.classLoader.getResourceAsStream("statistics.properties")
         val properties = Properties()
         inputStream?.let {
             properties.load(it)
