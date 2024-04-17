@@ -1,6 +1,7 @@
 package com.github.rinchinov.ijdbtplugin
 
 import com.github.rinchinov.ijdbtplugin.services.Notifications
+import com.github.rinchinov.ijdbtplugin.services.Statistics
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -16,6 +17,7 @@ import java.awt.datatransfer.StringSelection
 
 interface CopyPasteActionsInterface {
     val coroutineScope: CoroutineScope
+    val statistics: Statistics
 
     fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String
     fun replaceRefsAndSourcesToJinja2(query: String, target: String): String
