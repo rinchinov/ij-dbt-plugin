@@ -54,11 +54,6 @@ Ensure you have a Python SDK configured in IDE with DBT installed. This setup is
 
 - Open any DBT project in PyCharm to automatically unlock advanced navigation features, making every DBT component effortlessly accessible.
 
-### Configure Jinja2 for `.sql` and `.yml` Files
-
-1. **Access Settings**: Go to `File` > `Settings` > `Languages & Frameworks` > `Template Languages`.
-2. **Select Template Language**: Choose `Jinja2` and include `sql` and `yml` in `Template File Types`.
-
 ### Optional: Restart PyCharm/IntelliJ IDEA
 
 - A restart may be necessary to fully integrate the new settings, optimizing your plugin experience.
