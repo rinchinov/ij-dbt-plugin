@@ -2,16 +2,12 @@ package com.github.rinchinov.ijdbtplugin.artifactsServices
 
 import com.github.rinchinov.ijdbtplugin.AnnotationsInterface
 import com.github.rinchinov.ijdbtplugin.ReferenceInterface
-import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.artifactsVersions.*
 import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
-import com.github.rinchinov.ijdbtplugin.services.Executor
-import com.github.rinchinov.ijdbtplugin.services.Notifications
-import com.github.rinchinov.ijdbtplugin.services.ProjectSettings
+import com.github.rinchinov.ijdbtplugin.services.*
 import com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils
 import com.intellij.notification.NotificationType
 import java.time.LocalDateTime
@@ -36,6 +32,7 @@ class ManifestService(override var project: Project):
     override val projectConfigurations = project.service<ProjectConfigurations>()
     override val jinja2Utils = project.service<Jinja2Utils>()
     override val settings = project.service<ProjectSettings>()
+    override val statistics = Statistics.getInstance()
     private val executor = project.service<Executor>()
     override val dbtPackageLocation = executor.getDbtPythonPackageLocation()
     override val dbtNotifications = project.service<Notifications>()
@@ -82,6 +79,7 @@ class ManifestService(override var project: Project):
                         "",
                         NotificationType.INFORMATION
                     )
+                    statistics.sendStatistics(Statistics.GroupName.CORE, "ManifestService", "Manifest parsing succeed")
                 } catch (e: Exception) {
                     eventLoggerManager.logLines(e.toString().trim().lines(), "core")
                     dbtNotifications.sendNotification(
@@ -90,6 +88,7 @@ class ManifestService(override var project: Project):
                         NotificationType.ERROR,
                         MainToolWindowService.Tab.LOGS
                     )
+                    statistics.sendStatistics(Statistics.GroupName.CORE, "ManifestService", "Manifest parsing failed")
                 } finally {
                     mutex[target]?.unlock()
                 }

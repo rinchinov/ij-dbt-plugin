@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2024-04-15
+### Added
+- Environment Variable Settings: Introduced settings to configure environment variables for executions and Jinja configurations, enhancing flexibility and control over runtime environments.
+- Jinja templating with LanguageSubstitutor: Now there is no need to set up jinja for sql and yml files manually. Thanks to @joshuataylor
+- Enhanced Statistics: Implemented statistical tracking to improve user experience by understanding usage patterns and preferences more effectively.
+
 ## [0.2.0] - 2024-04-11
 ### Changed
 - Set minimal supported version 241.* (there is incompatible change https://plugins.jetbrains.com/docs/intellij/api-changes-list-2024.html#django-plugin-20241)
