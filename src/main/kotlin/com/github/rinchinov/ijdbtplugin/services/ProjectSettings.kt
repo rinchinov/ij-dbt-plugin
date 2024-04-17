@@ -7,7 +7,7 @@ import com.intellij.openapi.components.*
         name = "DBTSettings",
         storages = [Storage("dbtSettings.xml")]
 )
-class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
+class ProjectSettings: PersistentStateComponent<ProjectSettings.State> {
     private var myState = State()
 
     data class State(
@@ -15,6 +15,7 @@ class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
         var dbtProfileDir: String = DBT_PROFILE_DIR,
         var dbtRunnerImport: String = DBT_RUNNER_IMPORT,
         var dbtInterpreterPath: String = DBT_INTERPRETER_PATH,
+        var dbtEnvVariables: Map<String, String> = emptyMap(),
         var dbtQueryRunPaginationTemplate: String  = DBT_QUERY_RUN_PAGINATION_TEMPLATE,
         var dbtQueryRunCountTemplate: String  = DBT_QUERY_RUN_COUNT_TEMPLATE,
         var dbtQueryRunDryTemplate: String = DBT_QUERY_RUN_DRY_TEMPLATE,
@@ -32,6 +33,9 @@ class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
         }
     }
 
+    init {
+        Statistics.getInstance().setProjectSettings(this)
+    }
     override fun getState(): State {
         return myState
     }
@@ -55,6 +59,20 @@ class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
     fun setDbtRunnerImport(dbtRunnerImport: String) {
         myState.dbtRunnerImport = dbtRunnerImport
     }
+
+    fun getDbtEnvVariables(): Map<String, String> = myState.dbtEnvVariables
+
+    fun setDbtEnvVariables(dbtEnvVariables: String) {
+        myState.dbtEnvVariables = dbtEnvVariables.split(',')
+            .map { it.split('=') }
+            .map { it.first() to it.last() }
+            .toMap()
+    }
+
+    fun getDbtEnvVariablesText(): String {
+        return myState.dbtEnvVariables.entries.joinToString(separator = ",") { "${it.key}=${it.value}" }
+    }
+
     fun getDbtInterpreterPath(): String = myState.dbtInterpreterPath
     fun setDbtInterpreterPath(dbtInterpreterPath: String) {
         myState.dbtInterpreterPath = dbtInterpreterPath
@@ -75,4 +93,5 @@ class ProjectSettings() : PersistentStateComponent<ProjectSettings.State> {
     fun setDbtQueryRunPlanTemplate(dbtQueryRunPlanTemplate: String) {
         myState.dbtQueryRunPlanTemplate = dbtQueryRunPlanTemplate
     }
+
 }

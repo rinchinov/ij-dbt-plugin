@@ -1,9 +1,11 @@
 package com.github.rinchinov.ijdbtplugin
 
+import com.github.rinchinov.ijdbtplugin.services.Statistics
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 
 interface AnnotationsInterface: PsiLookupInterface {
+    val statistics: Statistics
     fun getSourceAnnotation(element: PsiElement): List<Pair<String, HighlightSeverity>> {
         val source = findSourceDefinitionByElement(element)
         if (source != null){
@@ -21,7 +23,7 @@ interface AnnotationsInterface: PsiLookupInterface {
             return result
         }
         else {
-            return listOf( Pair("Source not found!", HighlightSeverity.ERROR))
+            return listOf(Pair("Source not found!", HighlightSeverity.ERROR))
         }
     }
     fun getModelAnnotation(element: PsiElement): List<Pair<String, HighlightSeverity>>{

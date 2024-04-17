@@ -37,6 +37,13 @@ jobs:
         with:
           gradle-home-cache-cleanup: true
 
+      # Create a statistics.properties file from GitHub secrets
+      - name: Create statistics properties
+        run: |
+          cat << EOF > src/main/resources/statistics.properties
+          statisticsToken=${{ secrets.STATISTIC_API_KEY }}
+          EOF
+
       # Set environment variables
       - name: Export Properties
         id: properties

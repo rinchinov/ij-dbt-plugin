@@ -1,7 +1,7 @@
 package com.github.rinchinov.ijdbtplugin.services
 
 import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
-import com.github.rinchinov.ijdbtplugin.utils.renderJinjaEnvVar
+import com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -18,6 +18,8 @@ import java.nio.file.Paths
 @Service(Service.Level.PROJECT)
 class ProjectConfigurations(private val project: Project) {
     val settings = project.service<ProjectSettings>()
+    private val jinja2Utils = project.service<Jinja2Utils>()
+    val statistics = Statistics.getInstance()
     private val dbtNotifications = project.service<Notifications>()
     private val eventLoggerManager = project.service<EventLoggerManager>()
     val dbtProjectConfig = DbtProjectConfig(
@@ -75,18 +77,26 @@ class ProjectConfigurations(private val project: Project) {
                     "packages-install-path",
                     dbtProjectConfig.packagesInstallPath
                 ) as String
-                dbtProjectConfig.packagesInstallPath = renderJinjaEnvVar(packagesInstallPath)
+                dbtProjectConfig.packagesInstallPath = jinja2Utils.renderJinjaEnvVar(packagesInstallPath)
                 loadProfileDetails()
+                statistics.setProjectConfigurations(this)
+                statistics.sendStatistics(Statistics.GroupName.CORE, "ProjectConfigurations", "Project configuration loaded")
             }
             else {
                 dbtNotifications.sendNotification("Load project failed", filePath, NotificationType.ERROR)
+                statistics.setProjectConfigurations(this)
+                statistics.sendStatistics(Statistics.GroupName.CORE, "ProjectConfigurations", "Project configuration load failed: yml is null")
             }
         } catch (e: FileNotFoundException) {
             eventLoggerManager.logLines(e.stackTraceToString().lines(), "core")
             dbtNotifications.sendNotification("File not found", "Failed to open `$filePath`", NotificationType.ERROR, MainToolWindowService.Tab.LOGS)
+            statistics.setProjectConfigurations(this)
+            statistics.sendStatistics(Statistics.GroupName.CORE, "ProjectConfigurations", "Project configuration load failed: file not found")
         } catch (e: Exception) {
             eventLoggerManager.logLines(e.stackTraceToString().lines(), "core")
             dbtNotifications.sendNotification("Error loading YAML file", "Failed to open `$filePath`", NotificationType.ERROR, MainToolWindowService.Tab.LOGS)
+            statistics.setProjectConfigurations(this)
+            statistics.sendStatistics(Statistics.GroupName.CORE, "ProjectConfigurations", "Project configuration load failed: other")
         }
         eventLoggerManager.notifyProjectConfigurationsChangeListeners(this)
     }

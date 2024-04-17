@@ -30,6 +30,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("org.eclipse.jetty:jetty-server:11.0.20")
     implementation("org.eclipse.jetty:jetty-servlet:11.0.20")
+    implementation("org.json:json:20231013")
+    implementation("com.amplitude:java-sdk:1.+")
 }
 
 // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
