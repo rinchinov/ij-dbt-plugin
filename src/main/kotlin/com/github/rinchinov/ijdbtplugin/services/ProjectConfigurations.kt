@@ -54,7 +54,7 @@ class ProjectConfigurations(private val project: Project) {
         val profileFile = Paths.get(getDbtProfileDirAbsolute().toString(), "profiles.yml")
         val inputStream: InputStream = Files.newInputStream(profileFile)
         val profilesRaw = Yaml().load(inputStream) as Map<String, Map<String, Map<String, Map<String, Any>>>>?
-        val raw = profilesRaw?.get(dbtProjectConfig.name)
+        val raw = profilesRaw?.get(dbtProjectConfig.profile)
         dbtProjectConfig.projectProfiles = raw?.get("outputs") as Map<String, Map<String, Any>>
         dbtProjectConfig.defaultTarget = raw["target"] as String
         dbtProjectConfig.targets = dbtProjectConfig.projectProfiles?.keys?.toList() ?: emptyList()
