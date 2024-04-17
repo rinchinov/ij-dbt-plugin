@@ -42,10 +42,28 @@ class PluginProjectConfigurable(project: Project) : Configurable {
             insets = JBUI.insets(4)
         }
 
-        addLabeledField("Project path", projectPath, mainPanel, gbc)
-        addLabeledField("DBT profile path", dbtProfileDir, mainPanel, gbc)
-        addLabeledField("DBT runner import", dbtRunnerImport, mainPanel, gbc)
-        addLabeledField("DBT interpreter path", dbtInterpreterPath, mainPanel, gbc)
+        addLabeledField("dbt_project.yml File Path", projectPath, mainPanel, gbc)
+        addLabeledField(
+            "dbt Profile Directory",
+            "It should be a path to directory where profiles are stored. Click to go to dbt docs",
+            "https://docs.getdbt.com/docs/core/connect-data-platform/profiles.yml",
+            dbtProfileDir,
+            mainPanel,
+            gbc
+        )
+        addLabeledField(
+            "DBT runner import",
+            dbtRunnerImport,
+            mainPanel,
+            gbc
+        )
+        addLabeledField(
+            "DBT interpreter path",
+            "If this option is empty, then plugin will get active python SDK from IDE",
+            dbtInterpreterPath,
+            mainPanel,
+            gbc
+        )
         addLabeledField("DBT environment variables", dbtEnvVariables, mainPanel, gbc)
 
         addLabeledField("Query run SQL templates:", null, mainPanel, gbc)
@@ -66,6 +84,9 @@ class PluginProjectConfigurable(project: Project) : Configurable {
     }
 
     private fun simpleLabel(text: String) = JLabel(text)
+    private fun simpleLabel(text: String, toolTipText: String) = JLabel(text).apply {
+        this.toolTipText = toolTipText
+    }
 
     private fun hyperLinkLabel(labelText: String, toolTipText: String, labelLink: String) = HyperlinkLabel().apply {
         this.setHyperlinkText(labelText)
@@ -83,6 +104,16 @@ class PluginProjectConfigurable(project: Project) : Configurable {
             gbc
         )
     }
+
+    private fun addLabeledField(labelText: String, toolTipText: String, field: JComponent?, panel: JPanel, gbc: GridBagConstraints) {
+        addLabeledField(
+            simpleLabel(labelText, toolTipText),
+            field,
+            panel,
+            gbc
+        )
+    }
+
     private fun addLabeledField(labelText: String, field: JComponent?, panel: JPanel, gbc: GridBagConstraints) {
         addLabeledField(
             simpleLabel(labelText),
