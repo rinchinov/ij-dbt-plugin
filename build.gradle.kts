@@ -30,7 +30,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("org.eclipse.jetty:jetty-server:11.0.20")
     implementation("org.eclipse.jetty:jetty-servlet:11.0.20")
-    implementation("org.json:json:20231013")
+    implementation("org.json:json:20240303")
     implementation("com.amplitude:java-sdk:1.+")
 }
 
