@@ -27,7 +27,6 @@ class ProjectConfigurations(private val project: Project) {
         1,
         "",
         "",
-        "target",
         "dbt_packages",
         null,
         null,
@@ -39,7 +38,6 @@ class ProjectConfigurations(private val project: Project) {
         var configVersion: Int,
         var version: String,
         var profile: String,
-        var targetPath: String,
         var packagesInstallPath: String,
         var projectProfiles: Map<String, Map<String, Any>>?,
         var defaultTarget: String?,
@@ -72,7 +70,6 @@ class ProjectConfigurations(private val project: Project) {
                 dbtProjectConfig.configVersion = projectSettingRaw["config-version"] as Int
                 dbtProjectConfig.version = projectSettingRaw["version"] as String
                 dbtProjectConfig.profile = projectSettingRaw["profile"] as String
-                dbtProjectConfig.targetPath = projectSettingRaw["target-path"] as String
                 val packagesInstallPath = projectSettingRaw.getOrDefault(
                     "packages-install-path",
                     dbtProjectConfig.packagesInstallPath
