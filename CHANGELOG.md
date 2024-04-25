@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2024-04-15
+### Changed
+- Updated configuration loading, stop reading unnecessary options from files
+
 ## [0.2.1] - 2024-04-15
 ### Added
 - Environment Variable Settings: Introduced settings to configure environment variables for executions and Jinja configurations, enhancing flexibility and control over runtime environments.
