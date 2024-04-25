@@ -24,51 +24,58 @@ class ProjectConfigurations(private val project: Project) {
     private val eventLoggerManager = project.service<EventLoggerManager>()
     val dbtProjectConfig = DbtProjectConfig(
         "",
-        1,
-        "",
-        "",
         "dbt_packages",
         null,
-        null,
+        "default",
         emptyList(),
         null
     )
     data class DbtProjectConfig(
-        var name: String,
-        var configVersion: Int,
-        var version: String,
         var profile: String,
         var packagesInstallPath: String,
         var projectProfiles: Map<String, Map<String, Any>>?,
-        var defaultTarget: String?,
+        var defaultTarget: String,
         var targets: List<String>,
         var adapterName: String?
     )
+
     init {
         reloadDbtProjectSettings()
     }
     fun getProfileDetails(target: String): Map<String, Any>? {
         return dbtProjectConfig.projectProfiles?.get(target)
     }
+
     private fun loadProfileDetails(){
         val profileFile = Paths.get(getDbtProfileDirAbsolute().toString(), "profiles.yml")
-        val inputStream: InputStream = Files.newInputStream(profileFile)
-        val profilesRaw = Yaml().load(inputStream) as Map<String, Map<String, Map<String, Map<String, Any>>>>?
-        val raw = profilesRaw?.get(dbtProjectConfig.profile)
-        dbtProjectConfig.projectProfiles = raw?.get("outputs") as Map<String, Map<String, Any>>
-        dbtProjectConfig.defaultTarget = raw["target"] as String
-        dbtProjectConfig.targets = dbtProjectConfig.projectProfiles?.keys?.toList() ?: emptyList()
-        dbtProjectConfig.adapterName = dbtProjectConfig.projectProfiles!![dbtProjectConfig.defaultTarget!!]?.get("type") as String
+        try {
+            val inputStream: InputStream = Files.newInputStream(profileFile)
+            val profilesRaw = Yaml().load(inputStream) as Map<String, Map<String, Map<String, Map<String, Any>>>>?
+            val raw = profilesRaw?.get(dbtProjectConfig.profile)
+            dbtProjectConfig.projectProfiles = raw?.getOrDefault("outputs", emptyMap()) as Map<String, Map<String, Any>>
+            dbtProjectConfig.defaultTarget = raw.getOrDefault("target", "default").toString()
+            dbtProjectConfig.targets = dbtProjectConfig.projectProfiles?.keys?.toList() ?: emptyList()
+            dbtProjectConfig.adapterName = dbtProjectConfig.projectProfiles!![dbtProjectConfig.defaultTarget]?.get("type") as String
+        } catch (e: FileNotFoundException) {
+            eventLoggerManager.logLines(e.stackTraceToString().lines(), "core")
+            dbtNotifications.sendNotification("File not found", "Failed to open `${profileFile}`", NotificationType.ERROR, MainToolWindowService.Tab.LOGS)
+            statistics.setProjectConfigurations(this)
+            statistics.sendStatistics(Statistics.GroupName.CORE, "ProjectConfigurations", "Profile details load failed: file not found")
+        }
+        catch (e: Exception) {
+            eventLoggerManager.logLines(e.stackTraceToString().lines(), "core")
+            dbtNotifications.sendNotification("Error loading YAML file", "Failed to parse `$profileFile`", NotificationType.ERROR, MainToolWindowService.Tab.LOGS)
+            statistics.setProjectConfigurations(this)
+            statistics.sendStatistics(Statistics.GroupName.CORE, "ProjectConfigurations", "Profile details load failed: other")
+        }
     }
+
     fun reloadDbtProjectSettings(){
         val filePath = dbtProjectPath().absolutePath.toString()
         try {
             val inputStream: InputStream = Files.newInputStream(Paths.get(filePath))
             val projectSettingRaw = Yaml().load(inputStream) as Map<String, Any>?
             if (projectSettingRaw != null) {
-                dbtProjectConfig.name = projectSettingRaw["name"] as String
-                dbtProjectConfig.configVersion = projectSettingRaw["config-version"] as Int
-                dbtProjectConfig.version = projectSettingRaw["version"] as String
                 dbtProjectConfig.profile = projectSettingRaw["profile"] as String
                 val packagesInstallPath = projectSettingRaw.getOrDefault(
                     "packages-install-path",
@@ -160,6 +167,8 @@ class ProjectConfigurations(private val project: Project) {
         }
         eventLoggerManager.logLine("Can't find python interpreter", "core")
         dbtNotifications.sendNotification("Can't find python interpreter", "", NotificationType.ERROR)
+        statistics.setProjectConfigurations(this)
+        statistics.sendStatistics(Statistics.GroupName.CORE, "ProjectConfigurations", "Project configuration load failed: can't find python SDK")
         return ""
     }
 
