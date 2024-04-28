@@ -54,7 +54,7 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
     private val mainToolService = project.service<MainToolWindowService>()
 
     private var queryExecutionManager: BaseQueryExecutionManagerInterface = when (project.service<ProjectConfigurations>().dbtProjectConfig.adapterName) {
-//        "bigquery" -> BigQueryQueryExecutionManager(project)
+        "bigquery" -> BigQueryQueryExecutionManager(project)
         "postgres" -> PostgresQueryExecutionManager(project)
         else -> DbtManagerQueryExecutionManager(project)
     }
