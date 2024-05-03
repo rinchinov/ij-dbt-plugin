@@ -7,8 +7,8 @@ import com.github.rinchinov.ijdbtplugin.services.EventLoggerManager
 import com.github.rinchinov.ijdbtplugin.services.Notifications
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.*
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -139,12 +139,12 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
             }
         )
     }
-    fun runQuery(e: AnActionEvent, target: String, type: QueryTypes){
+    fun runQuery(editor: Editor, target: String, type: QueryTypes){
         mainToolService.activateTab(MainToolWindowService.Tab.QUERY_RUN)
         ProgressManager.getInstance().run(object : BaseQueryTask(project, "Running query in Background"){
                 override fun executeTask(indicator: ProgressIndicator): QueryExecution {
                     val manifestService = project.service<ManifestService>()
-                    val query = manifestService.getWithReplacingRefsAndSources(e, target)
+                    val query = manifestService.getWithReplacingRefsAndSources(editor, target)
                     this.query = query
                     this.target = target
                     queryExecution = queryExecutionManager.runQuery(type, query, target)

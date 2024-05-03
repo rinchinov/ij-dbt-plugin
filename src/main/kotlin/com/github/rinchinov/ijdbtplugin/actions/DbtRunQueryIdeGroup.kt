@@ -21,7 +21,7 @@ class DbtRunQueryIdeGroup : ActionGroup() {
         val actions: Array<AnAction> = targets.map { target ->
             listOf(
                 object : AnAction("Run query for $target") {
-                    override fun actionPerformed(e: AnActionEvent) = nativeQueryExecutionBackend.runQuery(e, target)
+                    override fun actionPerformed(e: AnActionEvent) = nativeQueryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target)
                 }
             )
         }.flatten().toTypedArray()

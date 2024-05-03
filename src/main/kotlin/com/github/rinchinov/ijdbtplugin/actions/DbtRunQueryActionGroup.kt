@@ -21,13 +21,13 @@ class DbtRunQueryActionGroup : ActionGroup() {
         val actions: Array<AnAction> = targets.map { target ->
             listOf(
                 object : AnAction("Run query for $target") {
-                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, QueryExecutionBackend.QueryTypes.PAGINATED)
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.PAGINATED)
                 },
                 object : AnAction("Get query plan for $target") {
-                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, QueryExecutionBackend.QueryTypes.PLAN)
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.PLAN)
                 },
                 object : AnAction("Dry run query for $target") {
-                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e, target, QueryExecutionBackend.QueryTypes.DRY)
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.DRY)
                 },
             )
         }.flatten().toTypedArray()

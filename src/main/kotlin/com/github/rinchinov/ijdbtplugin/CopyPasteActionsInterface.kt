@@ -21,10 +21,9 @@ interface CopyPasteActionsInterface {
 
     fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String
     fun replaceRefsAndSourcesToJinja2(query: String, target: String): String
-    fun getWithReplacingRefsAndSources(e: AnActionEvent, target: String): String {
+    fun getWithReplacingRefsAndSources(editor: Editor, target: String): String {
             var replacedContentResult = ""
             ApplicationManager.getApplication().runReadAction {
-                val editor: Editor = e.getRequiredData(CommonDataKeys.EDITOR)
                 val document = editor.document
                 val selectionModel = editor.selectionModel
                 val selectedText = selectionModel.selectedText ?: document.text
@@ -34,7 +33,7 @@ interface CopyPasteActionsInterface {
         }
     fun copyWithReplacingRefsAndSources(e: AnActionEvent, target: String){
         coroutineScope.launch {
-            val replacedContentResult = getWithReplacingRefsAndSources(e, target)
+            val replacedContentResult = getWithReplacingRefsAndSources(e.getRequiredData(CommonDataKeys.EDITOR), target)
             val copyPasteManager = CopyPasteManager.getInstance()
             copyPasteManager.setContents(StringSelection(replacedContentResult))
             e.project?.service<Notifications>()?.sendNotification(

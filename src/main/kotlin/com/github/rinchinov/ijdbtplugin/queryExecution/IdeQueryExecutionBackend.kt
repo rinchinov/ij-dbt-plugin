@@ -28,10 +28,9 @@ class IdeQueryExecutionBackend(private val project: Project) {
     private val virtualFiles: MutableMap<String, LightVirtualFile> = mutableMapOf()
     private val dbtNotifications = project.service<Notifications>()
 
-    fun runQuery(e: AnActionEvent, target: String) {
-        val editor: Editor = e.getRequiredData(CommonDataKeys.EDITOR)
+    fun runQuery(editor: Editor, target: String) {
         SwingUtilities.invokeLater {
-            val query = manifestService.getWithReplacingRefsAndSources(e, target)
+            val query = manifestService.getWithReplacingRefsAndSources(editor, target)
             val virtualFile = getVirtualFile(query, target)
             val console = getJdbcConsole(virtualFile, target)
             val consoleDataRequest = console?.let {
