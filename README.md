@@ -101,25 +101,23 @@ String templates are used for query formatting during execution, `%s` -- selecte
 
 Probably query execution is the most difficult and not obvious part of the plugin. It is adapter specific, so it can be different in different adapters.
 
-Now there is two ways how to execute query
+Now there is two ways how to execute query:
 * With IDEA's database tools
 * With plugins owns query execution logic
+  * Run query(with pagination)
+  * Dry run query
+  * Get query plan
 
-### How to use query execution with IDEA's database mechanism
-
-1. Set up datasource to with name `{project name}__{target}`, e.x. `jaffle_shop__dev`, plugin will use it.
-2. Select query in editor
-3. Choose `Run Selected Query With DBT` and then desired target
-4. Plugin should replace refs and sources and pass query text to IDEA database console
-
-### How to use query execution with plugins owns query execution mechanism
-
+### How to run query for selected text in editor:
 1. If your adapter is `postgres` then set up datasource to with name `{project name}__{target}`, e.x. `jaffle_shop__dev`, plugin will use it.
-2. Select query in editor
-3. Choose `Run Selected Query With DBT` then choose
-   * `Run query for {your desired target}` to run query with pagination
-   * `Get query plan for {your desired target}` to get query plan
-   * `Dry run query for {your desired target}` to dry run query
+2. Select query in editor and one of:
+   * Right click and select `Run Selected Query`
+   * Or click on top in run configurations
+3. Choose one of: 
+   * `Run with database tools: {your desired target}` to run query in IDEA's database tools
+   * `Run: {your desired target}` to run query with pagination
+   * `Query plan: {your desired target}` to get query plan
+   * `Dry run: {your desired target}` to dry run query
 4. Plugin should replace refs and sources and show query execution results in plugins tool window
 
 Note: It formats queries with query templates from [plugin's settings.](#query-execution-settings)
