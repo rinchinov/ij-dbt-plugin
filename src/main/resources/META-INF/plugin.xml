@@ -73,18 +73,6 @@
                     group-id="EditorPopupMenu"
                     anchor="first"/>
         </group>
-        <group
-                id="RunSelectedQueryIde"
-                text="Run Selected Query With IDE"
-                description="Actions to run selected query with native for target"
-                popup="true">
-            <action
-                    id="MyDynamicActionsNativeRunQuery"
-                    class="com.github.rinchinov.ijdbtplugin.actions.DbtRunQueryIdeGroup" />
-            <add-to-group
-                    group-id="EditorPopupMenu"
-                    anchor="first"/>
-        </group>
     </actions>
 
 </idea-plugin>

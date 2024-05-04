@@ -1,6 +1,7 @@
 package com.github.rinchinov.ijdbtplugin.actions
 
 
+import com.github.rinchinov.ijdbtplugin.queryExecution.IdeQueryExecutionBackend
 import com.github.rinchinov.ijdbtplugin.queryExecution.QueryExecutionBackend
 import com.github.rinchinov.ijdbtplugin.services.ProjectConfigurations
 import com.intellij.openapi.actionSystem.*
@@ -18,15 +19,19 @@ class DbtRunQueryActionGroup : ActionGroup() {
         val project = e.project!!
         val targets = project.service<ProjectConfigurations>().dbtProjectConfig.targets
         val queryExecutionBackend = project.service<QueryExecutionBackend>()
+        val nativeQueryExecutionBackend = project.service<IdeQueryExecutionBackend>()
         val actions: Array<AnAction> = targets.map { target ->
             listOf(
-                object : AnAction("Run query for $target") {
+                object : AnAction("Run with database tools: $target") {
+                    override fun actionPerformed(e: AnActionEvent) = nativeQueryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target)
+                },
+                object : AnAction("Run: $target") {
                     override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.PAGINATED)
                 },
-                object : AnAction("Get query plan for $target") {
+                object : AnAction("Query plan: $target") {
                     override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.PLAN)
                 },
-                object : AnAction("Dry run query for $target") {
+                object : AnAction("Dry run: $target") {
                     override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.DRY)
                 },
             )
