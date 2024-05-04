@@ -5,6 +5,7 @@
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.rinchinov.ijdbtplugin.svg)](https://plugins.jetbrains.com/plugin/23789-dbt)
 
 ![Alt text](https://s9.gifyu.com/images/SUcFi.md.gif "Usage")
+![Alt text](https://s9.gifyu.com/images/Sa73k.md.gif "Usage")
 # Table of contents
 1. [Key features](#key-features)
 2. [Quick start](#quick-start)
@@ -109,6 +110,7 @@ Now there is two ways how to execute query:
   * Get query plan
 
 ### How to run query for selected text in editor:
+![Alt text](https://s9.gifyu.com/images/Sa73k.md.gif "Usage")
 1. If your adapter is `postgres` then set up datasource to with name `{project name}__{target}`, e.x. `jaffle_shop__dev`, plugin will use it.
 2. Select query in editor and one of:
    * Right click and select `Run Selected Query`
