@@ -1,6 +1,7 @@
 package com.github.rinchinov.ijdbtplugin.services
 
 import com.github.rinchinov.ijdbtplugin.extensions.MainToolWindowService
+import com.github.rinchinov.ijdbtplugin.run.DbtRunConfigurationService
 import com.github.rinchinov.ijdbtplugin.utils.Jinja2Utils
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
@@ -22,6 +23,7 @@ class ProjectConfigurations(private val project: Project) {
     val statistics = Statistics.getInstance()
     private val dbtNotifications = project.service<Notifications>()
     private val eventLoggerManager = project.service<EventLoggerManager>()
+    private val dbtRunConfigurationService = project.service<DbtRunConfigurationService>()
     val dbtProjectConfig = DbtProjectConfig(
         "",
         "dbt_packages",
@@ -102,6 +104,7 @@ class ProjectConfigurations(private val project: Project) {
             statistics.setProjectConfigurations(this)
             statistics.sendStatistics(Statistics.GroupName.CORE, "ProjectConfigurations", "Project configuration load failed: other")
         }
+        dbtRunConfigurationService.updateConfigurations(this)
         eventLoggerManager.notifyProjectConfigurationsChangeListeners(this)
     }
     class SettingPath(relativePath: String, basePath: String) {

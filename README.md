@@ -1,11 +1,17 @@
 # ij-dbt-plugin
 
 ![Build](https://github.com/rinchinov/ij-dbt-plugin/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/com.github.rinchinov.ijdbtplugin.svg)](https://plugins.jetbrains.com/plugin/com.github.rinchinov.ijdbtplugin)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.rinchinov.ijdbtplugin.svg)](https://plugins.jetbrains.com/plugin/com.github.rinchinov.ijdbtplugin)
+[![Version](https://img.shields.io/jetbrains/plugin/v/com.github.rinchinov.ijdbtplugin.svg)](https://plugins.jetbrains.com/plugin/23789-dbt)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.rinchinov.ijdbtplugin.svg)](https://plugins.jetbrains.com/plugin/23789-dbt)
 
 ![Alt text](https://s9.gifyu.com/images/SUcFi.md.gif "Usage")
-
+![Alt text](https://s9.gifyu.com/images/Sa73k.md.gif "Usage")
+# Table of contents
+1. [Key features](#key-features)
+2. [Quick start](#quick-start)
+3. [Full Setup instructions](#full-setup-instructions)
+4. [Configuration options reference](#configuration-options-reference)
+5. [Query execution mechanism explanation](#query-execution-mechanism)
 <!-- Plugin description -->
 # DBT for idea IDEs
 
@@ -31,11 +37,21 @@ Leverage these features to transform your navigation and documentation review pr
 
 <!-- Plugin description end -->
 
-## Prerequisites
+## Quick start
+
+* Install the plugin
+* Open some dbt project
+* Make sure that in IDE [set python interpreter with dbt](#configure-python-sdk)
+* If your `dbt_project.yml` not in root directory of project
+  * set project file path in [plugins settings](#main-settings)
+* If your profiles not in `~/.dbt`
+  * set path to profiles directory in [plugins settings](#main-settings)
+
+## Full Setup Instructions
+
+### Prerequisites
 
 Ensure you have a Python SDK configured in IDE with DBT installed. This setup is essential for the correct functioning of the plugin.
-
-## Setup Instructions
 
 ### Install the DBT Plugin
 
@@ -57,6 +73,60 @@ Ensure you have a Python SDK configured in IDE with DBT installed. This setup is
 ### Optional: Restart PyCharm/IntelliJ IDEA
 
 - A restart may be necessary to fully integrate the new settings, optimizing your plugin experience.
+
+## Configuration options reference
+
+### Main settings
+| Settings name             | Description                                                                                                                                                              | By default                         | Examples                                   |
+|:--------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------|:-------------------------------------------|
+| dbt_project.yml File Path | Path to dbt project **file**(dbt_project.yml). <br/>[DBT docs link](https://docs.getdbt.com/reference/dbt_project.yml)                                                   | dbt_project.yml                    |                                            |
+| dbt Profile Directory     | Path to **directory** where dbt profile file is placed. <br/>[DBT docs link](https://docs.getdbt.com/docs/core/connect-data-platform/profiles.yml)                       | ~/.dbt                             |                                            |
+| DBT runner import         | Import string, will be used to call dbt commands [see programmatic invocations](https://docs.getdbt.com/reference/programmatic-invocations)                              | from dbt.cli.main import dbtRunner | from custom_package import customDbtRunner |
+| DBT interpreter path      | Python interpreter SDK where DBT is installed, if empty it takes current project's sdk                                                                                   |                                    |                                            |
+| DBT environment variables | Environment variables that will be used for dbt calls                                                                                                                    |                                    | DB_PASS=secret1@;DB_USER=dbt               |
+| Collect usage statistic   | Statistics help to analyze which features most used, which adapters and environments are most popular to prioritize plugin development. [privacy policy](PRIVACY_POLICY) | unchecked                          |                                            |
+
+### Query execution settings
+
+String templates are used for query formatting during execution, `%s` -- selected text. See section with query execution description
+
+| Settings name             | Description                              | By default                  | 
+|:--------------------------|:-----------------------------------------|:----------------------------|
+| Query paginated template  | for _pagination_ to get paginated result | `%s LIMIT ? OFFSET ?`       |
+| Query count template      | for _pagination_ to get count of pages   | `SELECT COUNT(*) FROM (%s)` |
+| Query plan template       | for getting query plan                   | `EXPLAIN %s`                |
+| Query dry run template    | for dry run query, if adapter supports   | `%s LIMIT 10`               |
+
+
+## Query execution mechanism
+
+Probably query execution is the most difficult and not obvious part of the plugin. It is adapter specific, so it can be different in different adapters.
+
+Now there is two ways how to execute query:
+* With IDEA's database tools
+* With plugins owns query execution logic
+  * Run query(with pagination)
+  * Dry run query
+  * Get query plan
+
+### How to run query for selected text in editor:
+![Alt text](https://s9.gifyu.com/images/Sa73k.md.gif "Usage")
+1. If your adapter is `postgres` then set up datasource to with name `{project name}__{target}`, e.x. `jaffle_shop__dev`, plugin will use it.
+2. Select query in editor and one of:
+   * Right click and select `Run Selected Query`
+   * Or click on top in run configurations
+3. Choose one of: 
+   * `Run with database tools: {your desired target}` to run query in IDEA's database tools
+   * `Run: {your desired target}` to run query with pagination
+   * `Query plan: {your desired target}` to get query plan
+   * `Dry run: {your desired target}` to dry run query
+4. Plugin should replace refs and sources and show query execution results in plugins tool window
+
+Note: It formats queries with query templates from [plugin's settings.](#query-execution-settings)
+
+If your adapter is `postgres` then plugin takes JDBC connection from IDEA's database tools, and runs query with JDBC.
+
+For the rest adapters it uses dbt some tricky logic to run query with dbt cli(it works much slower than JDBC).
 
 ---
 Plugin based on the [IntelliJ Platform Plugin Template][template].
