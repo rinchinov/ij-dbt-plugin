@@ -33,7 +33,7 @@ class ManifestService(override var project: Project):
     override val jinja2Utils = project.service<Jinja2Utils>()
     override val settings = project.service<ProjectSettings>()
     override val statistics = Statistics.getInstance()
-    private val executor = project.service<Executor>()
+    override val executor = project.service<Executor>()
     override val dbtPackageLocation = executor.getDbtPythonPackageLocation()
     override val dbtNotifications = project.service<Notifications>()
     private val eventLoggerManager = project.service<EventLoggerManager>()

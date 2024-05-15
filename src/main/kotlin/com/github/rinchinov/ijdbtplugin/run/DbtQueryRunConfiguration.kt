@@ -19,7 +19,8 @@ class DbtQueryRunConfiguration(
 
     data class Options(
         val target: String,
-        val queryType: QueryExecutionBackend.QueryTypes?
+        val queryType: QueryExecutionBackend.QueryTypes?,
+        val dbtCompile: Boolean
     )
 
     override fun clone(): RunConfiguration {

@@ -22,7 +22,7 @@ class DbtCopyPasteActionGroup : ActionGroup() {
         val actions: Array<AnAction> = targets.map { target ->
             listOf(
                 object : AnAction("Copy for $target") {
-                    override fun actionPerformed(e: AnActionEvent) = manifestService.copyWithReplacingRefsAndSources(e, target)
+                    override fun actionPerformed(e: AnActionEvent) = manifestService.copyWithReplacingRefsAndSources(e, target, false)
                 },
                 object : AnAction("Paste as $target") {
                     override fun actionPerformed(e: AnActionEvent) = manifestService.pasteWithReplacedRefsAndSources(e, target)

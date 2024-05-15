@@ -8,8 +8,6 @@ import com.intellij.database.console.session.DatabaseSessionManager
 import com.intellij.database.dataSource.LocalDataSourceManager
 import com.intellij.database.run.ConsoleDataRequest
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -28,9 +26,9 @@ class IdeQueryExecutionBackend(private val project: Project) {
     private val virtualFiles: MutableMap<String, LightVirtualFile> = mutableMapOf()
     private val dbtNotifications = project.service<Notifications>()
 
-    fun runQuery(editor: Editor, target: String) {
+    fun runQuery(editor: Editor, target: String, dbtCompile: Boolean) {
         SwingUtilities.invokeLater {
-            val query = manifestService.getWithReplacingRefsAndSources(editor, target)
+            val query = manifestService.getWithReplacingRefsAndSources(editor, target, dbtCompile)
             val virtualFile = getVirtualFile(query, target)
             val console = getJdbcConsole(virtualFile, target)
             val consoleDataRequest = console?.let {

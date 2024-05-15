@@ -139,12 +139,12 @@ class QueryExecutionBackend(private val project: Project): PersistentStateCompon
             }
         )
     }
-    fun runQuery(editor: Editor, target: String, type: QueryTypes){
+    fun runQuery(editor: Editor, target: String, type: QueryTypes, dbtCompile: Boolean){
         mainToolService.activateTab(MainToolWindowService.Tab.QUERY_RUN)
         ProgressManager.getInstance().run(object : BaseQueryTask(project, "Running query in Background"){
                 override fun executeTask(indicator: ProgressIndicator): QueryExecution {
                     val manifestService = project.service<ManifestService>()
-                    val query = manifestService.getWithReplacingRefsAndSources(editor, target)
+                    val query = manifestService.getWithReplacingRefsAndSources(editor, target, dbtCompile)
                     this.query = query
                     this.target = target
                     queryExecution = queryExecutionManager.runQuery(type, query, target)

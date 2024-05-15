@@ -22,10 +22,15 @@ class DbtRunConfigurationService(val project: Project) {
         runManager.removeConfigurations(runManager.getConfigurationSettingsList(UnknownConfigurationType.getInstance()))
         runManager.removeConfigurations(runManager.getConfigurationSettingsList(DbtQueryRunConfigurationType()))
         configurations.dbtProjectConfig.targets.forEach {target ->
-            createQueryRunConfiguration(runManager, "Run Selected With Database Tools: $target", DbtQueryRunConfiguration.Options(target, null))
-            createQueryRunConfiguration(runManager, "Run Selected: $target", DbtQueryRunConfiguration.Options(target, QueryExecutionBackend.QueryTypes.PAGINATED))
-            createQueryRunConfiguration(runManager, "Dry Run Selected: $target", DbtQueryRunConfiguration.Options(target, QueryExecutionBackend.QueryTypes.DRY))
-            createQueryRunConfiguration(runManager, "Query Plan Selected: $target", DbtQueryRunConfiguration.Options(target, QueryExecutionBackend.QueryTypes.PLAN))
+            createQueryRunConfiguration(runManager, "Run Selected With Database Tools: $target", DbtQueryRunConfiguration.Options(target, null, false))
+            createQueryRunConfiguration(runManager, "Run Selected: $target", DbtQueryRunConfiguration.Options(target, QueryExecutionBackend.QueryTypes.PAGINATED, false))
+            createQueryRunConfiguration(runManager, "Dry Run Selected: $target", DbtQueryRunConfiguration.Options(target, QueryExecutionBackend.QueryTypes.DRY, false))
+            createQueryRunConfiguration(runManager, "Query Plan Selected: $target", DbtQueryRunConfiguration.Options(target, QueryExecutionBackend.QueryTypes.PLAN, false))
+
+            createQueryRunConfiguration(runManager, "Compile & Run Selected With Database Tools: $target", DbtQueryRunConfiguration.Options(target, null, true))
+            createQueryRunConfiguration(runManager, "Compile & Run Selected: $target", DbtQueryRunConfiguration.Options(target, QueryExecutionBackend.QueryTypes.PAGINATED, true))
+            createQueryRunConfiguration(runManager, "Compile & Dry Run Selected: $target", DbtQueryRunConfiguration.Options(target, QueryExecutionBackend.QueryTypes.DRY, true))
+            createQueryRunConfiguration(runManager, "Compile & Query Plan Selected: $target", DbtQueryRunConfiguration.Options(target, QueryExecutionBackend.QueryTypes.PLAN, true))
         }
     }
 
@@ -36,7 +41,7 @@ class DbtRunConfigurationService(val project: Project) {
                 return DbtQueryRunConfiguration(project, this, name, this.options)
             }
             override fun getId(): String {
-                return "DBT_RUN_QUERY_CONFIGURATION_${options.queryType}_${options.target.uppercase()}"
+                return "DBT_RUN_QUERY_CONFIGURATION_${options.queryType}_${options.target.uppercase()}_${options.dbtCompile.toString().uppercase()}"
             }
         }
         val settings = runManager.createConfiguration(name, factory)

@@ -19,21 +19,24 @@ interface CopyPasteActionsInterface {
     val coroutineScope: CoroutineScope
     val statistics: Statistics
 
-    fun replaceRefsAndSourcesFromJinja2(query: String, target: String): String
+    fun replaceRefsAndSourcesFromJinja2(query: String, target: String, dbtCompile: Boolean): String
+
     fun replaceRefsAndSourcesToJinja2(query: String, target: String): String
-    fun getWithReplacingRefsAndSources(editor: Editor, target: String): String {
-            var replacedContentResult = ""
-            ApplicationManager.getApplication().runReadAction {
-                val document = editor.document
-                val selectionModel = editor.selectionModel
-                val selectedText = selectionModel.selectedText ?: document.text
-                replacedContentResult = replaceRefsAndSourcesFromJinja2(selectedText, target)
-            }
-            return replacedContentResult
+
+    fun getWithReplacingRefsAndSources(editor: Editor, target: String, dbtCompile: Boolean): String {
+        var replacedContentResult = ""
+        ApplicationManager.getApplication().runReadAction {
+            val document = editor.document
+            val selectionModel = editor.selectionModel
+            val selectedText = selectionModel.selectedText ?: document.text
+            replacedContentResult = replaceRefsAndSourcesFromJinja2(selectedText, target, dbtCompile)
         }
-    fun copyWithReplacingRefsAndSources(e: AnActionEvent, target: String){
+        return replacedContentResult
+    }
+
+    fun copyWithReplacingRefsAndSources(e: AnActionEvent, target: String, dbtCompile: Boolean){
         coroutineScope.launch {
-            val replacedContentResult = getWithReplacingRefsAndSources(e.getRequiredData(CommonDataKeys.EDITOR), target)
+            val replacedContentResult = getWithReplacingRefsAndSources(e.getRequiredData(CommonDataKeys.EDITOR), target, dbtCompile)
             val copyPasteManager = CopyPasteManager.getInstance()
             copyPasteManager.setContents(StringSelection(replacedContentResult))
             e.project?.service<Notifications>()?.sendNotification(
@@ -43,6 +46,7 @@ interface CopyPasteActionsInterface {
             )
         }
     }
+
     fun pasteWithReplacedRefsAndSources(e: AnActionEvent, target: String){
         coroutineScope.launch {
             val clipboard = CopyPasteManager.getInstance()

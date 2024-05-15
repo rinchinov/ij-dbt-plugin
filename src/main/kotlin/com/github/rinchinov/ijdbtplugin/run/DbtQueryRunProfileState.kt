@@ -16,14 +16,16 @@ class DbtQueryRunProfileState(private val environment: ExecutionEnvironment, pri
             if (options.queryType == null){
                 environment.project.service<IdeQueryExecutionBackend>().runQuery(
                     it,
-                    options.target
+                    options.target,
+                    options.dbtCompile
                 )
             }
             else {
                 environment.project.service<QueryExecutionBackend>().runQuery(
                     it,
                     options.target,
-                    options.queryType
+                    options.queryType,
+                    options.dbtCompile
                 )
             }
         }

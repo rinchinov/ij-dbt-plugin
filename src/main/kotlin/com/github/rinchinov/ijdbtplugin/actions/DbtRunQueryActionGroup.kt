@@ -23,16 +23,16 @@ class DbtRunQueryActionGroup : ActionGroup() {
         val actions: Array<AnAction> = targets.map { target ->
             listOf(
                 object : AnAction("Run with database tools: $target") {
-                    override fun actionPerformed(e: AnActionEvent) = nativeQueryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target)
+                    override fun actionPerformed(e: AnActionEvent) = nativeQueryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, false)
                 },
                 object : AnAction("Run: $target") {
-                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.PAGINATED)
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.PAGINATED, false)
                 },
                 object : AnAction("Query plan: $target") {
-                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.PLAN)
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.PLAN, false)
                 },
                 object : AnAction("Dry run: $target") {
-                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.DRY)
+                    override fun actionPerformed(e: AnActionEvent) = queryExecutionBackend.runQuery(e.getRequiredData(CommonDataKeys.EDITOR), target, QueryExecutionBackend.QueryTypes.DRY, false)
                 },
             )
         }.flatten().toTypedArray()
