@@ -29,7 +29,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("org.eclipse.jetty:jetty-server:11.0.20")
-    implementation("org.eclipse.jetty:jetty-servlet:11.0.20")
+    implementation("org.eclipse.jetty:jetty-servlet:11.0.21")
     implementation("org.json:json:20240303")
     implementation("com.amplitude:java-sdk:1.+")
     implementation("com.google.cloud:google-cloud-bigquery:2.40.1") {
