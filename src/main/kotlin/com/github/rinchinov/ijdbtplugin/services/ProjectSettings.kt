@@ -65,8 +65,8 @@ class ProjectSettings: PersistentStateComponent<ProjectSettings.State> {
     fun setDbtEnvVariables(dbtEnvVariables: String) {
         myState.dbtEnvVariables = dbtEnvVariables.split(',')
             .map { it.split('=') }
-            .map { it.first() to it.last() }
-            .toMap()
+            .associate { it.first() to it.last() }
+            .filterKeys { it.isNotEmpty() }
     }
 
     fun getDbtEnvVariablesText(): String {
