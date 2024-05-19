@@ -8,6 +8,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import com.intellij.notification.NotificationType
 import java.io.File
+import java.nio.file.Paths
 
 
 @Service(Service.Level.PROJECT)
@@ -92,11 +93,9 @@ class Executor(project: Project){
         try {
             val pythonSdkPath = projectConfigurations.getProjectPythonSdk()
             eventLoggerManager.logLine("using $pythonSdkPath","core")
+            val pythonSdkPathNormalized = Paths.get(pythonSdkPath).toAbsolutePath().toString()
             val processBuilder = ProcessBuilder(
-                listOf(
-                    listOf(pythonSdkPath),
-                    command
-                ).flatten()
+                listOf(pythonSdkPathNormalized) + command
             )
             if (directory != null){
                 processBuilder.directory(directory)
