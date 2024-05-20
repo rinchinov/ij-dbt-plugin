@@ -90,8 +90,8 @@ class Executor(project: Project){
     }
 
     private fun runPython(command: List<String>, directory: File?): String {
+        val pythonSdkPath = projectConfigurations.getProjectPythonSdk()
         try {
-            val pythonSdkPath = projectConfigurations.getProjectPythonSdk()
             eventLoggerManager.logLine("using $pythonSdkPath","core")
             val pythonSdkPathNormalized = Paths.get(pythonSdkPath).toAbsolutePath().toString()
             val processBuilder = ProcessBuilder(
@@ -113,6 +113,12 @@ class Executor(project: Project){
             )
             eventLoggerManager.logLine("Caught an exception: ${e.message}", "core")
             eventLoggerManager.logLine(e.printStackTrace().toString(), "core")
+            (listOf(pythonSdkPath) + command).forEach {
+                eventLoggerManager.logLine(it, "core")
+            }
+            settings.getDbtEnvVariables().forEach { (t, u) ->
+                eventLoggerManager.logLine("$t: $u", "core")
+            }
             return e.message.toString()
         }
     }
