@@ -26,7 +26,7 @@ repositories {
 dependencies {
     implementation("org.yaml:snakeyaml:2.2")
     implementation("com.google.code.gson:gson:2.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("org.eclipse.jetty:jetty-server:11.0.21")
     implementation("org.eclipse.jetty:jetty-servlet:11.0.21")
