@@ -32,7 +32,7 @@ dependencies {
     implementation("org.eclipse.jetty:jetty-servlet:11.0.23")
     implementation("org.json:json:20240303")
     implementation("com.amplitude:java-sdk:1.+")
-    implementation("com.google.cloud:google-cloud-bigquery:2.41.0") {
+    implementation("com.google.cloud:google-cloud-bigquery:2.42.0") {
         exclude(group = "com.fasterxml.jackson.core", module = "jackson-databind")
         exclude(group = "com.fasterxml.jackson.core", module = "jackson-core")
         exclude(group = "com.fasterxml.jackson.core", module = "jackson-annotations")
