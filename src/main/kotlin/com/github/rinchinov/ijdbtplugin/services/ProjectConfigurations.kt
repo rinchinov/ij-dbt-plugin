@@ -8,7 +8,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
-import com.jetbrains.python.sdk.PythonSdkType
+// import com.jetbrains.python.sdk.PythonSdkType TODO: fix import issue
 import org.yaml.snakeyaml.Yaml
 import java.io.*
 import java.nio.file.Files
@@ -161,7 +161,7 @@ class ProjectConfigurations(private val project: Project) {
             return settings.getDbtInterpreterPath()
         }
         val projectSdk = ProjectRootManager.getInstance(project).projectSdk
-        if (projectSdk != null && projectSdk.sdkType is PythonSdkType) {
+        if (projectSdk != null && projectSdk.sdkType.javaClass.name == "com.jetbrains.python.sdk.PythonSdkType" ) {
             return projectSdk.homePath.toString()
         }
         val dbtPython = findDbtPython()

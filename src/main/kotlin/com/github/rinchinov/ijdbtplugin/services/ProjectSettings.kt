@@ -4,8 +4,8 @@ import com.intellij.openapi.components.*
 
 @Service(Service.Level.PROJECT)
 @State(
-        name = "DBTSettings",
-        storages = [Storage("dbtSettings.xml")]
+    name = "DBTSettings",
+    storages = [Storage("dbtSettings.xml")]
 )
 class ProjectSettings: PersistentStateComponent<ProjectSettings.State> {
     private var myState = State()
@@ -74,6 +74,7 @@ class ProjectSettings: PersistentStateComponent<ProjectSettings.State> {
     }
 
     fun getDbtInterpreterPath(): String = myState.dbtInterpreterPath
+
     fun setDbtInterpreterPath(dbtInterpreterPath: String) {
         myState.dbtInterpreterPath = dbtInterpreterPath
     }
