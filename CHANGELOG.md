@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Support new version of IDEs PY-242.* 
+- Update project builds configuration, use intelliJPlatform = "2.0.1"
 
 ## [0.2.5] - 2024-05-20
 ### Changed
