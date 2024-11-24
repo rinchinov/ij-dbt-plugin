@@ -7,12 +7,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Support new version of IDEs PY-242.* 
+- Update project builds configuration, use intelliJPlatform = "2.0.1"
+
 ## [0.2.5] - 2024-05-20
 ### Changed
 - Enhanced logging for dbt execution failures #68 troubleshooting
+
 ## [0.2.4] - 2024-05-15
 ### Added
 - Option to compile selected text and then run results
+
 ## [0.2.3] - 2024-05-04
 ### Added
 - Experimental query execution with native IDEA database module
@@ -41,7 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MVP for query execution feature
 ### Changed
 - Updated error handling
-
 
 ## [0.1.4] - 2024-03-12
 ### Changed

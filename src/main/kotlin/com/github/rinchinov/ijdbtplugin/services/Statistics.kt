@@ -6,8 +6,8 @@ import com.amplitude.Event
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.components.*
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.extensions.PluginId
-import org.jetbrains.letsPlot.commons.registration.Disposable
 import org.json.JSONObject
 import java.util.*
 

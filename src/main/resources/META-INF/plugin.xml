@@ -1,5 +1,5 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin require-restart="false" on-demand="true" >
+<idea-plugin require-restart="false">
     <id>com.github.rinchinov.ijdbtplugin</id>
     <name>DBT</name>
     <vendor>rinchinov</vendor>
@@ -9,6 +9,8 @@
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.ultimate</depends>
     <depends>com.intellij.database</depends>
+    <depends>PythonCore</depends>
+    <depends>Pythonid</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
